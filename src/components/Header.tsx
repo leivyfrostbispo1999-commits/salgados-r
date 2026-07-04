@@ -21,6 +21,9 @@ export function Header() {
           <a className="transition hover:text-yellow-300" href="#refil">
             Refil
           </a>
+          <a className="transition hover:text-yellow-300" href="#cardapio-oficial">
+            Oficial
+          </a>
           <a className="transition hover:text-yellow-300" href="#como-pedir">
             Como pedir
           </a>
@@ -30,7 +33,7 @@ export function Header() {
           href="#cardapio"
           className="rounded bg-yellow-300 px-4 py-2 text-sm font-black text-black transition hover:bg-white"
         >
-          Pedir agora
+          Ver cardapio
         </a>
       </div>
     </header>

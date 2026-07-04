@@ -5,11 +5,11 @@ const steps = [
   },
   {
     title: 'Clique no WhatsApp',
-    description: 'A mensagem do produto ja vai pronta para confirmar o pedido.',
+    description: 'A mensagem ja vai com produto, preco e quantidade.',
   },
   {
-    title: 'Retire fresquinho',
-    description: 'Combinamos o melhor horario e preparamos tudo quentinho.',
+    title: 'Confira a regra dos sucos',
+    description: 'Copo e apenas presencial. Delivery de suco somente na garrafinha de 300 ml.',
   },
 ]
 

@@ -10,8 +10,8 @@ export function Hero() {
             Salgados quentinhos, pasteis crocantes e sucos gelados.
           </h1>
           <p className="mt-5 max-w-2xl text-lg font-medium text-red-50">
-            Cardapio direto para pedir sem enrolacao: escolha seu salgado, mande no WhatsApp e retire
-            tudo fresquinho.
+            Cardapio direto: pasteis e salgados para pedir no WhatsApp, sucos de copo para consumo no
+            estabelecimento e garrafinha de suco natural para delivery.
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -35,14 +35,14 @@ export function Hero() {
           <div className="relative mt-10 rounded-lg bg-white p-5 shadow-xl">
             <div className="rounded-lg border-4 border-red-600 bg-red-50 p-5">
               <p className="text-sm font-black uppercase tracking-[0.2em] text-red-700">Combo popular</p>
-              <h2 className="mt-2 text-3xl font-black">Pastel + Suco</h2>
+              <h2 className="mt-2 text-3xl font-black">Balcao + Delivery</h2>
               <p className="mt-2 text-sm font-semibold text-zinc-700">
-                Massa crocante, recheio caprichado e bebida gelada para fechar o pedido.
+                Sucos de copo ficam no estabelecimento. Para entrega, vai a garrafinha de 300 ml.
               </p>
               <div className="mt-5 grid grid-cols-3 gap-3 text-center">
                 <span className="rounded bg-black px-3 py-5 text-sm font-black text-yellow-300">Pastel</span>
                 <span className="rounded bg-red-600 px-3 py-5 text-sm font-black text-white">Coxinha</span>
-                <span className="rounded bg-yellow-300 px-3 py-5 text-sm font-black text-black">Suco</span>
+                <span className="rounded bg-yellow-300 px-3 py-5 text-sm font-black text-black">Garrafinha</span>
               </div>
             </div>
           </div>

@@ -1,4 +1,5 @@
 export type ProductCategory = 'pasteis' | 'salgados' | 'sucos'
+export type ProductAvailability = 'delivery' | 'presencial' | 'ambos'
 
 export type Product = {
   id: string
@@ -6,6 +7,7 @@ export type Product = {
   description: string
   price: string
   category: ProductCategory
+  availability: ProductAvailability
   highlight?: string
 }
 
@@ -16,6 +18,7 @@ export const products: Product[] = [
     description: 'Pastel crocante com recheio de carne bem temperada.',
     price: 'R$ 5,00',
     category: 'pasteis',
+    availability: 'ambos',
   },
   {
     id: 'pastel-frango',
@@ -23,6 +26,7 @@ export const products: Product[] = [
     description: 'Frango suculento em massa sequinha e dourada.',
     price: 'R$ 5,00',
     category: 'pasteis',
+    availability: 'ambos',
   },
   {
     id: 'pastel-misto',
@@ -30,6 +34,7 @@ export const products: Product[] = [
     description: 'Queijo com presunto em uma combinacao classica.',
     price: 'R$ 5,00',
     category: 'pasteis',
+    availability: 'ambos',
   },
   {
     id: 'pastel-calabresa-queijo',
@@ -37,6 +42,7 @@ export const products: Product[] = [
     description: 'Calabresa marcante com queijo derretido.',
     price: 'R$ 6,00',
     category: 'pasteis',
+    availability: 'ambos',
     highlight: 'Mais pedido',
   },
   {
@@ -45,6 +51,7 @@ export const products: Product[] = [
     description: 'Frango temperado com queijo cremoso.',
     price: 'R$ 7,00',
     category: 'pasteis',
+    availability: 'ambos',
   },
   {
     id: 'coxinha',
@@ -52,6 +59,7 @@ export const products: Product[] = [
     description: 'Massa macia, casquinha crocante e recheio caprichado.',
     price: 'R$ 4,00',
     category: 'salgados',
+    availability: 'ambos',
   },
   {
     id: 'enroladinho',
@@ -59,33 +67,47 @@ export const products: Product[] = [
     description: 'Salgado pratico, dourado e perfeito para qualquer hora.',
     price: 'R$ 4,00',
     category: 'salgados',
-  },
-  {
-    id: 'suco-maracuja-pequeno',
-    name: 'Suco de Maracuja - Copo pequeno',
-    description: 'Suco gelado, refrescante e no ponto certo.',
-    price: 'R$ 2,00',
-    category: 'sucos',
-  },
-  {
-    id: 'suco-maracuja-grande',
-    name: 'Suco de Maracuja - Copo grande',
-    description: 'Mais refresco para acompanhar seu pedido.',
-    price: 'R$ 4,00',
-    category: 'sucos',
+    availability: 'ambos',
   },
   {
     id: 'suco-goiaba-pequeno',
-    name: 'Suco de Goiaba - Copo pequeno',
-    description: 'Sabor de fruta, gelado e leve.',
+    name: 'Suco de Goiaba pequeno - copo',
+    description: 'Vendido apenas para consumo no estabelecimento.',
     price: 'R$ 2,00',
     category: 'sucos',
+    availability: 'presencial',
   },
   {
     id: 'suco-goiaba-grande',
-    name: 'Suco de Goiaba - Copo grande',
-    description: 'Copo grande para completar o lanche.',
+    name: 'Suco de Goiaba grande - copo',
+    description: 'Vendido apenas para consumo no estabelecimento.',
     price: 'R$ 4,00',
     category: 'sucos',
+    availability: 'presencial',
+  },
+  {
+    id: 'suco-maracuja-pequeno',
+    name: 'Suco de Maracuja pequeno - copo',
+    description: 'Vendido apenas para consumo no estabelecimento.',
+    price: 'R$ 2,00',
+    category: 'sucos',
+    availability: 'presencial',
+  },
+  {
+    id: 'suco-maracuja-grande',
+    name: 'Suco de Maracuja grande - copo',
+    description: 'Vendido apenas para consumo no estabelecimento.',
+    price: 'R$ 4,00',
+    category: 'sucos',
+    availability: 'presencial',
+  },
+  {
+    id: 'suco-natural-garrafinha-300ml',
+    name: 'Suco Natural na Garrafinha 300 ml',
+    description: 'Unica opcao de suco para delivery. Sabores: goiaba e maracuja.',
+    price: 'R$ 4,00',
+    category: 'sucos',
+    availability: 'delivery',
+    highlight: 'Delivery',
   },
 ]

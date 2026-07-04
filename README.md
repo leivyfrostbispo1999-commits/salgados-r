@@ -2,6 +2,14 @@
 
 Site de vendas para a SALGADOS R, criado com React, TypeScript, Vite, Tailwind CSS e Docker.
 
+## Regras do cardapio
+
+- Pasteis e salgados podem ser vendidos no estabelecimento e por delivery.
+- Sucos de copo de R$ 2,00 e R$ 4,00 sao somente para consumo no estabelecimento.
+- Para delivery de sucos, a opcao disponivel e Suco Natural na Garrafinha 300 ml por R$ 4,00.
+- Refil de sucos: R$ 1,00 a cada 100 ml, valido para qualquer garrafa.
+- O cliente pode devolver a garrafinha da casa ou levar sua propria garrafa.
+
 ## Desenvolvimento local
 
 ```bash
@@ -56,3 +64,5 @@ Formato base dos links:
 ```text
 https://wa.me/5571997021801
 ```
+
+As mensagens de pedido incluem produto, preco e quantidade.

@@ -7,9 +7,11 @@ type MenuSectionProps = {
   eyebrow: string
   category: ProductCategory
   products: Product[]
+  description?: string
+  badge?: string
 }
 
-export function MenuSection({ id, title, eyebrow, category, products }: MenuSectionProps) {
+export function MenuSection({ id, title, eyebrow, category, products, description, badge }: MenuSectionProps) {
   const filteredProducts = products.filter((product) => product.category === category)
 
   return (
@@ -18,9 +20,10 @@ export function MenuSection({ id, title, eyebrow, category, products }: MenuSect
         <div>
           <p className="text-sm font-black uppercase tracking-[0.2em] text-red-700">{eyebrow}</p>
           <h2 className="mt-2 text-3xl font-black text-zinc-950">{title}</h2>
+          {description ? <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-zinc-600">{description}</p> : null}
         </div>
         <span className="w-fit rounded-full bg-black px-4 py-2 text-sm font-black text-yellow-300">
-          Pedido rapido
+          {badge ?? 'Pedido rapido'}
         </span>
       </div>
 
