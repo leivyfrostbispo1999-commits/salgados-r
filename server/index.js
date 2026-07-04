@@ -318,12 +318,24 @@ app.patch('/api/orders/:id/status', (req, res) => {
   const allowed = new Set(['novo', 'preparando', 'pronto', 'entregue', 'cancelado'])
   if (!allowed.has(req.body.status)) return res.status(400).json({ error: 'Status invalido.' })
 
-  const result = db.prepare('UPDATE orders SET status = ?, updated_at = ? WHERE id = ?').run(
+  const current = db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id)
+  if (!current) return res.status(404).json({ error: 'Pedido nao encontrado.' })
+
+  db.prepare('UPDATE orders SET status = ?, updated_at = ? WHERE id = ?').run(
     req.body.status,
     new Date().toISOString(),
     req.params.id,
   )
-  if (result.changes === 0) return res.status(404).json({ error: 'Pedido nao encontrado.' })
+
+  if (req.body.status === 'cancelado' && current.status !== 'cancelado' && current.phone) {
+    const points = Math.floor(current.total_cents / 100)
+    db.prepare(
+      `UPDATE loyalty_customers
+       SET points = CASE WHEN points - ? < 0 THEN 0 ELSE points - ? END,
+           updated_at = ?
+       WHERE phone = ?`,
+    ).run(points, points, new Date().toISOString(), current.phone)
+  }
 
   res.json(orderDto(db.prepare('SELECT * FROM orders WHERE id = ?').get(req.params.id)))
 })
@@ -380,9 +392,11 @@ app.get('/api/reports/summary', (_req, res) => {
 
   const topProducts = db
     .prepare(
-      `SELECT product_name, SUM(quantity) AS quantity, SUM(total_cents) AS total_cents
-       FROM order_items
-       GROUP BY product_name
+      `SELECT oi.product_name, SUM(oi.quantity) AS quantity, SUM(oi.total_cents) AS total_cents
+       FROM order_items oi
+       JOIN orders o ON o.id = oi.order_id
+       WHERE o.status != 'cancelado'
+       GROUP BY oi.product_name
        ORDER BY quantity DESC
        LIMIT 5`,
     )
