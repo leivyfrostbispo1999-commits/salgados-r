@@ -1,4 +1,20 @@
 services:
+  salgados-r-db:
+    image: postgres:16-alpine
+    container_name: salgados-r-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: salgadosr
+      POSTGRES_USER: salgadosr
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-salgadosr-local-change}
+    volumes:
+      - salgados-r-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U salgadosr -d salgadosr"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   salgados-r-api:
     build:
       context: .
@@ -8,9 +24,15 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
-      DATA_DIR: /data
-    volumes:
-      - salgados-r-data:/data
+      PGHOST: salgados-r-db
+      PGPORT: 5432
+      PGDATABASE: salgadosr
+      PGUSER: salgadosr
+      PGPASSWORD: ${POSTGRES_PASSWORD:-salgadosr-local-change}
+      JWT_SECRET: ${JWT_SECRET:-dev-local-change-this-secret}
+    depends_on:
+      salgados-r-db:
+        condition: service_healthy
     ports:
       - "3001:3001"
 
@@ -26,4 +48,4 @@ services:
       - "3000:3000"
 
 volumes:
-  salgados-r-data:
+  salgados-r-postgres:

@@ -51,9 +51,27 @@ export type ReportSummary = {
   topProducts: Array<{ productName: string; quantity: number; total: number }>
 }
 
+export type AuthUser = {
+  id: string
+  name: string
+  email: string
+  role: 'SUPER_US' | 'ADMIN' | 'GERENTE' | 'ATENDENTE'
+}
+
+const tokenStore = {
+  get: () => localStorage.getItem('salgados-r-token') || '',
+  set: (token: string) => localStorage.setItem('salgados-r-token', token),
+  clear: () => localStorage.removeItem('salgados-r-token'),
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = tokenStore.get()
   const response = await fetch(`/api${path}`, {
-    headers: { 'Content-Type': 'application/json', ...init?.headers },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...init?.headers,
+    },
     ...init,
   })
 
@@ -66,6 +84,24 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 export const api = {
+  token: tokenStore,
+  authStatus: () => request<{ hasUsers: boolean; roles: string[] }>('/auth/status'),
+  login: async (payload: { email: string; password: string }) => {
+    const result = await request<{ user: AuthUser; token: string }>('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    tokenStore.set(result.token)
+    return result
+  },
+  bootstrap: async (payload: { name: string; email: string; password: string }) => {
+    const result = await request<{ user: AuthUser; token: string }>('/auth/bootstrap', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    })
+    tokenStore.set(result.token)
+    return result
+  },
   products: () => request<ApiProduct[]>('/products'),
   createProduct: (payload: {
     name: string

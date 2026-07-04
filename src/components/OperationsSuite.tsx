@@ -1,5 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { api, type ApiOrder, type ApiProduct, type ReportSummary, type StockItem, formatCurrency } from '../utils/api'
+import type { ReactNode } from 'react'
+import {
+  api,
+  type ApiOrder,
+  type ApiProduct,
+  type AuthUser,
+  type ReportSummary,
+  type StockItem,
+  formatCurrency,
+} from '../utils/api'
 
 type CartItem = {
   product: ApiProduct
@@ -20,6 +29,9 @@ const statusFlow: ApiOrder['status'][] = ['novo', 'preparando', 'pronto', 'entre
 
 export function OperationsSuite() {
   const [activeTab, setActiveTab] = useState<TabId>('pedido')
+  const [authChecked, setAuthChecked] = useState(false)
+  const [hasUsers, setHasUsers] = useState(true)
+  const [user, setUser] = useState<AuthUser | null>(null)
   const [products, setProducts] = useState<ApiProduct[]>([])
   const [orders, setOrders] = useState<ApiOrder[]>([])
   const [stock, setStock] = useState<StockItem[]>([])
@@ -41,10 +53,44 @@ export function OperationsSuite() {
   }
 
   useEffect(() => {
-    refresh()
-      .catch((error: Error) => setMessage(error.message))
-      .finally(() => setLoading(false))
+    api
+      .authStatus()
+      .then((status) => {
+        setHasUsers(status.hasUsers)
+        setAuthChecked(true)
+        if (!status.hasUsers || !api.token.get()) {
+          setLoading(false)
+          return
+        }
+        return refresh()
+          .then(() => setUser({ id: 'session', name: 'Sessao ativa', email: '', role: 'ADMIN' }))
+          .catch((error: Error) => {
+            api.token.clear()
+            setMessage(error.message)
+          })
+          .finally(() => setLoading(false))
+      })
+      .catch((error: Error) => {
+        setMessage(error.message)
+        setAuthChecked(true)
+        setLoading(false)
+      })
   }, [])
+
+  async function afterAuth(nextUser: AuthUser) {
+    setUser(nextUser)
+    setLoading(true)
+    await refresh()
+    setLoading(false)
+  }
+
+  function logout() {
+    api.token.clear()
+    setUser(null)
+    setOrders([])
+    setStock([])
+    setSummary(null)
+  }
 
   return (
     <section id="sistema" className="scroll-mt-24 bg-white py-12">
@@ -52,45 +98,136 @@ export function OperationsSuite() {
         <p className="text-sm font-black uppercase tracking-[0.2em] text-red-700">Sistema operacional</p>
         <h2 className="mt-2 text-3xl font-black text-zinc-950">Pedidos, cozinha, estoque e gestao em um so lugar.</h2>
         <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-zinc-600">
-          Primeira versao operacional do Salgados R: backend com banco SQLite, painel de cozinha, produtos,
-          estoque, relatorios e base para fidelidade/PWA.
+          Primeira versao operacional do Salgados R: backend com PostgreSQL, login por perfis, painel de cozinha,
+          produtos, estoque, relatorios, auditoria e base para fidelidade/PWA.
         </p>
 
-        <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
-          {tabs.map((tab) => (
-            <button
-              key={tab.id}
-              type="button"
-              onClick={() => setActiveTab(tab.id)}
-              className={`whitespace-nowrap rounded px-4 py-3 text-sm font-black ${
-                activeTab === tab.id ? 'bg-black text-yellow-300' : 'bg-zinc-100 text-zinc-800'
-              }`}
-            >
-              {tab.label}
+        {user ? (
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-zinc-950 p-4 text-white">
+            <p className="text-sm font-bold">
+              Logado como <span className="text-yellow-300">{user.name}</span> {user.role ? `(${user.role})` : null}
+            </p>
+            <button type="button" onClick={logout} className="rounded bg-yellow-300 px-3 py-2 text-sm font-black text-black">
+              Sair
             </button>
-          ))}
-        </div>
+          </div>
+        ) : null}
+
+        {user ? (
+          <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
+            {tabs.map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setActiveTab(tab.id)}
+                className={`whitespace-nowrap rounded px-4 py-3 text-sm font-black ${
+                  activeTab === tab.id ? 'bg-black text-yellow-300' : 'bg-zinc-100 text-zinc-800'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         {message ? <p className="mt-4 rounded bg-yellow-100 p-3 text-sm font-bold text-zinc-900">{message}</p> : null}
 
         <div className="mt-6">
-          {loading ? <p className="font-bold">Carregando sistema...</p> : null}
-          {!loading && activeTab === 'pedido' ? (
+          {loading || !authChecked ? <p className="font-bold">Carregando sistema...</p> : null}
+          {!loading && authChecked && !user && !hasUsers ? (
+            <BootstrapForm onReady={afterAuth} setMessage={setMessage} />
+          ) : null}
+          {!loading && authChecked && !user && hasUsers ? <LoginForm onReady={afterAuth} setMessage={setMessage} /> : null}
+          {!loading && user && activeTab === 'pedido' ? (
             <OrderBuilder products={products} onCreated={refresh} setMessage={setMessage} />
           ) : null}
-          {!loading && activeTab === 'cozinha' ? (
+          {!loading && user && activeTab === 'cozinha' ? (
             <KitchenPanel orders={orders} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
-          {!loading && activeTab === 'admin' ? (
+          {!loading && user && activeTab === 'admin' ? (
             <AdminPanel products={products} onCreated={refresh} setMessage={setMessage} />
           ) : null}
-          {!loading && activeTab === 'estoque' ? (
+          {!loading && user && activeTab === 'estoque' ? (
             <StockPanel stock={stock} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
-          {!loading && activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
+          {!loading && user && activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
         </div>
       </div>
     </section>
+  )
+}
+
+function BootstrapForm({
+  onReady,
+  setMessage,
+}: {
+  onReady: (user: AuthUser) => Promise<void>
+  setMessage: (message: string) => void
+}) {
+  const [name, setName] = useState('Regina')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  async function submit() {
+    try {
+      const result = await api.bootstrap({ name, email, password })
+      setMessage('SUPER_US criado. Guarde essa senha com cuidado.')
+      await onReady(result.user)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Erro no bootstrap.')
+    }
+  }
+
+  return (
+    <AuthBox title="Criar primeiro SUPER_US" subtitle="Esse passo aparece apenas enquanto nao existe usuario no banco.">
+      <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+      <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+      <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha inicial" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+      <button type="button" onClick={submit} className="rounded bg-black px-4 py-3 font-black text-yellow-300">
+        Criar SUPER_US
+      </button>
+    </AuthBox>
+  )
+}
+
+function LoginForm({
+  onReady,
+  setMessage,
+}: {
+  onReady: (user: AuthUser) => Promise<void>
+  setMessage: (message: string) => void
+}) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  async function submit() {
+    try {
+      const result = await api.login({ email, password })
+      setMessage('Login realizado.')
+      await onReady(result.user)
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Erro no login.')
+    }
+  }
+
+  return (
+    <AuthBox title="Entrar no painel" subtitle="Acesso restrito a SUPER_US, ADMIN, GERENTE e ATENDENTE.">
+      <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+      <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+      <button type="button" onClick={submit} className="rounded bg-black px-4 py-3 font-black text-yellow-300">
+        Entrar
+      </button>
+    </AuthBox>
+  )
+}
+
+function AuthBox({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
+  return (
+    <div className="mx-auto max-w-xl rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+      <h3 className="text-xl font-black">{title}</h3>
+      <p className="mt-2 text-sm font-semibold text-zinc-600">{subtitle}</p>
+      <div className="mt-4 grid gap-3">{children}</div>
+    </div>
   )
 }
 

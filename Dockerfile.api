@@ -8,7 +8,6 @@ RUN npm ci --omit=dev
 COPY server ./server
 
 ENV NODE_ENV=production
-ENV DATA_DIR=/data
 EXPOSE 3001
 
-CMD ["node", "--experimental-sqlite", "server/index.js"]
+CMD ["node", "server/index.js"]

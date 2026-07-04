@@ -4,7 +4,8 @@ Site de vendas para a SALGADOS R, criado com React, TypeScript, Vite, Tailwind C
 
 Agora o projeto tambem inclui uma primeira versao full-stack:
 
-- Backend Node/Express com banco SQLite.
+- Backend Node/Express com banco PostgreSQL.
+- Login com perfis `SUPER_US`, `ADMIN`, `GERENTE` e `ATENDENTE`.
 - API de produtos, pedidos, cozinha, estoque, relatorios e fidelidade.
 - Painel operacional no proprio site.
 - PWA com manifest e service worker.
@@ -43,6 +44,8 @@ API local:
 http://localhost:3001/api/health
 ```
 
+Para desenvolvimento local da API, configure um PostgreSQL e defina `PGHOST`, `PGDATABASE`, `PGUSER` e `PGPASSWORD`.
+
 ## Build
 
 ```bash
@@ -67,6 +70,8 @@ A API roda no servico `salgados-r-api` e fica disponivel pelo proxy:
 http://localhost:3000/api/health
 ```
 
+No primeiro acesso ao painel, a tela de bootstrap cria o primeiro usuario `SUPER_US`. Depois disso, o painel exige login.
+
 ## Deploy atual
 
 O deploy inicial usa Nginx como proxy reverso na VM Oracle Cloud:
@@ -84,7 +89,8 @@ Fase 1:
 - SEO basico, Open Graph, PWA e acabamento visual.
 
 Fase 2:
-- Backend com SQLite.
+- Backend com PostgreSQL.
+- Login por perfil.
 - Painel administrativo de produtos.
 
 Fase 3:
