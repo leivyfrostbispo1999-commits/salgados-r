@@ -1,9 +1,29 @@
 services:
+  salgados-r-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: salgados-r-api
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATA_DIR: /data
+    volumes:
+      - salgados-r-data:/data
+    ports:
+      - "3001:3001"
+
   salgados-r-web:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: salgados-r-web
     restart: unless-stopped
+    depends_on:
+      - salgados-r-api
     ports:
       - "3000:3000"
+
+volumes:
+  salgados-r-data:

@@ -5,6 +5,7 @@ import { Hero } from './components/Hero'
 import { HowToOrder } from './components/HowToOrder'
 import { MenuSection } from './components/MenuSection'
 import { OfficialMenu } from './components/OfficialMenu'
+import { OperationsSuite } from './components/OperationsSuite'
 import { RefillSection } from './components/RefillSection'
 import { products } from './data/products'
 
@@ -69,6 +70,7 @@ function App() {
         </section>
         <RefillSection />
         <OfficialMenu />
+        <OperationsSuite />
         <HowToOrder />
       </main>
       <Footer />

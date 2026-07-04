@@ -1,0 +1,17 @@
+{
+  "name": "SALGADOS R",
+  "short_name": "Salgados R",
+  "description": "Cardapio, pedidos e gestao operacional da SALGADOS R.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#fafafa",
+  "theme_color": "#dc0000",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

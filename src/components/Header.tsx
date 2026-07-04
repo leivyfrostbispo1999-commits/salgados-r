@@ -24,6 +24,9 @@ export function Header() {
           <a className="transition hover:text-yellow-300" href="#cardapio-oficial">
             Oficial
           </a>
+          <a className="transition hover:text-yellow-300" href="#sistema">
+            Sistema
+          </a>
           <a className="transition hover:text-yellow-300" href="#como-pedir">
             Como pedir
           </a>

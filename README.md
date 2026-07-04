@@ -2,6 +2,14 @@
 
 Site de vendas para a SALGADOS R, criado com React, TypeScript, Vite, Tailwind CSS e Docker.
 
+Agora o projeto tambem inclui uma primeira versao full-stack:
+
+- Backend Node/Express com banco SQLite.
+- API de produtos, pedidos, cozinha, estoque, relatorios e fidelidade.
+- Painel operacional no proprio site.
+- PWA com manifest e service worker.
+- Docker Compose com servicos separados para `web` e `api`.
+
 ## Regras do cardapio
 
 - Pasteis e salgados podem ser vendidos no estabelecimento e por delivery.
@@ -23,6 +31,18 @@ A aplicacao abre em:
 http://localhost:3000
 ```
 
+Em outro terminal, suba a API:
+
+```bash
+npm run dev:api
+```
+
+API local:
+
+```text
+http://localhost:3001/api/health
+```
+
 ## Build
 
 ```bash
@@ -41,6 +61,12 @@ O container publica a aplicacao na porta:
 http://localhost:3000
 ```
 
+A API roda no servico `salgados-r-api` e fica disponivel pelo proxy:
+
+```text
+http://localhost:3000/api/health
+```
+
 ## Deploy atual
 
 O deploy inicial usa Nginx como proxy reverso na VM Oracle Cloud:
@@ -50,6 +76,31 @@ http://137.131.223.147 -> http://127.0.0.1:3000
 ```
 
 HTTPS sera configurado depois, quando houver dominio apontado para o IP publico.
+
+## Roadmap por fases
+
+Fase 1:
+- Dominio e HTTPS quando houver dominio.
+- SEO basico, Open Graph, PWA e acabamento visual.
+
+Fase 2:
+- Backend com SQLite.
+- Painel administrativo de produtos.
+
+Fase 3:
+- Pedidos pelo site.
+- Painel da cozinha.
+- Base para impressao automatica.
+
+Fase 4:
+- Estoque.
+- Relatorios.
+- Movimentos financeiros por pedido.
+
+Fase 5:
+- PWA.
+- Pontos de fidelidade por telefone.
+- Base de dados para recomendacoes e automacoes futuras.
 
 ## WhatsApp
 
