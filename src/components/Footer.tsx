@@ -8,9 +8,7 @@ export function Footer() {
             Salgados, pasteis e sucos para pedidos rapidos.
           </p>
         </div>
-        <p className="text-sm font-semibold text-zinc-400">
-          Atendimento por WhatsApp. Numero oficial em configuracao.
-        </p>
+        <p className="text-sm font-semibold text-zinc-400">Atendimento por WhatsApp: +55 71 99702-1801.</p>
       </div>
     </footer>
   )

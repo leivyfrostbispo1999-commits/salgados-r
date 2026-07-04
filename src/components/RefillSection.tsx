@@ -32,7 +32,7 @@ export function RefillSection() {
         </div>
 
         <a
-          href={buildWhatsAppUrl('Refil de Suco')}
+          href={buildWhatsAppUrl({ name: 'Refil de Suco - 100 ml', price: 'R$ 1,00' })}
           target="_blank"
           rel="noreferrer"
           className="rounded bg-yellow-300 px-6 py-4 text-center text-base font-black text-black transition hover:bg-white lg:col-start-2"

@@ -45,10 +45,14 @@ HTTPS sera configurado depois, quando houver dominio apontado para o IP publico.
 
 ## WhatsApp
 
-O numero usado em `src/utils/whatsapp.ts` e temporario:
+O numero usado em `src/utils/whatsapp.ts` e o WhatsApp oficial da SALGADOS R:
 
 ```text
-5500000000000
+5571997021801
 ```
 
-Troque pelo numero oficial antes de divulgar o site.
+Formato base dos links:
+
+```text
+https://wa.me/5571997021801
+```

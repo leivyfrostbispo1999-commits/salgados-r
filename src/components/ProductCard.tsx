@@ -25,7 +25,7 @@ export function ProductCard({ product }: ProductCardProps) {
       <p className="flex-1 text-sm font-medium leading-6 text-zinc-600">{product.description}</p>
 
       <a
-        href={buildWhatsAppUrl(product.name)}
+        href={buildWhatsAppUrl({ name: product.name, price: product.price })}
         target="_blank"
         rel="noreferrer"
         className="mt-5 rounded bg-black px-4 py-3 text-center text-sm font-black text-white transition hover:bg-red-700"
