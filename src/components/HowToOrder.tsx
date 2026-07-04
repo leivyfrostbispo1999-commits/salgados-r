@@ -1,0 +1,37 @@
+const steps = [
+  {
+    title: 'Escolha no cardapio',
+    description: 'Veja pasteis, salgados, sucos e refil em uma lista simples.',
+  },
+  {
+    title: 'Clique no WhatsApp',
+    description: 'A mensagem do produto ja vai pronta para confirmar o pedido.',
+  },
+  {
+    title: 'Retire fresquinho',
+    description: 'Combinamos o melhor horario e preparamos tudo quentinho.',
+  },
+]
+
+export function HowToOrder() {
+  return (
+    <section id="como-pedir" className="scroll-mt-24 bg-red-50 py-12">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <p className="text-sm font-black uppercase tracking-[0.2em] text-red-700">Como pedir</p>
+        <h2 className="mt-2 text-3xl font-black text-zinc-950">Pedido rapido, sem complicar.</h2>
+
+        <div className="mt-6 grid gap-4 md:grid-cols-3">
+          {steps.map((step, index) => (
+            <article key={step.title} className="rounded-lg bg-white p-5 shadow-sm">
+              <span className="grid size-11 place-items-center rounded bg-black text-lg font-black text-yellow-300">
+                {index + 1}
+              </span>
+              <h3 className="mt-4 text-xl font-black text-zinc-950">{step.title}</h3>
+              <p className="mt-2 text-sm font-medium leading-6 text-zinc-600">{step.description}</p>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}

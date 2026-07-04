@@ -1,0 +1,9 @@
+services:
+  salgados-r-web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: salgados-r-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
