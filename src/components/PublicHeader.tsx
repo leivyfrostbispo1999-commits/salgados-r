@@ -40,13 +40,13 @@ export function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-zinc-100 bg-white/95 shadow-sm backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-[#EFE0C8] bg-[#FFFDF7]/95 shadow-sm backdrop-blur">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="grid h-11 w-11 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-950 shadow-sm transition hover:border-[#DA291C] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 lg:hidden"
+              className="grid h-11 w-11 place-items-center rounded-full border border-[#EFE0C8] bg-white text-[#050505] shadow-sm transition hover:border-[#D90416] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 lg:hidden"
               aria-label="Abrir menu"
             >
               <span className="space-y-1.5">
@@ -56,41 +56,41 @@ export function PublicHeader() {
               </span>
             </button>
             <a href="/" className="flex min-w-0 items-center gap-2 sm:gap-3" aria-label="Salgados R - inicio">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#DA291C] text-2xl font-black text-[#FFC72C] shadow-sm sm:h-12 sm:w-12">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[linear-gradient(135deg,#8B0008,#D90416)] text-2xl font-black text-[#FFD51E] shadow-sm sm:h-12 sm:w-12">
                 R
               </span>
               <span className="min-w-0">
-                <span className="block whitespace-nowrap text-base font-black tracking-tight text-[#1D1D1D] sm:text-xl">SALGADOS R</span>
-                <span className="block whitespace-nowrap text-[10px] font-black uppercase tracking-[0.18em] text-[#DA291C] sm:text-xs">
+                <span className="block whitespace-nowrap text-base font-black tracking-tight text-[#050505] sm:text-xl">SALGADOS R</span>
+                <span className="block whitespace-nowrap text-[10px] font-black uppercase tracking-[0.18em] text-[#99000D] sm:text-xs">
                   pasteis e sucos
                 </span>
               </span>
             </a>
           </div>
 
-          <nav className="hidden items-center gap-6 text-sm font-black text-[#1D1D1D] lg:flex">
-            <a href="/cardapio" className="transition hover:text-[#DA291C]">Cardapio</a>
-            <a href="/#como-pedir" className="transition hover:text-[#DA291C]">Como pedir</a>
-            <a href="/#refil" className="transition hover:text-[#DA291C]">Refil</a>
+          <nav className="hidden items-center gap-6 text-sm font-black text-[#050505] lg:flex">
+            <a href="/cardapio" className="transition hover:text-[#99000D]">Cardapio</a>
+            <a href="/#como-pedir" className="transition hover:text-[#99000D]">Como pedir</a>
+            <a href="/#refil" className="transition hover:text-[#99000D]">Refil</a>
           </nav>
 
           <div className="flex items-center gap-2">
             <a
               href="/carrinho"
-              className="relative grid h-11 min-w-11 place-items-center rounded-full bg-[#F6F6F6] px-3 text-sm font-black text-[#1D1D1D] transition hover:bg-[#FFC72C] sm:block sm:h-auto sm:px-4 sm:py-3"
+              className="relative grid h-11 min-w-11 place-items-center rounded-full bg-[#FFF3B0] px-3 text-sm font-black text-[#050505] transition hover:bg-[#FFD51E] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 sm:block sm:h-auto sm:px-4 sm:py-3"
               aria-label={`Carrinho com ${cartCount} itens`}
             >
               <span className="sm:hidden">{cartCount}</span>
               <span className="hidden sm:inline">Carrinho</span>
               {cartCount > 0 ? (
-                <span className="absolute -right-1 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-[#DA291C] px-1 text-xs text-white">
+                <span className="absolute -right-1 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-[#D90416] px-1 text-xs text-white">
                   {cartCount}
                 </span>
               ) : null}
             </a>
             <a
               href="/cardapio"
-              className="hidden rounded-full bg-[#FFC72C] px-5 py-3 text-sm font-black text-[#1D1D1D] shadow-sm transition hover:bg-[#ffd85c] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 sm:inline-flex"
+              className="hidden rounded-full bg-[#FFD51E] px-5 py-3 text-sm font-black text-[#050505] shadow-sm transition hover:bg-[#FFE047] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 sm:inline-flex"
             >
               Pedir agora
             </a>
@@ -106,18 +106,18 @@ export function PublicHeader() {
             onClick={close}
             aria-label="Fechar menu"
           />
-          <aside className="relative flex h-full w-[min(88vw,380px)] flex-col bg-white p-6 shadow-2xl">
+          <aside className="relative flex h-full w-[min(88vw,380px)] flex-col bg-[#FFFDF7] p-6 shadow-2xl">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#DA291C] text-xl font-black text-[#FFC72C]">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(135deg,#8B0008,#D90416)] text-xl font-black text-[#FFD51E]">
                   R
                 </span>
-                <strong className="text-lg font-black text-[#1D1D1D]">SALGADOS R</strong>
+                <strong className="text-lg font-black text-[#050505]">SALGADOS R</strong>
               </div>
               <button
                 type="button"
                 onClick={close}
-                className="grid h-10 w-10 place-items-center rounded-full bg-zinc-100 text-xl font-black text-zinc-900"
+                className="grid h-10 w-10 place-items-center rounded-full bg-[#FFF3B0] text-xl font-black text-[#050505]"
                 aria-label="Fechar menu"
               >
                 x
@@ -132,9 +132,9 @@ export function PublicHeader() {
                   onClick={close}
                   target={item.label === 'WhatsApp' ? '_blank' : undefined}
                   rel={item.label === 'WhatsApp' ? 'noreferrer' : undefined}
-                  className="flex items-center gap-3 rounded-lg px-3 py-3 text-base font-black text-zinc-900 transition hover:bg-[#FFC72C]"
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-base font-black text-[#050505] transition hover:bg-[#FFD51E] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
                 >
-                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#F5F5F5] text-sm text-[#DA291C]">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#FFF3B0] text-sm text-[#99000D]">
                     {item.icon}
                   </span>
                   {item.label}
@@ -142,8 +142,8 @@ export function PublicHeader() {
               ))}
             </nav>
 
-            <div className="mt-auto rounded-lg bg-[#F5F5F5] p-4">
-              <p className="text-sm font-bold leading-6 text-zinc-700">
+            <div className="mt-auto rounded-2xl bg-[#050505] p-4">
+              <p className="text-sm font-bold leading-6 text-white/85">
                 Monte seu pedido no site ou chame no WhatsApp: +55 71 99702-1801.
               </p>
             </div>
