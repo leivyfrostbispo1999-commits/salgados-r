@@ -41,7 +41,7 @@ export function HeroFastFood() {
             <img
               src="/cardapio/cardapio-principal.jpeg"
               alt="Pasteis, coxinha, enroladinho e sucos do cardapio oficial da Salgados R"
-              className="aspect-[4/3] w-full rounded-[1.5rem] object-cover object-top"
+              className="aspect-[4/3] w-full scale-110 rounded-[1.5rem] object-cover object-top"
             />
             <div className="absolute bottom-8 left-8 rounded-lg bg-white px-5 py-4 shadow-xl">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-[#DA291C]">Delivery</p>
