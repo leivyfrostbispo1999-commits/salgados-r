@@ -9,10 +9,10 @@ export function Footer() {
         <div>
           <p className="font-black">Cardapio</p>
           <div className="mt-3 grid gap-2 text-sm font-semibold text-zinc-600">
-            <a href="#pasteis">Pasteis</a>
-            <a href="#salgados">Salgados</a>
-            <a href="#sucos">Sucos</a>
-            <a href="#refil">Refil</a>
+            <a href="/cardapio?categoria=pasteis">Pasteis</a>
+            <a href="/cardapio?categoria=salgados">Salgados</a>
+            <a href="/cardapio?categoria=sucos">Sucos</a>
+            <a href="/cardapio?categoria=refil">Refil</a>
           </div>
         </div>
         <div>
@@ -23,7 +23,7 @@ export function Footer() {
         <div>
           <p className="font-black">Sistema</p>
           <a href="/admin" className="mt-3 inline-flex text-sm font-black text-[#DA291C]">
-            Entrar no painel
+            Area administrativa
           </a>
         </div>
       </div>

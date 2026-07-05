@@ -1,18 +1,38 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 
 const menuItems = [
-  { href: '#cardapio', icon: 'C', label: 'Cardapio' },
-  { href: '#mais-pedidos', icon: 'M', label: 'Mais pedidos' },
-  { href: '#refil', icon: 'R', label: 'Refil' },
-  { href: '#como-pedir', icon: 'P', label: 'Como pedir' },
-  { href: '#cardapio-oficial', icon: 'O', label: 'Cardapio oficial' },
-  { href: '#sistema', icon: 'S', label: 'Sistema' },
-  { href: '#atendimento', icon: 'W', label: 'Atendimento' },
+  { href: '/', icon: 'I', label: 'Inicio' },
+  { href: '/cardapio', icon: 'C', label: 'Cardapio' },
+  { href: '/carrinho', icon: 'P', label: 'Carrinho' },
+  { href: '/#como-pedir', icon: '3', label: 'Como pedir' },
+  { href: '/#refil', icon: 'R', label: 'Refil' },
+  { href: buildWhatsAppUrl({ name: 'Atendimento Salgados R', price: 'consulta', quantity: 1 }), icon: 'W', label: 'WhatsApp' },
+  { href: '/admin', icon: 'A', label: 'Area administrativa' },
 ]
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
+
+  useEffect(() => {
+    function syncCart() {
+      try {
+        const cart = JSON.parse(localStorage.getItem('salgados-r-cart') || '[]') as Array<{ quantity: number }>
+        setCartCount(cart.reduce((sum, item) => sum + Number(item.quantity || 0), 0))
+      } catch {
+        setCartCount(0)
+      }
+    }
+
+    syncCart()
+    window.addEventListener('storage', syncCart)
+    window.addEventListener('salgados-r-cart', syncCart)
+    return () => {
+      window.removeEventListener('storage', syncCart)
+      window.removeEventListener('salgados-r-cart', syncCart)
+    }
+  }, [])
 
   function close() {
     setOpen(false)
@@ -21,12 +41,12 @@ export function PublicHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-zinc-100 bg-white/95 shadow-sm backdrop-blur">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="grid h-11 w-11 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-950 shadow-sm transition hover:border-[#DA291C] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50"
+              className="grid h-11 w-11 place-items-center rounded-full border border-zinc-200 bg-white text-zinc-950 shadow-sm transition hover:border-[#DA291C] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 lg:hidden"
               aria-label="Abrir menu"
             >
               <span className="space-y-1.5">
@@ -35,33 +55,44 @@ export function PublicHeader() {
                 <span className="block h-0.5 w-5 rounded bg-current" />
               </span>
             </button>
-            <a href="/" className="flex items-center gap-3" aria-label="Salgados R - inicio">
-              <span className="grid h-12 w-12 place-items-center rounded-lg bg-[#DA291C] text-2xl font-black text-[#FFC72C] shadow-sm">
+            <a href="/" className="flex min-w-0 items-center gap-2 sm:gap-3" aria-label="Salgados R - inicio">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[#DA291C] text-2xl font-black text-[#FFC72C] shadow-sm sm:h-12 sm:w-12">
                 R
               </span>
-              <span>
-                <span className="block text-xl font-black tracking-tight text-[#1D1D1D]">SALGADOS R</span>
-                <span className="block text-xs font-black uppercase tracking-[0.18em] text-[#DA291C]">
+              <span className="min-w-0">
+                <span className="block whitespace-nowrap text-base font-black tracking-tight text-[#1D1D1D] sm:text-xl">SALGADOS R</span>
+                <span className="block whitespace-nowrap text-[10px] font-black uppercase tracking-[0.18em] text-[#DA291C] sm:text-xs">
                   pasteis e sucos
                 </span>
               </span>
             </a>
           </div>
 
+          <nav className="hidden items-center gap-6 text-sm font-black text-[#1D1D1D] lg:flex">
+            <a href="/cardapio" className="transition hover:text-[#DA291C]">Cardapio</a>
+            <a href="/#como-pedir" className="transition hover:text-[#DA291C]">Como pedir</a>
+            <a href="/#refil" className="transition hover:text-[#DA291C]">Refil</a>
+          </nav>
+
           <div className="flex items-center gap-2">
             <a
-              href={buildWhatsAppUrl({ name: 'Pedido pelo site', price: 'cardapio aberto', quantity: 1 })}
-              target="_blank"
-              rel="noreferrer"
-              className="hidden rounded-full bg-[#1D1D1D] px-5 py-3 text-sm font-black text-white transition hover:bg-[#DA291C] sm:inline-flex"
+              href="/carrinho"
+              className="relative grid h-11 min-w-11 place-items-center rounded-full bg-[#F6F6F6] px-3 text-sm font-black text-[#1D1D1D] transition hover:bg-[#FFC72C] sm:block sm:h-auto sm:px-4 sm:py-3"
+              aria-label={`Carrinho com ${cartCount} itens`}
             >
-              WhatsApp
+              <span className="sm:hidden">{cartCount}</span>
+              <span className="hidden sm:inline">Carrinho</span>
+              {cartCount > 0 ? (
+                <span className="absolute -right-1 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-[#DA291C] px-1 text-xs text-white">
+                  {cartCount}
+                </span>
+              ) : null}
             </a>
             <a
-              href="/admin"
-              className="rounded-full bg-[#FFC72C] px-5 py-3 text-sm font-black text-[#1D1D1D] shadow-sm transition hover:bg-[#ffd85c] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50"
+              href="/cardapio"
+              className="hidden rounded-full bg-[#FFC72C] px-5 py-3 text-sm font-black text-[#1D1D1D] shadow-sm transition hover:bg-[#ffd85c] focus:outline-none focus:ring-4 focus:ring-[#FFC72C]/50 sm:inline-flex"
             >
-              Entrar
+              Pedir agora
             </a>
           </div>
         </div>
@@ -78,7 +109,7 @@ export function PublicHeader() {
           <aside className="relative flex h-full w-[min(88vw,380px)] flex-col bg-white p-6 shadow-2xl">
             <div className="flex items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-lg bg-[#DA291C] text-xl font-black text-[#FFC72C]">
+                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[#DA291C] text-xl font-black text-[#FFC72C]">
                   R
                 </span>
                 <strong className="text-lg font-black text-[#1D1D1D]">SALGADOS R</strong>
@@ -99,6 +130,8 @@ export function PublicHeader() {
                   key={item.href}
                   href={item.href}
                   onClick={close}
+                  target={item.label === 'WhatsApp' ? '_blank' : undefined}
+                  rel={item.label === 'WhatsApp' ? 'noreferrer' : undefined}
                   className="flex items-center gap-3 rounded-lg px-3 py-3 text-base font-black text-zinc-900 transition hover:bg-[#FFC72C]"
                 >
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-[#F5F5F5] text-sm text-[#DA291C]">
@@ -111,7 +144,7 @@ export function PublicHeader() {
 
             <div className="mt-auto rounded-lg bg-[#F5F5F5] p-4">
               <p className="text-sm font-bold leading-6 text-zinc-700">
-                Atendimento pelo WhatsApp oficial: +55 71 99702-1801.
+                Monte seu pedido no site ou chame no WhatsApp: +55 71 99702-1801.
               </p>
             </div>
           </aside>
