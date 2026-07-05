@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salgados-r-v20260705-navigation-ux-fix'
+const CACHE_NAME = 'salgados-r-v20260705-art-direction-clean-final'
 const CORE_ASSETS = ['/', '/manifest.webmanifest', '/icon.svg']
 
 self.addEventListener('install', (event) => {

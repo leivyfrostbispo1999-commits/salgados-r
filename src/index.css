@@ -1,19 +1,20 @@
 @import "tailwindcss";
 
 :root {
-  --sr-red: #dc0008;
-  --sr-red-dark: #7b0007;
-  --sr-red-deep: #3a0004;
+  --sr-red: #c90008;
+  --sr-red-dark: #5f0005;
   --sr-yellow: #ffbd0d;
-  --sr-yellow-dark: #d89100;
-  --sr-yellow-light: #fff3c4;
-  --sr-black: #111111;
-  --sr-cream: #fff8e6;
-  --sr-radius-xl: 26px;
-  --sr-shadow-premium: 0 20px 48px rgba(42, 0, 5, 0.30);
-  --sr-shadow-card: 0 18px 44px rgba(42, 0, 5, 0.28);
-  color: #18181b;
-  background: #fafafa;
+  --sr-yellow-light: #fff4c7;
+  --sr-neutral: #fff9ec;
+  --sr-ink: #191313;
+  --sr-red-deep: var(--sr-red-dark);
+  --sr-black: var(--sr-ink);
+  --sr-cream: var(--sr-neutral);
+  --sr-radius-xl: 22px;
+  --sr-shadow-premium: 0 18px 38px rgba(48, 0, 5, 0.18);
+  --sr-shadow-card: 0 14px 32px rgba(48, 0, 5, 0.14);
+  color: var(--sr-ink);
+  background: var(--sr-neutral);
   font-family:
     Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-synthesis: none;
@@ -37,90 +38,68 @@ body {
 }
 
 .sr-hot-bg {
-  background: linear-gradient(180deg, var(--sr-red-dark), var(--sr-red));
+  background: var(--sr-red);
 }
 
 .sr-hero-stage {
   position: relative;
-  background:
-    linear-gradient(90deg, rgba(58, 0, 4, 0.76), rgba(58, 0, 4, 0.24)),
-    var(--sr-red);
+  background: var(--sr-red);
   isolation: isolate;
 }
 
 .sr-hero-stage::before {
   position: absolute;
-  inset: 0;
+  inset: auto 0 0;
   z-index: -1;
-  background: linear-gradient(180deg, transparent 0%, rgba(58, 0, 4, 0.18) 100%);
+  height: 34%;
+  background: var(--sr-red-dark);
   content: "";
-  opacity: 0.82;
+  opacity: 0.18;
 }
 
 .sr-hero-plate {
   position: absolute;
   inset: 0;
   min-height: 340px;
-  border-radius: 34px;
-  background:
-    linear-gradient(180deg, var(--sr-yellow-light), var(--sr-yellow));
-  box-shadow: var(--sr-shadow-premium);
+  overflow: hidden;
+  border: 1px solid rgba(255, 244, 199, 0.42);
+  border-radius: var(--sr-radius-xl);
+  background: var(--sr-yellow-light);
+  box-shadow: var(--sr-shadow-card);
 }
 
 .sr-hero-plate::after {
   position: absolute;
-  right: 8%;
-  bottom: 10%;
-  left: 8%;
-  height: 48px;
+  right: 12%;
+  bottom: 14%;
+  left: 12%;
+  height: 36px;
   border-radius: 999px;
-  background: rgba(20, 0, 0, 0.22);
+  background: rgba(25, 19, 19, 0.16);
   content: "";
-  filter: blur(22px);
+  filter: blur(18px);
 }
 
 .sr-hero-product {
   position: absolute;
   z-index: 1;
   object-fit: contain;
-  filter: drop-shadow(0 24px 22px rgba(20, 0, 0, 0.38));
+  filter: drop-shadow(0 18px 18px rgba(48, 0, 5, 0.20));
 }
 
 .sr-hero-product-pastel {
-  right: 8%;
-  bottom: 16%;
-  width: min(56vw, 430px);
-  transform: rotate(-7deg);
+  right: 9%;
+  bottom: 13%;
+  width: min(52vw, 420px);
+  transform: rotate(-3deg);
 }
 
-.sr-price-burst {
-  position: absolute;
-  bottom: 6%;
-  left: 8%;
-  z-index: 2;
-  display: grid;
-  min-width: 150px;
-  place-items: center;
-  border: 4px solid white;
-  border-radius: 999px;
-  background: var(--sr-yellow);
-  color: var(--sr-black);
-  padding: 0.9rem 1.1rem;
-  box-shadow: 0 18px 32px rgba(0, 0, 0, 0.28);
-  transform: rotate(-7deg);
-}
-
-.sr-price-burst span {
-  font-size: 0.78rem;
-  font-weight: 950;
-  text-transform: uppercase;
-}
-
-.sr-price-burst strong {
-  font-size: clamp(1.45rem, 4vw, 2.2rem);
-  font-weight: 950;
-  letter-spacing: -0.06em;
-  line-height: 1;
+.sr-hero-product-coxinha {
+  left: 7%;
+  bottom: 17%;
+  width: min(34vw, 230px);
+  transform: rotate(4deg);
+  opacity: 0.94;
 }
 
 .sr-primary-cta,
@@ -137,16 +116,16 @@ body {
 .sr-primary-cta {
   display: inline-flex;
   background: var(--sr-yellow);
-  color: var(--sr-black);
-  box-shadow: 0 20px 42px rgba(255, 189, 13, 0.3);
+  color: var(--sr-ink);
+  box-shadow: 0 12px 22px rgba(48, 0, 5, 0.16);
 }
 
 .sr-secondary-cta {
   display: inline-flex;
   border: 1px solid rgba(255, 255, 255, 0.36);
-  background: rgba(255, 255, 255, 0.12);
-  color: white;
-  box-shadow: 0 18px 34px rgba(20, 0, 0, 0.16);
+  background: rgba(255, 255, 255, 0.10);
+  color: var(--sr-ink);
+  box-shadow: none;
 }
 
 .sr-primary-cta:hover,
@@ -156,16 +135,17 @@ body {
 
 .sr-category-tile {
   display: flex;
-  min-height: 94px;
+  min-height: 86px;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   overflow: hidden;
-  border-radius: 22px;
-  background: linear-gradient(135deg, var(--sr-red-dark), var(--sr-red));
+  border: 1px solid rgba(95, 0, 5, 0.12);
+  border-radius: var(--sr-radius-xl);
+  background: var(--sr-neutral);
   color: white;
   padding: 0.85rem 1rem;
-  box-shadow: var(--sr-shadow-premium);
+  box-shadow: var(--sr-shadow-card);
 }
 
 .sr-category-tile strong,
@@ -182,7 +162,7 @@ body {
 
 .sr-category-tile small {
   margin-top: 0.35rem;
-  color: rgba(255, 255, 255, 0.76);
+  color: rgba(25, 19, 19, 0.66);
   font-size: 0.8rem;
   font-weight: 850;
 }
@@ -190,13 +170,13 @@ body {
 .sr-food-card {
   position: relative;
   display: flex;
-  min-height: 374px;
+  min-height: 344px;
   overflow: hidden;
   flex-direction: column;
-  border-radius: 24px;
-  border: 1px solid rgba(255, 189, 13, 0.34);
-  color: var(--sr-black);
-  background: var(--sr-cream);
+  border-radius: var(--sr-radius-xl);
+  border: 1px solid rgba(95, 0, 5, 0.10);
+  color: var(--sr-ink);
+  background: var(--sr-neutral);
   box-shadow: var(--sr-shadow-card);
   isolation: isolate;
   transition:
@@ -206,81 +186,63 @@ body {
 }
 
 .sr-food-card::before {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  background: linear-gradient(180deg, var(--sr-red) 0 44%, transparent 44%);
-  content: "";
-  opacity: 1;
+  content: none;
 }
 
 .sr-food-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 26px 58px rgba(68, 0, 8, 0.32), 0 0 30px rgba(255, 199, 44, 0.22);
+  transform: translateY(-3px);
+  box-shadow: 0 18px 40px rgba(48, 0, 5, 0.18);
 }
 
 .sr-food-media {
   position: relative;
-  min-height: 188px;
-  overflow: visible;
+  margin: 12px 12px 0;
+  min-height: 172px;
+  overflow: hidden;
+  border-radius: calc(var(--sr-radius-xl) - 6px);
+  background: var(--sr-yellow-light);
 }
 
 .sr-food-media::after {
   position: absolute;
-  right: 8%;
-  bottom: 10px;
-  left: 8%;
-  height: 24px;
+  right: 15%;
+  bottom: 20px;
+  left: 15%;
+  height: 20px;
   border-radius: 999px;
-  background: rgba(17, 17, 17, 0.18);
+  background: rgba(25, 19, 19, 0.12);
   content: "";
-  filter: blur(18px);
+  filter: blur(14px);
 }
 
 .sr-food-image {
   position: relative;
   z-index: 1;
   width: 100%;
-  height: 210px;
+  height: 184px;
   object-fit: contain;
   object-position: center;
-  transform: scale(1.02);
-  filter: drop-shadow(0 18px 18px rgba(20, 0, 0, 0.28));
+  transform: scale(1.04);
+  filter: drop-shadow(0 12px 12px rgba(48, 0, 5, 0.14));
   transition: transform 250ms ease, filter 250ms ease;
 }
 
 .sr-food-card:hover .sr-food-image {
-  transform: scale(1.06);
-  filter: drop-shadow(0 22px 22px rgba(20, 0, 0, 0.34));
-}
-
-.sr-food-badge {
-  position: absolute;
-  top: 14px;
-  left: 14px;
-  z-index: 2;
-  border-radius: 999px;
-  background: var(--sr-yellow);
-  color: var(--sr-black);
-  box-shadow: 0 14px 28px rgba(17, 17, 17, 0.2);
-  font-size: 0.66rem;
-  font-weight: 950;
-  letter-spacing: 0.08em;
-  padding: 0.45rem 0.72rem;
-  text-transform: uppercase;
+  transform: scale(1.07);
+  filter: drop-shadow(0 14px 14px rgba(48, 0, 5, 0.18));
 }
 
 .sr-food-body {
   display: flex;
   flex: 1;
   flex-direction: column;
-  gap: 9px;
-  padding: 0 16px 16px;
+  gap: 10px;
+  padding: 16px;
 }
 
 .sr-food-name {
-  color: var(--sr-black);
-  font-size: clamp(1.35rem, 3.5vw, 1.75rem);
+  color: var(--sr-ink);
+  font-size: clamp(1.24rem, 3vw, 1.55rem);
   font-weight: 950;
   letter-spacing: -0.04em;
   line-height: 0.98;
@@ -290,7 +252,7 @@ body {
 .sr-food-description {
   max-width: 24rem;
   overflow: hidden;
-  color: #5f382e;
+  color: rgba(25, 19, 19, 0.72);
   display: -webkit-box;
   font-size: 0.88rem;
   font-weight: 650;
@@ -305,8 +267,8 @@ body {
   align-items: center;
   border-radius: 999px;
   background: var(--sr-yellow);
-  color: var(--sr-black);
-  box-shadow: 0 14px 28px rgba(255, 199, 44, 0.34);
+  color: var(--sr-ink);
+  box-shadow: none;
   font-size: 1rem;
   font-weight: 950;
   padding: 0.58rem 0.9rem;
@@ -316,16 +278,15 @@ body {
 .sr-official-preview {
   display: block;
   overflow: hidden;
-  border: 6px solid var(--sr-yellow);
+  border: 1px solid rgba(255, 189, 13, 0.45);
   border-radius: var(--sr-radius-xl);
   background: var(--sr-red-dark);
   box-shadow: var(--sr-shadow-premium);
-  transform: rotate(1.5deg);
   transition: transform 220ms ease;
 }
 
 .sr-official-preview:hover {
-  transform: rotate(0deg) translateY(-4px);
+  transform: translateY(-3px);
 }
 
 .sr-official-preview img {
@@ -339,10 +300,9 @@ body {
   min-height: 158px;
   place-items: center;
   border: 2px solid rgba(255, 189, 13, 0.42);
-  border-radius: 24px;
-  background:
-    linear-gradient(180deg, var(--sr-red), var(--sr-red-dark));
-  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10), 0 18px 34px rgba(0, 0, 0, 0.24);
+  border-radius: var(--sr-radius-xl);
+  background: var(--sr-red);
+  box-shadow: none;
   text-align: center;
 }
 
@@ -375,25 +335,31 @@ body {
   .sr-hero-product-pastel {
     right: -6%;
     bottom: 18%;
-    width: 72vw;
+    width: 68vw;
+  }
+
+  .sr-hero-product-coxinha {
+    left: 2%;
+    bottom: 20%;
+    width: 36vw;
   }
 
   .sr-food-card {
-    min-height: 360px;
+    min-height: 330px;
   }
 
   .sr-food-media {
-    min-height: 180px;
+    min-height: 168px;
   }
 
   .sr-food-image {
-    height: 200px;
+    height: 178px;
   }
 }
 
 .sr-food-card:hover .sr-food-price {
   transform: translateY(-1px);
-  box-shadow: 0 18px 34px rgba(255, 199, 44, 0.52);
+  box-shadow: none;
 }
 
 .sr-food-action {
@@ -404,7 +370,7 @@ body {
   border-radius: 16px;
   background: var(--sr-red);
   color: white;
-  box-shadow: 0 14px 26px rgba(123, 0, 7, 0.24);
+  box-shadow: none;
   font-size: 0.95rem;
   font-weight: 950;
   padding: 0.75rem 1rem;
@@ -416,8 +382,9 @@ body {
 
 .sr-food-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 18px 32px rgba(123, 0, 7, 0.30);
-  filter: saturate(1.08);
+  background: var(--sr-red-dark);
+  box-shadow: none;
+  filter: none;
 }
 
 .sr-food-action:active {

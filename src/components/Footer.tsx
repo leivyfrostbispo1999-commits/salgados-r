@@ -1,9 +1,9 @@
 export function Footer() {
   return (
-    <footer id="atendimento" className="bg-[linear-gradient(135deg,#3A0004,var(--sr-red-dark))] py-10 text-white">
+    <footer id="atendimento" className="bg-[var(--sr-red-dark)] py-10 text-white">
       <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
         <div>
-          <img src="/assets-reais/logo-salgados-r.png" alt="SALGADOS R" className="h-12 w-40 rounded-xl object-cover shadow-xl" />
+          <img src="/assets-reais/logo-salgados-r.png" alt="SALGADOS R" className="h-12 w-40 rounded-xl object-cover" />
           <p className="mt-2 text-sm font-semibold leading-6 text-white/75">Salgados, pasteis e sucos naturais.</p>
         </div>
         <div>
