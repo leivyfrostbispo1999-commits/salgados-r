@@ -25,7 +25,7 @@ export type ApiOrder = {
   phone: string
   channel: string
   notes: string
-  status: 'novo' | 'preparando' | 'pronto' | 'entregue' | 'cancelado'
+  status: 'RECEBIDO' | 'ACEITO' | 'PREPARANDO' | 'PRONTO' | 'SAIU_PARA_ENTREGA' | 'FINALIZADO' | 'CANCELADO'
   totalCents: number
   total: number
   createdAt: string
@@ -44,10 +44,15 @@ export type StockItem = {
 export type ReportSummary = {
   today: string
   revenue: number
+  monthRevenue: number
   orders: number
+  averageTicket: number
   pendingOrders: number
+  deliveredOrders: number
+  canceledOrders: number
   lowStockItems: number
   loyaltyCustomers: number
+  paymentMethods: Array<{ method: string; quantity: number; total: number }>
   topProducts: Array<{ productName: string; quantity: number; total: number }>
 }
 
@@ -56,6 +61,31 @@ export type AuthUser = {
   name: string
   email: string
   role: 'SUPER_US' | 'ADMIN' | 'GERENTE' | 'ATENDENTE'
+}
+
+export type FinanceSummary = {
+  revenue: number
+  expenses: number
+  estimatedProfit: number
+  openSession: unknown | null
+  byMethod: Array<{ method: string; total: number }>
+}
+
+export type PrintStatus = {
+  mode: string
+  configured: boolean
+  message: string
+  pending: number
+  failed: number
+}
+
+export type SecurityStatus = {
+  api: string
+  database: string
+  auth: string
+  cors: string
+  loginRateLimit: string
+  recentLoginFailures: unknown[]
 }
 
 const tokenStore = {
@@ -123,6 +153,14 @@ export const api = {
   updateStock: (id: string, payload: { quantity: number; minQuantity: number }) =>
     request<StockItem>(`/stock/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   summary: () => request<ReportSummary>('/reports/summary'),
+  customers: () => request<unknown[]>('/customers'),
+  auditLogs: () => request<unknown[]>('/audit-logs'),
+  financeSummary: () => request<FinanceSummary>('/finance/summary'),
+  printStatus: () => request<PrintStatus>('/printing/status'),
+  testPrint: () => request<unknown>('/printing/test', { method: 'POST', body: JSON.stringify({}) }),
+  notifications: () => request<unknown[]>('/notifications'),
+  backupsStatus: () => request<unknown>('/backups/status'),
+  securityStatus: () => request<SecurityStatus>('/security/status'),
 }
 
 export function formatCurrency(value: number) {

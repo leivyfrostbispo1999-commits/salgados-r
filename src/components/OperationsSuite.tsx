@@ -5,7 +5,10 @@ import {
   type ApiOrder,
   type ApiProduct,
   type AuthUser,
+  type FinanceSummary,
+  type PrintStatus,
   type ReportSummary,
+  type SecurityStatus,
   type StockItem,
   formatCurrency,
 } from '../utils/api'
@@ -16,19 +19,25 @@ type CartItem = {
 }
 
 const tabs = [
-  { id: 'pedido', label: 'Pedido pelo site' },
+  { id: 'dashboard', label: 'Dashboard' },
+  { id: 'pedidos', label: 'Pedidos' },
   { id: 'cozinha', label: 'Cozinha' },
-  { id: 'admin', label: 'Admin' },
+  { id: 'produtos', label: 'Produtos' },
   { id: 'estoque', label: 'Estoque' },
+  { id: 'clientes', label: 'Clientes' },
+  { id: 'financeiro', label: 'Financeiro' },
   { id: 'relatorios', label: 'Relatorios' },
+  { id: 'impressao', label: 'Impressao' },
+  { id: 'auditoria', label: 'Auditoria' },
+  { id: 'seguranca', label: 'Seguranca' },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
 
-const statusFlow: ApiOrder['status'][] = ['novo', 'preparando', 'pronto', 'entregue']
+const statusFlow: ApiOrder['status'][] = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA', 'FINALIZADO']
 
 export function OperationsSuite() {
-  const [activeTab, setActiveTab] = useState<TabId>('pedido')
+  const [activeTab, setActiveTab] = useState<TabId>(() => pathToTab(window.location.pathname))
   const [authChecked, setAuthChecked] = useState(false)
   const [hasUsers, setHasUsers] = useState(true)
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -36,20 +45,35 @@ export function OperationsSuite() {
   const [orders, setOrders] = useState<ApiOrder[]>([])
   const [stock, setStock] = useState<StockItem[]>([])
   const [summary, setSummary] = useState<ReportSummary | null>(null)
+  const [customers, setCustomers] = useState<unknown[]>([])
+  const [auditLogs, setAuditLogs] = useState<unknown[]>([])
+  const [finance, setFinance] = useState<FinanceSummary | null>(null)
+  const [printStatus, setPrintStatus] = useState<PrintStatus | null>(null)
+  const [security, setSecurity] = useState<SecurityStatus | null>(null)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
 
   async function refresh() {
-    const [nextProducts, nextOrders, nextStock, nextSummary] = await Promise.all([
+    const [nextProducts, nextOrders, nextStock, nextSummary, nextCustomers, nextAuditLogs, nextFinance, nextPrint, nextSecurity] = await Promise.all([
       api.products(),
       api.orders(),
       api.stock(),
       api.summary(),
+      api.customers().catch(() => []),
+      api.auditLogs().catch(() => []),
+      api.financeSummary().catch(() => null),
+      api.printStatus().catch(() => null),
+      api.securityStatus().catch(() => null),
     ])
     setProducts(nextProducts)
     setOrders(nextOrders)
     setStock(nextStock)
     setSummary(nextSummary)
+    setCustomers(nextCustomers)
+    setAuditLogs(nextAuditLogs)
+    setFinance(nextFinance)
+    setPrintStatus(nextPrint)
+    setSecurity(nextSecurity)
   }
 
   useEffect(() => {
@@ -93,13 +117,19 @@ export function OperationsSuite() {
   }
 
   return (
-    <section id="sistema" className="scroll-mt-24 bg-white py-12">
-      <div className="mx-auto max-w-6xl px-4 sm:px-6">
-        <p className="text-sm font-black uppercase tracking-[0.2em] text-red-700">Sistema operacional</p>
-        <h2 className="mt-2 text-3xl font-black text-zinc-950">Pedidos, cozinha, estoque e gestao em um so lugar.</h2>
+    <section id="sistema" className="min-h-screen bg-[#F5F5F5] py-6">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+        <div className="flex flex-col gap-4 rounded-lg bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <a href="/" className="text-sm font-black text-[#DA291C]">← Voltar para o site</a>
+            <p className="mt-3 text-sm font-black uppercase tracking-[0.18em] text-[#DA291C]">Sistema operacional</p>
+            <h1 className="mt-2 text-3xl font-black text-[#1D1D1D]">Pedidos, cozinha, estoque, financeiro e gestao.</h1>
+          </div>
+          <span className="w-fit rounded-full bg-[#FFC72C] px-4 py-2 text-sm font-black text-[#1D1D1D]">PostgreSQL + API</span>
+        </div>
         <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-zinc-600">
           Primeira versao operacional do Salgados R: backend com PostgreSQL, login por perfis, painel de cozinha,
-          produtos, estoque, relatorios, auditoria e base para fidelidade/PWA.
+          produtos, estoque, relatorios, financeiro, auditoria, impressao mock e base para PIX/PWA.
         </p>
 
         {user ? (
@@ -121,7 +151,7 @@ export function OperationsSuite() {
                 type="button"
                 onClick={() => setActiveTab(tab.id)}
                 className={`whitespace-nowrap rounded px-4 py-3 text-sm font-black ${
-                  activeTab === tab.id ? 'bg-black text-yellow-300' : 'bg-zinc-100 text-zinc-800'
+              activeTab === tab.id ? 'bg-[#1D1D1D] text-[#FFC72C]' : 'bg-white text-zinc-800'
                 }`}
               >
                 {tab.label}
@@ -138,23 +168,44 @@ export function OperationsSuite() {
             <BootstrapForm onReady={afterAuth} setMessage={setMessage} />
           ) : null}
           {!loading && authChecked && !user && hasUsers ? <LoginForm onReady={afterAuth} setMessage={setMessage} /> : null}
-          {!loading && user && activeTab === 'pedido' ? (
+          {!loading && user && activeTab === 'dashboard' ? <ReportsPanel summary={summary} orders={orders} /> : null}
+          {!loading && user && activeTab === 'pedidos' ? (
             <OrderBuilder products={products} onCreated={refresh} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'cozinha' ? (
             <KitchenPanel orders={orders} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
-          {!loading && user && activeTab === 'admin' ? (
+          {!loading && user && activeTab === 'produtos' ? (
             <AdminPanel products={products} onCreated={refresh} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'estoque' ? (
             <StockPanel stock={stock} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
+          {!loading && user && activeTab === 'clientes' ? <SimpleListPanel title="Clientes" items={customers} empty="Ainda nao ha clientes cadastrados." /> : null}
+          {!loading && user && activeTab === 'financeiro' ? <FinancePanel finance={finance} /> : null}
           {!loading && user && activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
+          {!loading && user && activeTab === 'impressao' ? (
+            <PrintingPanel status={printStatus} onTest={async () => { await api.testPrint(); await refresh(); }} setMessage={setMessage} />
+          ) : null}
+          {!loading && user && activeTab === 'auditoria' ? <SimpleListPanel title="Auditoria" items={auditLogs} empty="Ainda nao ha eventos de auditoria." /> : null}
+          {!loading && user && activeTab === 'seguranca' ? <SecurityPanel security={security} /> : null}
         </div>
       </div>
     </section>
   )
+}
+
+function pathToTab(path: string): TabId {
+  if (path.includes('/cozinha')) return 'cozinha'
+  if (path.includes('/pedidos')) return 'pedidos'
+  if (path.includes('/produtos')) return 'produtos'
+  if (path.includes('/estoque')) return 'estoque'
+  if (path.includes('/clientes')) return 'clientes'
+  if (path.includes('/financeiro')) return 'financeiro'
+  if (path.includes('/relatorios')) return 'relatorios'
+  if (path.includes('/auditoria')) return 'auditoria'
+  if (path.includes('/seguranca')) return 'seguranca'
+  return 'dashboard'
 }
 
 function BootstrapForm({
@@ -380,11 +431,11 @@ function KitchenPanel({
   onUpdated: () => Promise<void>
   setMessage: (message: string) => void
 }) {
-  const visibleOrders = orders.filter((order) => order.status !== 'entregue' && order.status !== 'cancelado')
+  const visibleOrders = orders.filter((order) => order.status !== 'FINALIZADO' && order.status !== 'CANCELADO')
 
   async function move(order: ApiOrder) {
     const currentIndex = statusFlow.indexOf(order.status)
-    const nextStatus = statusFlow[Math.min(currentIndex + 1, statusFlow.length - 1)]
+    const nextStatus = statusFlow[Math.min(Math.max(currentIndex, 0) + 1, statusFlow.length - 1)]
     await api.updateOrderStatus(order.id, nextStatus)
     setMessage(`Pedido ${order.id.slice(0, 8)} atualizado para ${nextStatus}.`)
     await onUpdated()
@@ -534,8 +585,12 @@ function ReportsPanel({ summary, orders }: { summary: ReportSummary | null; orde
     <div className="grid gap-5">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Metric label="Vendas hoje" value={formatCurrency(summary.revenue)} />
+        <Metric label="Vendas no mes" value={formatCurrency(summary.monthRevenue)} />
         <Metric label="Pedidos hoje" value={String(summary.orders)} />
+        <Metric label="Ticket medio" value={formatCurrency(summary.averageTicket)} />
         <Metric label="Pendentes" value={String(summary.pendingOrders)} />
+        <Metric label="Finalizados" value={String(summary.deliveredOrders)} />
+        <Metric label="Cancelados" value={String(summary.canceledOrders)} />
         <Metric label="Estoque baixo" value={String(summary.lowStockItems)} />
       </div>
       <div className="grid gap-5 lg:grid-cols-2">
@@ -551,8 +606,21 @@ function ReportsPanel({ summary, orders }: { summary: ReportSummary | null; orde
           </div>
         </div>
         <div className="rounded-lg border border-zinc-200 p-5">
+          <h3 className="text-xl font-black">Formas de pagamento</h3>
+          <div className="mt-4 space-y-3">
+            {summary.paymentMethods.length === 0 ? <p className="text-sm font-semibold text-zinc-600">Ainda nao ha vendas registradas.</p> : null}
+            {summary.paymentMethods.map((payment) => (
+              <p key={payment.method} className="flex justify-between text-sm font-semibold">
+                <span>{payment.method}</span>
+                <span>{formatCurrency(payment.total)}</span>
+              </p>
+            ))}
+          </div>
+        </div>
+        <div className="rounded-lg border border-zinc-200 p-5">
           <h3 className="text-xl font-black">Ultimos pedidos</h3>
           <div className="mt-4 space-y-3">
+            {orders.length === 0 ? <p className="text-sm font-semibold text-zinc-600">Ainda nao ha pedidos.</p> : null}
             {orders.slice(0, 6).map((order) => (
               <p key={order.id} className="flex justify-between text-sm font-semibold">
                 <span>{order.customerName}</span>
@@ -571,6 +639,109 @@ function ReportsPanel({ summary, orders }: { summary: ReportSummary | null; orde
       </div>
     </div>
   )
+}
+
+function FinancePanel({ finance }: { finance: FinanceSummary | null }) {
+  if (!finance) {
+    return <EmptyState text="Modulo financeiro aguardando permissao ou dados." />
+  }
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Metric label="Faturamento hoje" value={formatCurrency(finance.revenue)} />
+        <Metric label="Despesas hoje" value={formatCurrency(finance.expenses)} />
+        <Metric label="Resultado estimado" value={formatCurrency(finance.estimatedProfit)} />
+      </div>
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h3 className="text-xl font-black">Caixa</h3>
+        <p className="mt-2 text-sm font-semibold text-zinc-600">
+          {finance.openSession ? 'Ha um caixa aberto.' : 'Nenhum caixa aberto no momento.'}
+        </p>
+        <div className="mt-4 space-y-3">
+          {finance.byMethod.length === 0 ? <p className="text-sm font-semibold text-zinc-600">Sem movimentos financeiros hoje.</p> : null}
+          {finance.byMethod.map((item) => (
+            <p key={item.method} className="flex justify-between text-sm font-bold">
+              <span>{item.method}</span>
+              <span>{formatCurrency(item.total)}</span>
+            </p>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PrintingPanel({
+  status,
+  onTest,
+  setMessage,
+}: {
+  status: PrintStatus | null
+  onTest: () => Promise<void>
+  setMessage: (message: string) => void
+}) {
+  async function test() {
+    await onTest()
+    setMessage('Teste de impressao criado na fila mock.')
+  }
+
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white p-5">
+      <h3 className="text-xl font-black">Impressao termica ESC/POS</h3>
+      <p className="mt-2 text-sm font-semibold leading-6 text-zinc-600">
+        {status?.message ?? 'Agente de impressao ainda nao configurado nesta maquina.'}
+      </p>
+      <div className="mt-4 grid gap-4 sm:grid-cols-3">
+        <Metric label="Modo" value={status?.mode ?? 'mock'} />
+        <Metric label="Pendentes" value={String(status?.pending ?? 0)} />
+        <Metric label="Falhas" value={String(status?.failed ?? 0)} />
+      </div>
+      <button type="button" onClick={test} className="mt-5 rounded bg-black px-4 py-3 font-black text-yellow-300">
+        Criar teste de impressao
+      </button>
+    </div>
+  )
+}
+
+function SecurityPanel({ security }: { security: SecurityStatus | null }) {
+  if (!security) return <EmptyState text="Area de seguranca disponivel para SUPER_US ou ADMIN." />
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Metric label="API" value={security.api} />
+        <Metric label="Banco" value={security.database} />
+        <Metric label="Auth" value={security.auth} />
+        <Metric label="Rate limit" value={security.loginRateLimit} />
+      </div>
+      <SimpleListPanel
+        title="Falhas recentes de login"
+        items={security.recentLoginFailures}
+        empty="Nao ha falhas recentes de login."
+      />
+    </div>
+  )
+}
+
+function SimpleListPanel({ title, items, empty }: { title: string; items: unknown[]; empty: string }) {
+  return (
+    <div className="rounded-lg border border-zinc-200 bg-white p-5">
+      <h3 className="text-xl font-black">{title}</h3>
+      <div className="mt-4 grid gap-3">
+        {items.length === 0 ? <EmptyState text={empty} /> : null}
+        {items.slice(0, 20).map((item, index) => (
+          <pre key={index} className="overflow-auto rounded bg-zinc-50 p-3 text-xs font-semibold text-zinc-700">
+            {JSON.stringify(item, null, 2)}
+          </pre>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function EmptyState({ text }: { text: string }) {
+  return <p className="rounded-lg bg-zinc-50 p-4 text-sm font-bold text-zinc-600">{text}</p>
 }
 
 function Metric({ label, value }: { label: string; value: string }) {

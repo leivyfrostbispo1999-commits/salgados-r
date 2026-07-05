@@ -19,6 +19,41 @@ const pool = new Pool({
 
 const app = express()
 app.use(express.json({ limit: '1mb' }))
+app.use((req, res, next) => {
+  res.setHeader('X-Content-Type-Options', 'nosniff')
+  res.setHeader('X-Frame-Options', 'DENY')
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin')
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=()')
+  const allowedOrigin = process.env.APP_ORIGIN || 'https://salgadosr.duckdns.org'
+  const origin = req.headers.origin
+  if (!origin || origin === allowedOrigin || origin.includes('localhost') || origin.includes('127.0.0.1')) {
+    if (origin) res.setHeader('Access-Control-Allow-Origin', origin)
+    res.setHeader('Vary', 'Origin')
+  }
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS')
+  if (req.method === 'OPTIONS') return res.sendStatus(204)
+  next()
+})
+
+const loginAttempts = new Map()
+
+function rateLimitLogin(req, res, next) {
+  const key = req.ip || req.socket.remoteAddress || 'unknown'
+  const now = Date.now()
+  const entry = loginAttempts.get(key) || { count: 0, firstAt: now, blockedUntil: 0 }
+  if (entry.blockedUntil > now) {
+    return res.status(429).json({ error: 'Muitas tentativas. Tente novamente em alguns minutos.' })
+  }
+  if (now - entry.firstAt > 15 * 60 * 1000) {
+    entry.count = 0
+    entry.firstAt = now
+  }
+  entry.count += 1
+  if (entry.count > 8) entry.blockedUntil = now + 10 * 60 * 1000
+  loginAttempts.set(key, entry)
+  next()
+}
 
 const productsSeed = [
   ['pastel-carne', 'Pastel de Carne', 'pasteis', 'ambos', 500],
@@ -51,10 +86,12 @@ const stockSeed = [
 
 const permissions = {
   SUPER_US: ['*'],
-  ADMIN: ['products', 'orders', 'stock', 'reports', 'users'],
-  GERENTE: ['products', 'orders', 'stock', 'reports'],
+  ADMIN: ['products', 'orders', 'stock', 'reports', 'users', 'finance', 'audit', 'printing', 'settings', 'security'],
+  GERENTE: ['products', 'orders', 'stock', 'reports', 'finance', 'printing', 'settings'],
   ATENDENTE: ['orders'],
 }
+
+const orderStatuses = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA', 'FINALIZADO', 'CANCELADO']
 
 function money(cents) {
   return Number(cents || 0) / 100
@@ -155,11 +192,12 @@ async function query(sql, params = []) {
 
 async function audit(req, action, entity, entityId, beforeData = null, afterData = null) {
   await query(
-    `INSERT INTO audit_logs (id, user_id, action, entity, entity_id, before_data, after_data, created_at)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+    `INSERT INTO audit_logs (id, user_id, ip_address, action, entity, entity_id, before_data, after_data, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
     [
       randomUUID(),
       req.user?.id || null,
+      req.ip || req.socket.remoteAddress || null,
       action,
       entity,
       entityId,
@@ -267,6 +305,7 @@ async function initDb() {
     CREATE TABLE IF NOT EXISTS audit_logs (
       id TEXT PRIMARY KEY,
       user_id TEXT,
+      ip_address TEXT,
       action TEXT NOT NULL,
       entity TEXT NOT NULL,
       entity_id TEXT,
@@ -274,7 +313,82 @@ async function initDb() {
       after_data JSONB,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS print_jobs (
+      id TEXT PRIMARY KEY,
+      order_id TEXT REFERENCES orders(id) ON DELETE SET NULL,
+      status TEXT NOT NULL DEFAULT 'PENDING',
+      content TEXT NOT NULL,
+      error_message TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS notifications (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      title TEXT NOT NULL,
+      message TEXT NOT NULL,
+      read_at TIMESTAMPTZ,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS cash_sessions (
+      id TEXT PRIMARY KEY,
+      opened_by TEXT,
+      closed_by TEXT,
+      opening_amount_cents INTEGER NOT NULL DEFAULT 0,
+      closing_amount_cents INTEGER,
+      status TEXT NOT NULL DEFAULT 'OPEN',
+      opened_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      closed_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS expenses (
+      id TEXT PRIMARY KEY,
+      description TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS payments (
+      id TEXT PRIMARY KEY,
+      order_id TEXT REFERENCES orders(id) ON DELETE SET NULL,
+      provider TEXT NOT NULL DEFAULT 'manual',
+      method TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'PENDING',
+      amount_cents INTEGER NOT NULL,
+      metadata JSONB,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS delivery_zones (
+      id TEXT PRIMARY KEY,
+      neighborhood TEXT UNIQUE NOT NULL,
+      fee_cents INTEGER NOT NULL DEFAULT 0,
+      eta_minutes INTEGER,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS store_settings (
+      key TEXT PRIMARY KEY,
+      value JSONB NOT NULL,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS backups_log (
+      id TEXT PRIMARY KEY,
+      status TEXT NOT NULL,
+      file_path TEXT,
+      size_bytes BIGINT,
+      message TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `)
+
+  await query('ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS ip_address TEXT')
 
   const productCount = await query('SELECT COUNT(*)::int AS total FROM products')
   if (productCount.rows[0].total === 0) {
@@ -312,6 +426,23 @@ async function getProduct(id) {
   return result.rows[0]
 }
 
+function buildPrintContent({ orderId, customerName, channel, paymentMethod, notes, items, total }) {
+  const lines = [
+    'SALGADOS R',
+    `Pedido #${orderId.slice(0, 8).toUpperCase()}`,
+    `Cliente: ${customerName}`,
+    `Tipo: ${channel}`,
+    `Pagamento: ${paymentMethod}`,
+    '------------------------------',
+    ...items.map((item) => `${item.quantity}x ${item.product.name} - R$ ${(item.totalCents / 100).toFixed(2)}`),
+    '------------------------------',
+    `Total: R$ ${(total / 100).toFixed(2)}`,
+    notes ? `Obs: ${notes}` : '',
+    new Date().toLocaleString('pt-BR'),
+  ]
+  return lines.filter(Boolean).join('\n')
+}
+
 app.get('/api/health', async (_req, res) => {
   await query('SELECT 1')
   res.json({ ok: true, service: 'salgados-r-api', database: 'postgresql', timestamp: new Date().toISOString() })
@@ -343,14 +474,17 @@ app.post('/api/auth/bootstrap', async (req, res) => {
   res.status(201).json(signUser(created.rows[0]))
 })
 
-app.post('/api/auth/login', async (req, res) => {
+app.post('/api/auth/login', rateLimitLogin, async (req, res) => {
   const { email, password } = req.body
   const result = await query('SELECT * FROM users WHERE email = $1 AND active = TRUE', [String(email || '').toLowerCase()])
   const user = result.rows[0]
   if (!user || !(await bcrypt.compare(String(password || ''), user.password_hash))) {
+    await audit(req, 'login_failed', 'auth', String(email || '').toLowerCase(), null, null)
     return res.status(401).json({ error: 'Email ou senha invalidos.' })
   }
 
+  req.user = userDto(user)
+  await audit(req, 'login', 'auth', user.id, null, { role: user.role })
   res.json(signUser(user))
 })
 
@@ -428,6 +562,11 @@ app.get('/api/orders', auth('orders'), async (req, res) => {
   res.json(await Promise.all(result.rows.map(orderDto)))
 })
 
+app.get('/api/orders/today', auth('orders'), async (_req, res) => {
+  const result = await query('SELECT * FROM orders WHERE created_at::date = CURRENT_DATE ORDER BY created_at DESC')
+  res.json(await Promise.all(result.rows.map(orderDto)))
+})
+
 app.post('/api/orders', async (req, res) => {
   const {
     customerName,
@@ -491,7 +630,7 @@ app.post('/api/orders', async (req, res) => {
       `INSERT INTO orders (
         id, customer_id, customer_name, phone, address, neighborhood, channel, payment_method,
         coupon_code, notes, status, subtotal_cents, discount_cents, total_cents
-      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'novo', $11, $12, $13)`,
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, 'RECEBIDO', $11, $12, $13)`,
       [
         orderId,
         customerId,
@@ -524,6 +663,35 @@ app.post('/api/orders', async (req, res) => {
       [randomUUID(), orderId, paymentMethod, `Pedido ${orderId.slice(0, 8)}`, total],
     )
 
+    await client.query(
+      `INSERT INTO payments (id, order_id, provider, method, status, amount_cents, metadata)
+       VALUES ($1, $2, 'manual', $3, $4, $5, $6)`,
+      [
+        randomUUID(),
+        orderId,
+        paymentMethod,
+        paymentMethod === 'pix' ? 'AGUARDANDO_PAGAMENTO' : 'PENDING',
+        total,
+        JSON.stringify({ mode: 'manual', note: 'Integracao automatica depende de credenciais do provedor.' }),
+      ],
+    )
+
+    await client.query(
+      `INSERT INTO print_jobs (id, order_id, status, content)
+       VALUES ($1, $2, 'PENDING', $3)`,
+      [
+        randomUUID(),
+        orderId,
+        buildPrintContent({ orderId, customerName, channel, paymentMethod, notes, items: orderItems, total }),
+      ],
+    )
+
+    await client.query(
+      `INSERT INTO notifications (id, type, title, message)
+       VALUES ($1, 'ORDER_CREATED', 'Pedido novo', $2)`,
+      [randomUUID(), `Pedido #${orderId.slice(0, 8).toUpperCase()} recebido.`],
+    )
+
     await client.query('COMMIT')
     const order = await query('SELECT * FROM orders WHERE id = $1', [orderId])
     res.status(201).json(await orderDto(order.rows[0]))
@@ -535,19 +703,32 @@ app.post('/api/orders', async (req, res) => {
   }
 })
 
+app.get('/api/orders/:id', auth('orders'), async (req, res) => {
+  const result = await query('SELECT * FROM orders WHERE id = $1', [req.params.id])
+  if (!result.rows[0]) return res.status(404).json({ error: 'Pedido nao encontrado.' })
+  res.json(await orderDto(result.rows[0]))
+})
+
 app.patch('/api/orders/:id/status', auth('orders'), async (req, res) => {
-  const allowed = new Set(['novo', 'preparando', 'pronto', 'entregue', 'cancelado'])
-  if (!allowed.has(req.body.status)) return res.status(400).json({ error: 'Status invalido.' })
+  const legacyMap = {
+    novo: 'RECEBIDO',
+    preparando: 'PREPARANDO',
+    pronto: 'PRONTO',
+    entregue: 'FINALIZADO',
+    cancelado: 'CANCELADO',
+  }
+  const nextStatus = legacyMap[req.body.status] || req.body.status
+  if (!orderStatuses.includes(nextStatus)) return res.status(400).json({ error: 'Status invalido.' })
 
   const current = await query('SELECT * FROM orders WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Pedido nao encontrado.' })
 
   const updated = await query('UPDATE orders SET status = $1, updated_at = NOW() WHERE id = $2 RETURNING *', [
-    req.body.status,
+    nextStatus,
     req.params.id,
   ])
 
-  if (req.body.status === 'cancelado' && current.rows[0].status !== 'cancelado' && current.rows[0].phone) {
+  if (nextStatus === 'CANCELADO' && current.rows[0].status !== 'CANCELADO' && current.rows[0].phone) {
     await query(
       `UPDATE customers
        SET points = GREATEST(points - $1, 0), updated_at = NOW()
@@ -557,6 +738,22 @@ app.patch('/api/orders/:id/status', auth('orders'), async (req, res) => {
   }
 
   await audit(req, 'status', 'orders', req.params.id, current.rows[0], updated.rows[0])
+  await query(
+    `INSERT INTO notifications (id, type, title, message)
+     VALUES ($1, 'ORDER_STATUS', 'Status atualizado', $2)`,
+    [randomUUID(), `Pedido #${req.params.id.slice(0, 8).toUpperCase()} agora esta ${nextStatus}.`],
+  )
+  res.json(await orderDto(updated.rows[0]))
+})
+
+app.patch('/api/orders/:id/cancel', auth('orders'), async (req, res) => {
+  const current = await query('SELECT * FROM orders WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Pedido nao encontrado.' })
+
+  const updated = await query("UPDATE orders SET status = 'CANCELADO', updated_at = NOW() WHERE id = $1 RETURNING *", [
+    req.params.id,
+  ])
+  await audit(req, 'cancel', 'orders', req.params.id, current.rows[0], updated.rows[0])
   res.json(await orderDto(updated.rows[0]))
 })
 
@@ -571,6 +768,23 @@ app.get('/api/stock', auth('stock'), async (_req, res) => {
       minQuantity: Number(item.min_quantity),
       low: Number(item.quantity) <= Number(item.min_quantity),
       updatedAt: item.updated_at,
+    })),
+  )
+})
+
+app.get('/api/inventory', auth('stock'), async (_req, res) => {
+  const result = await query('SELECT * FROM stock_items ORDER BY name')
+  res.json(
+    result.rows.map((item) => ({
+      id: item.id,
+      name: item.name,
+      unit: item.unit,
+      quantity: Number(item.quantity),
+      minQuantity: Number(item.min_quantity),
+      low: Number(item.quantity) <= Number(item.min_quantity),
+      updatedAt: item.updated_at,
+      recipeConfigured: false,
+      warning: 'Produto sem ficha tecnica quando aplicavel.',
     })),
   )
 })
@@ -597,17 +811,30 @@ app.get('/api/reports/summary', auth('reports'), async (_req, res) => {
   const sales = await query(
     `SELECT COALESCE(SUM(total_cents), 0)::int AS revenue, COUNT(*)::int AS orders
      FROM orders
-     WHERE status != 'cancelado' AND created_at::date = CURRENT_DATE`,
+     WHERE status NOT IN ('cancelado', 'CANCELADO') AND created_at::date = CURRENT_DATE`,
   )
-  const pending = await query("SELECT COUNT(*)::int AS total FROM orders WHERE status IN ('novo', 'preparando')")
-  const delivered = await query("SELECT COUNT(*)::int AS total FROM orders WHERE status = 'entregue' AND created_at::date = CURRENT_DATE")
+  const monthSales = await query(
+    `SELECT COALESCE(SUM(total_cents), 0)::int AS revenue
+     FROM orders
+     WHERE status NOT IN ('cancelado', 'CANCELADO') AND date_trunc('month', created_at) = date_trunc('month', CURRENT_DATE)`,
+  )
+  const pending = await query("SELECT COUNT(*)::int AS total FROM orders WHERE status IN ('novo', 'preparando', 'RECEBIDO', 'ACEITO', 'PREPARANDO')")
+  const delivered = await query("SELECT COUNT(*)::int AS total FROM orders WHERE status IN ('entregue', 'FINALIZADO') AND created_at::date = CURRENT_DATE")
+  const canceled = await query("SELECT COUNT(*)::int AS total FROM orders WHERE status IN ('cancelado', 'CANCELADO') AND created_at::date = CURRENT_DATE")
   const lowStock = await query('SELECT COUNT(*)::int AS total FROM stock_items WHERE quantity <= min_quantity')
   const customers = await query('SELECT COUNT(*)::int AS total FROM customers')
+  const paymentMethods = await query(
+    `SELECT payment_method, COUNT(*)::int AS quantity, COALESCE(SUM(total_cents), 0)::int AS total_cents
+     FROM orders
+     WHERE status NOT IN ('cancelado', 'CANCELADO')
+     GROUP BY payment_method
+     ORDER BY total_cents DESC`,
+  )
   const topProducts = await query(
     `SELECT oi.product_name, SUM(oi.quantity)::int AS quantity, SUM(oi.total_cents)::int AS total_cents
      FROM order_items oi
      JOIN orders o ON o.id = oi.order_id
-     WHERE o.status != 'cancelado'
+     WHERE o.status NOT IN ('cancelado', 'CANCELADO')
      GROUP BY oi.product_name
      ORDER BY quantity DESC
      LIMIT 5`,
@@ -619,12 +846,21 @@ app.get('/api/reports/summary', auth('reports'), async (_req, res) => {
     today: new Date().toISOString().slice(0, 10),
     revenueCents: revenue,
     revenue: money(revenue),
+    monthRevenueCents: monthSales.rows[0].revenue,
+    monthRevenue: money(monthSales.rows[0].revenue),
     orders: orderCount,
     averageTicket: orderCount > 0 ? money(Math.round(revenue / orderCount)) : 0,
     pendingOrders: pending.rows[0].total,
     deliveredOrders: delivered.rows[0].total,
+    canceledOrders: canceled.rows[0].total,
     lowStockItems: lowStock.rows[0].total,
     loyaltyCustomers: customers.rows[0].total,
+    paymentMethods: paymentMethods.rows.map((item) => ({
+      method: item.payment_method,
+      quantity: item.quantity,
+      totalCents: item.total_cents,
+      total: money(item.total_cents),
+    })),
     topProducts: topProducts.rows.map((item) => ({
       productName: item.product_name,
       quantity: item.quantity,
@@ -642,6 +878,148 @@ app.get('/api/customers', auth('reports'), async (_req, res) => {
 app.get('/api/audit', auth('users'), async (_req, res) => {
   const result = await query('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 100')
   res.json(result.rows)
+})
+
+app.get('/api/audit-logs', auth('audit'), async (_req, res) => {
+  const result = await query('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 100')
+  res.json(result.rows)
+})
+
+app.get('/api/audit-logs/:id', auth('audit'), async (req, res) => {
+  const result = await query('SELECT * FROM audit_logs WHERE id = $1', [req.params.id])
+  if (!result.rows[0]) return res.status(404).json({ error: 'Log nao encontrado.' })
+  res.json(result.rows[0])
+})
+
+app.get('/api/finance/summary', auth('finance'), async (_req, res) => {
+  const totals = await query(
+    `SELECT method, SUM(CASE WHEN type = 'entrada' THEN amount_cents ELSE -amount_cents END)::int AS total_cents
+     FROM cash_movements
+     WHERE created_at::date = CURRENT_DATE
+     GROUP BY method
+     ORDER BY total_cents DESC`,
+  )
+  const expenses = await query(
+    `SELECT COALESCE(SUM(amount_cents), 0)::int AS total_cents
+     FROM expenses
+     WHERE created_at::date = CURRENT_DATE`,
+  )
+  const openSession = await query("SELECT * FROM cash_sessions WHERE status = 'OPEN' ORDER BY opened_at DESC LIMIT 1")
+  const revenueCents = totals.rows.reduce((sum, item) => sum + Number(item.total_cents), 0)
+  res.json({
+    openSession: openSession.rows[0] || null,
+    revenueCents,
+    revenue: money(revenueCents),
+    expensesCents: expenses.rows[0].total_cents,
+    expenses: money(expenses.rows[0].total_cents),
+    estimatedProfit: money(revenueCents - expenses.rows[0].total_cents),
+    byMethod: totals.rows.map((item) => ({ method: item.method, totalCents: item.total_cents, total: money(item.total_cents) })),
+  })
+})
+
+app.post('/api/finance/cash/open', auth('finance'), async (req, res) => {
+  const open = await query("SELECT id FROM cash_sessions WHERE status = 'OPEN' LIMIT 1")
+  if (open.rows[0]) return res.status(409).json({ error: 'Ja existe um caixa aberto.' })
+  const created = await query(
+    `INSERT INTO cash_sessions (id, opened_by, opening_amount_cents)
+     VALUES ($1, $2, $3)
+     RETURNING *`,
+    [randomUUID(), req.user.id, Number(req.body.openingAmountCents || 0)],
+  )
+  await audit(req, 'cash_open', 'cash_sessions', created.rows[0].id, null, created.rows[0])
+  res.status(201).json(created.rows[0])
+})
+
+app.post('/api/finance/cash/close', auth('finance'), async (req, res) => {
+  const open = await query("SELECT * FROM cash_sessions WHERE status = 'OPEN' ORDER BY opened_at DESC LIMIT 1")
+  if (!open.rows[0]) return res.status(404).json({ error: 'Nao ha caixa aberto.' })
+  const updated = await query(
+    `UPDATE cash_sessions SET status = 'CLOSED', closed_by = $1, closing_amount_cents = $2, closed_at = NOW()
+     WHERE id = $3 RETURNING *`,
+    [req.user.id, Number(req.body.closingAmountCents || 0), open.rows[0].id],
+  )
+  await audit(req, 'cash_close', 'cash_sessions', updated.rows[0].id, open.rows[0], updated.rows[0])
+  res.json(updated.rows[0])
+})
+
+app.get('/api/printing/jobs', auth('printing'), async (_req, res) => {
+  const result = await query("SELECT * FROM print_jobs WHERE status IN ('PENDING', 'FAILED', 'RETRYING') ORDER BY created_at ASC LIMIT 50")
+  res.json(result.rows)
+})
+
+app.post('/api/printing/jobs/:id/printed', auth('printing'), async (req, res) => {
+  const updated = await query("UPDATE print_jobs SET status = 'PRINTED', updated_at = NOW() WHERE id = $1 RETURNING *", [req.params.id])
+  if (!updated.rows[0]) return res.status(404).json({ error: 'Impressao nao encontrada.' })
+  await audit(req, 'printed', 'print_jobs', req.params.id, null, updated.rows[0])
+  res.json(updated.rows[0])
+})
+
+app.post('/api/printing/jobs/:id/failed', auth('printing'), async (req, res) => {
+  const updated = await query(
+    "UPDATE print_jobs SET status = 'FAILED', error_message = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
+    [req.body.error || 'Falha informada pelo agente de impressao.', req.params.id],
+  )
+  if (!updated.rows[0]) return res.status(404).json({ error: 'Impressao nao encontrada.' })
+  res.json(updated.rows[0])
+})
+
+app.post('/api/printing/test', auth('printing'), async (req, res) => {
+  const created = await query(
+    `INSERT INTO print_jobs (id, status, content)
+     VALUES ($1, 'PENDING', $2)
+     RETURNING *`,
+    [randomUUID(), 'SALGADOS R\nTeste de impressao\nAgente local ainda precisa ser configurado.'],
+  )
+  await audit(req, 'test', 'print_jobs', created.rows[0].id, null, created.rows[0])
+  res.status(201).json(created.rows[0])
+})
+
+app.get('/api/printing/status', auth('printing'), async (_req, res) => {
+  const pending = await query("SELECT COUNT(*)::int AS total FROM print_jobs WHERE status = 'PENDING'")
+  const failed = await query("SELECT COUNT(*)::int AS total FROM print_jobs WHERE status = 'FAILED'")
+  res.json({
+    mode: process.env.PRINTING_MODE || 'mock',
+    configured: false,
+    message: 'Agente de impressao ainda nao configurado nesta maquina.',
+    pending: pending.rows[0].total,
+    failed: failed.rows[0].total,
+  })
+})
+
+app.get('/api/notifications', auth('orders'), async (_req, res) => {
+  const result = await query('SELECT * FROM notifications ORDER BY created_at DESC LIMIT 50')
+  res.json(result.rows)
+})
+
+app.patch('/api/notifications/:id/read', auth('orders'), async (req, res) => {
+  const updated = await query('UPDATE notifications SET read_at = NOW() WHERE id = $1 RETURNING *', [req.params.id])
+  if (!updated.rows[0]) return res.status(404).json({ error: 'Notificacao nao encontrada.' })
+  res.json(updated.rows[0])
+})
+
+app.get('/api/backups/status', auth('security'), async (_req, res) => {
+  const last = await query('SELECT * FROM backups_log ORDER BY created_at DESC LIMIT 1')
+  res.json({
+    provider: process.env.BACKUP_PROVIDER || 'local',
+    directory: '/opt/salgados-r/backups',
+    retentionDays: 7,
+    lastBackup: last.rows[0] || null,
+    nextExpected: 'diario via cron na VM',
+    configured: false,
+    message: 'Estrutura criada. Agendamento real depende do cron/servico da VM.',
+  })
+})
+
+app.get('/api/security/status', auth('security'), async (_req, res) => {
+  const failures = await query("SELECT * FROM audit_logs WHERE action = 'login_failed' ORDER BY created_at DESC LIMIT 10")
+  res.json({
+    api: 'online',
+    database: 'postgresql',
+    auth: 'jwt-bcrypt',
+    cors: process.env.APP_ORIGIN || 'https://salgadosr.duckdns.org',
+    loginRateLimit: 'ativo',
+    recentLoginFailures: failures.rows,
+  })
 })
 
 app.use((error, _req, res, _next) => {

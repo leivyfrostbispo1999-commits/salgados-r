@@ -1,14 +1,34 @@
 export function Footer() {
   return (
-    <footer className="bg-black py-8 text-white">
-      <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 sm:px-6 md:flex-row md:items-center md:justify-between">
+    <footer id="atendimento" className="bg-[#F5F5F5] py-12 text-[#1D1D1D]">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
         <div>
-          <p className="text-xl font-black text-yellow-300">SALGADOS R</p>
-          <p className="mt-1 text-sm font-medium text-zinc-300">
-            Salgados, pasteis e sucos para pedidos rapidos.
-          </p>
+          <p className="text-xl font-black">SALGADOS R</p>
+          <p className="mt-2 text-sm font-semibold leading-6 text-zinc-600">Salgados, pasteis e sucos naturais.</p>
         </div>
-        <p className="text-sm font-semibold text-zinc-400">Atendimento por WhatsApp: +55 71 99702-1801.</p>
+        <div>
+          <p className="font-black">Cardapio</p>
+          <div className="mt-3 grid gap-2 text-sm font-semibold text-zinc-600">
+            <a href="#pasteis">Pasteis</a>
+            <a href="#salgados">Salgados</a>
+            <a href="#sucos">Sucos</a>
+            <a href="#refil">Refil</a>
+          </div>
+        </div>
+        <div>
+          <p className="font-black">Atendimento</p>
+          <p className="mt-3 text-sm font-semibold text-zinc-600">WhatsApp: +55 71 99702-1801</p>
+          <p className="mt-2 text-sm font-semibold text-zinc-600">Delivery: suco somente na garrafinha 300 ml.</p>
+        </div>
+        <div>
+          <p className="font-black">Sistema</p>
+          <a href="/admin" className="mt-3 inline-flex text-sm font-black text-[#DA291C]">
+            Entrar no painel
+          </a>
+        </div>
+      </div>
+      <div className="mx-auto mt-8 max-w-7xl border-t border-zinc-200 px-4 pt-6 text-sm font-semibold text-zinc-500 sm:px-6">
+        © 2026 Salgados R. Todos os direitos reservados.
       </div>
     </footer>
   )
