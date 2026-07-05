@@ -313,55 +313,65 @@ function MenuView({
             </div>
             {group.category === 'sucos' ? <JuiceRules /> : null}
             {group.category === 'refil' ? <RefillRules /> : null}
-            <div className="mt-4 grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-4 grid items-stretch gap-5 md:grid-cols-2 xl:grid-cols-3">
               {group.products.map((product) => {
                 const canCart = !product.dineInOnly && product.availability !== 'presencial' && product.deliveryEnabled
                 const visual = productVisual(product)
                 return (
-                  <article key={product.id} className="group overflow-hidden rounded-[1.35rem] border border-[#EFE0C8] bg-[#FFFDF7] p-3 shadow-[0_14px_38px_rgba(39,20,8,0.08)] transition duration-200 hover:-translate-y-0.5 hover:shadow-[0_20px_52px_rgba(139,0,8,0.16)]">
-                    <div className="relative overflow-hidden rounded-[1.1rem] bg-[linear-gradient(135deg,#FFF8E8,#FFE7A3)]">
+                  <article
+                    key={product.id}
+                    className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[#F0D39B] bg-[linear-gradient(180deg,#FFF8EC_0%,#FFF4DD_58%,#FFEFC8_100%)] p-3 shadow-[0_18px_44px_rgba(83,38,0,0.12),0_0_0_1px_rgba(255,213,30,0.16)] transition duration-[250ms] hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(139,0,8,0.20),0_0_30px_rgba(255,213,30,0.16)]"
+                  >
+                    <div className="relative overflow-hidden rounded-[24px] bg-[radial-gradient(circle_at_50%_38%,#FFFDF7_0,#FFE7A3_46%,#F4B51A_100%)]">
+                      <div className="absolute inset-x-8 bottom-6 h-9 rounded-full bg-black/18 blur-xl transition duration-[250ms] group-hover:bg-black/24" />
                       <img
                         src={visual.imageUrl}
                         alt={visual.imageAlt}
                         width="900"
                         height="640"
                         loading="lazy"
-                        className="aspect-[4/3] w-full object-cover transition duration-200 group-hover:scale-[1.025]"
+                        className="relative aspect-[1.08/1] w-full object-cover object-center drop-shadow-[0_18px_18px_rgba(75,35,0,0.18)] transition duration-[250ms] group-hover:scale-[1.045]"
                       />
-                      <span className={`absolute left-3 top-3 rounded-full px-3 py-1.5 text-xs font-black uppercase tracking-wide shadow-sm ${
-                        canCart ? 'bg-[#FFD51E] text-[#050505]' : 'bg-[#FFFDF7] text-[#99000D]'
+                      <span className={`absolute left-4 top-4 rounded-full px-3.5 py-2 text-xs font-black uppercase tracking-wide shadow-[0_10px_22px_rgba(0,0,0,0.14)] backdrop-blur ${
+                        canCart ? 'bg-[#FFD51E] text-[#050505]' : 'bg-[#FFFDF7]/95 text-[#99000D]'
                       }`}>
-                        {visual.badge}
+                        {badgeFor(product, canCart)}
                       </span>
                     </div>
-                    <div className="p-4">
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0">
-                          <h3 className="text-xl font-black leading-tight text-[#050505]">{product.name}</h3>
-                          <p className="mt-2 line-clamp-2 text-sm font-semibold leading-6 text-[#4A3329]">{product.description}</p>
-                        </div>
-                        <span className="shrink-0 rounded-2xl bg-[#FFD51E] px-3 py-2 text-base font-black text-[#050505] shadow-sm">{formatCurrency(product.price)}</span>
+                    <div className="flex flex-1 flex-col p-4 pt-5">
+                      <p className="text-xs font-black tracking-[0.24em] text-[#99000D]">★★★★★</p>
+                      <h3 className="mt-2 text-2xl font-black leading-[1.02] tracking-tight text-[#050505]">{product.name}</h3>
+                      <p className="mt-2 min-h-12 text-sm font-medium leading-6 text-[#5F4030]">{descriptionFor(product)}</p>
+                      <div className="mt-4 flex items-center justify-between gap-3">
+                        <span className="rounded-full bg-[#FFD51E] px-5 py-2.5 text-xl font-black text-[#050505] shadow-[0_10px_22px_rgba(255,213,30,0.32)] transition duration-[250ms] group-hover:shadow-[0_12px_26px_rgba(255,213,30,0.48)]">
+                          {formatCurrency(product.price)}
+                        </span>
+                        <span className={`rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wide ${
+                          canCart ? 'bg-[#FFFDF7] text-[#99000D]' : 'bg-white/70 text-zinc-700'
+                        }`}>
+                          {canCart ? 'Online' : 'Balcao'}
+                        </span>
                       </div>
-                      <p className={`mt-3 w-fit rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ${
-                        canCart ? 'bg-[#FFEFB0] text-[#99000D]' : 'bg-zinc-100 text-zinc-700'
+                      <p className={`mt-3 rounded-2xl px-3 py-2 text-xs font-black leading-5 ${
+                        canCart ? 'bg-white/55 text-[#6B2D17]' : 'bg-zinc-100 text-zinc-700'
                       }`}>
-                        {canCart ? 'Pede online e confirma no WhatsApp' : 'Somente consumo no estabelecimento'}
+                        {canCart ? 'Adicione ao carrinho ou peca direto pelo WhatsApp.' : 'Produto somente para consumo no estabelecimento.'}
                       </p>
-                      <div className="mt-4 grid gap-2">
+                      <div className="mt-auto grid gap-2 pt-4">
                       <button
                         type="button"
                         disabled={!canCart}
                         onClick={() => add(product)}
-                        className="min-h-12 rounded-xl bg-[#FFD51E] px-4 py-3 text-sm font-black text-[#050505] transition hover:bg-[#FFE047] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-zinc-200 disabled:text-zinc-500 focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
+                        className="min-h-14 rounded-2xl bg-[linear-gradient(135deg,#050505,#2A1610)] px-5 py-4 text-base font-black text-white shadow-[0_14px_28px_rgba(5,5,5,0.22)] transition duration-[250ms] hover:scale-[1.015] hover:bg-[#99000D] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-none disabled:bg-zinc-200 disabled:text-zinc-500 disabled:shadow-none focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
                       >
-                        Adicionar
+                        + Adicionar
                       </button>
                       <a
                         href={canCart ? buildWhatsAppUrl({ name: product.name, price: formatCurrency(product.price), quantity: 1 }) : '#'}
                         target={canCart ? '_blank' : undefined}
                         rel="noreferrer"
-                        className={`min-h-12 rounded-xl px-4 py-3 text-center text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 ${
-                          canCart ? 'bg-[#050505] text-white hover:bg-[#99000D]' : 'bg-zinc-100 text-zinc-500'
+                        className={`min-h-12 rounded-2xl px-4 py-3 text-center text-sm font-black transition duration-[250ms] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 ${
+                          canCart ? 'bg-[#D90416] text-white shadow-[0_12px_24px_rgba(217,4,22,0.20)] hover:bg-[#99000D]' : 'bg-zinc-100 text-zinc-500'
                         }`}
                       >
                         Pedir no WhatsApp
@@ -697,6 +707,20 @@ function productVisual(product: ApiProduct) {
     imageAlt: product.name,
     badge: product.availability === 'presencial' ? 'Somente presencial' : 'Delivery e presencial',
   }
+}
+
+function badgeFor(product: ApiProduct, canCart: boolean) {
+  if (!canCart) return 'Presencial'
+  if (product.featured) return product.category === 'salgados' ? '⭐ Favorito' : '🔥 Mais vendido'
+  if (product.category === 'pasteis') return 'Artesanal'
+  if (product.category === 'sucos') return 'Gelado'
+  return 'Pronto rapido'
+}
+
+function descriptionFor(product: ApiProduct) {
+  if (product.category === 'sucos') return 'Suco natural gelado.'
+  if (product.category === 'refil') return 'Refil de suco natural no balcao.'
+  return product.description
 }
 
 function JuiceRules() {

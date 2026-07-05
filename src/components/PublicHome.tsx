@@ -160,26 +160,41 @@ function FeaturedHome() {
           </a>
         </div>
 
-        <div className="mt-8 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid items-stretch gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {featured.map((item) => (
-            <article key={item.name} className="group overflow-hidden rounded-[1.35rem] border border-[#EFE0C8] bg-white p-3 shadow-sm transition hover:-translate-y-1 hover:shadow-xl">
-              <div className="overflow-hidden rounded-[1.1rem] bg-[#FFF8E8]">
+            <article
+              key={item.name}
+              className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[#F0D39B] bg-[linear-gradient(180deg,#FFF8EC_0%,#FFF4DD_58%,#FFEFC8_100%)] p-3 shadow-[0_18px_44px_rgba(83,38,0,0.12),0_0_0_1px_rgba(255,213,30,0.16)] transition duration-[250ms] hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(139,0,8,0.20),0_0_30px_rgba(255,213,30,0.16)]"
+            >
+              <div className="relative overflow-hidden rounded-[24px] bg-[radial-gradient(circle_at_50%_38%,#FFFDF7_0,#FFE7A3_46%,#F4B51A_100%)]">
+                <div className="absolute inset-x-8 bottom-6 h-9 rounded-full bg-black/18 blur-xl transition duration-[250ms] group-hover:bg-black/24" />
                 <img
                   src={item.imageUrl}
                   alt={item.imageAlt}
                   width="900"
                   height="640"
                   loading="lazy"
-                  className="aspect-[4/3] w-full object-cover transition duration-200 group-hover:scale-[1.025]"
+                  className="relative aspect-[1.08/1] w-full object-cover object-center drop-shadow-[0_18px_18px_rgba(75,35,0,0.18)] transition duration-[250ms] group-hover:scale-[1.045]"
                 />
+                <span className="absolute left-4 top-4 rounded-full bg-[#FFD51E] px-3.5 py-2 text-xs font-black uppercase tracking-wide text-[#050505] shadow-[0_10px_22px_rgba(0,0,0,0.14)]">
+                  🔥 Mais pedido
+                </span>
               </div>
-              <div className="p-5">
-                <h3 className="text-xl font-black text-[#050505]">{item.name}</h3>
-                <p className="mt-2 min-h-12 text-sm font-semibold leading-6 text-[#4A3329]">{item.description}</p>
-                <div className="mt-4 flex items-center justify-between gap-3">
-                  <span className="rounded-2xl bg-[#FFD51E] px-4 py-2 text-base font-black text-[#050505]">{item.price}</span>
-                  <a href={item.href} className="rounded-xl bg-[#050505] px-4 py-3 text-sm font-black text-white transition hover:bg-[#99000D]">
-                    Adicionar
+              <div className="flex flex-1 flex-col p-5">
+                <p className="text-xs font-black tracking-[0.24em] text-[#99000D]">★★★★★</p>
+                <h3 className="mt-2 text-2xl font-black leading-[1.02] tracking-tight text-[#050505]">{item.name}</h3>
+                <p className="mt-2 min-h-12 text-sm font-medium leading-6 text-[#5F4030]">{item.description}</p>
+                <div className="mt-auto pt-4">
+                  <div className="mb-3">
+                    <span className="rounded-full bg-[#FFD51E] px-5 py-2.5 text-xl font-black text-[#050505] shadow-[0_10px_22px_rgba(255,213,30,0.32)]">
+                      {item.price}
+                    </span>
+                  </div>
+                  <a
+                    href={item.href}
+                    className="block min-h-14 rounded-2xl bg-[linear-gradient(135deg,#050505,#2A1610)] px-5 py-4 text-center text-base font-black text-white shadow-[0_14px_28px_rgba(5,5,5,0.22)] transition duration-[250ms] hover:scale-[1.015] hover:bg-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
+                  >
+                    + Adicionar
                   </a>
                 </div>
               </div>
