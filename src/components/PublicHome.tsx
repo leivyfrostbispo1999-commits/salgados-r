@@ -44,7 +44,7 @@ const featured = [
   },
   {
     name: 'Suco Natural',
-    description: 'Goiaba ou maracuja geladinho.',
+    description: 'Goiaba ou maracujá geladinho.',
     price: 'A partir de R$ 4,00',
     href: '/cardapio?produto=suco-natural-garrafinha-300ml',
     imageUrl: realAssets.refil,
@@ -233,7 +233,7 @@ function RefillBannerHome() {
           <div>
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Refil de sucos naturais</p>
             <h2 className="mt-2 text-4xl font-black tracking-tight text-white">A partir de R$ 4,00</h2>
-            <p className="mt-2 max-w-2xl text-lg font-black leading-7 text-white/86">Goiaba e maracuja geladinhos.</p>
+            <p className="mt-2 max-w-2xl text-lg font-black leading-7 text-white/86">Goiaba e maracujá geladinhos.</p>
           </div>
           <img src={realAssets.refil} alt="Refil de sucos naturais da Salgados R" className="h-48 w-full rounded-3xl object-cover shadow-[0_24px_46px_rgba(0,0,0,0.32)]" />
         </div>

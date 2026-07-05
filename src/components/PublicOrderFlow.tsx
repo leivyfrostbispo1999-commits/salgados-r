@@ -121,7 +121,7 @@ export function PublicOrderFlow() {
 
   function add(product: ApiProduct) {
     if (product.dineInOnly || product.availability === 'presencial') {
-      setMessage(`${product.name} e somente para consumo no estabelecimento.`)
+      setMessage(`${displayNameFor(product)} e somente para consumo no estabelecimento.`)
       return
     }
     setCart((current) => {
@@ -133,7 +133,7 @@ export function PublicOrderFlow() {
       }
       return [...current, { product, quantity: 1, notes: '' }]
     })
-    setMessage(`${product.name} adicionado ao carrinho.`)
+    setMessage(`${displayNameFor(product)} adicionado ao carrinho.`)
   }
 
   function update(productId: string, patch: Partial<CartItem>) {
@@ -237,7 +237,7 @@ function MenuView({
           products: products.filter((product) => {
             const matchesCategory =
               category === 'todos' || category === group || (category === 'mais-pedidos' && product.featured)
-            const matchesSearch = product.name.toLowerCase().includes(search.toLowerCase())
+            const matchesSearch = displayNameFor(product).toLowerCase().includes(search.toLowerCase())
             return product.category === group && product.active && matchesCategory && matchesSearch
           }),
         }))
@@ -349,7 +349,7 @@ function MenuView({
                         + Adicionar
                       </button>
                       <a
-                        href={canCart ? buildWhatsAppUrl({ name: product.name, price: formatCurrency(product.price), quantity: 1 }) : '#'}
+                        href={canCart ? buildWhatsAppUrl({ name: displayNameFor(product), price: visualPriceFor(product), quantity: 1 }) : '#'}
                         target={canCart ? '_blank' : undefined}
                         rel="noreferrer"
                         className={`min-h-12 rounded-2xl px-4 py-3 text-center text-sm font-black transition duration-[250ms] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 ${
@@ -395,18 +395,18 @@ function CartView({
 }) {
   return (
     <div className="grid gap-5 pb-24 lg:grid-cols-[1fr_320px] lg:pb-0">
-      <section className="rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-5 shadow-[0_14px_40px_rgba(139,0,8,0.08)]">
-        <h2 className="text-3xl font-black text-[#050505]">Carrinho</h2>
+      <section className="rounded-[var(--sr-radius-xl)] border border-white/15 bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)]">
+        <h2 className="text-3xl font-black text-white">Carrinho</h2>
         <div className="mt-4 grid gap-4">
-          {cart.length === 0 ? <p className="rounded-2xl bg-[#FFF3B0] p-4 text-sm font-black text-[#050505]">Seu carrinho esta vazio.</p> : null}
+          {cart.length === 0 ? <p className="rounded-2xl bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-black)]">Seu carrinho esta vazio.</p> : null}
           {cart.map((item) => (
-            <article key={item.product.id} className="rounded-2xl border border-[#EFE0C8] bg-white p-4 shadow-sm">
+            <article key={item.product.id} className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-sm backdrop-blur">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="font-black text-[#050505]">{item.product.name}</h3>
-                  <p className="text-sm font-semibold text-[#4A3329]">{formatCurrency(item.product.price)} cada</p>
+                  <h3 className="font-black text-white">{displayNameFor(item.product)}</h3>
+                  <p className="text-sm font-semibold text-white/75">{visualPriceFor(item.product)} cada</p>
                 </div>
-                <button type="button" onClick={() => remove(item.product.id)} className="text-sm font-black text-[#99000D] transition hover:text-[#D90416] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
+                <button type="button" onClick={() => remove(item.product.id)} className="text-sm font-black text-[var(--sr-yellow)] transition hover:text-white focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
                   Remover
                 </button>
               </div>
@@ -416,7 +416,7 @@ function CartView({
                     type="button"
                     onClick={() => update(item.product.id, { quantity: Math.max(1, item.quantity - 1) })}
                     className="grid h-10 w-10 place-items-center rounded-full bg-white font-black shadow-sm transition hover:bg-zinc-100 focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
-                    aria-label={`Diminuir ${item.product.name}`}
+                    aria-label={`Diminuir ${displayNameFor(item.product)}`}
                   >
                     -
                   </button>
@@ -425,7 +425,7 @@ function CartView({
                     type="button"
                     onClick={() => update(item.product.id, { quantity: item.quantity + 1 })}
                     className="grid h-10 w-10 place-items-center rounded-full bg-[#FFD51E] font-black transition hover:bg-[#FFE047] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
-                    aria-label={`Aumentar ${item.product.name}`}
+                    aria-label={`Aumentar ${displayNameFor(item.product)}`}
                   >
                     +
                   </button>
@@ -536,7 +536,7 @@ function CheckoutView({
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-      <section className="rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-5 shadow-[0_14px_40px_rgba(139,0,8,0.08)]">
+      <section className="rounded-[var(--sr-radius-xl)] border border-white/15 bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)]">
         <div className="flex flex-wrap gap-2">
           {['Seus dados', 'Tipo de pedido', 'Pagamento', 'Revisao'].map((step, index) => (
             <span key={step} className="rounded-full bg-[#FFF3B0] px-3 py-2 text-xs font-black text-[#050505]">
@@ -544,7 +544,7 @@ function CheckoutView({
             </span>
           ))}
         </div>
-        <h2 className="mt-5 text-3xl font-black text-[#050505]">Checkout</h2>
+        <h2 className="mt-5 text-3xl font-black text-white">Checkout</h2>
         <div className="mt-4 rounded-2xl border border-[#EFE0C8] bg-white p-4">
           <p className="text-sm font-black uppercase tracking-wide text-[#99000D]">1. Seus dados</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
@@ -598,7 +598,7 @@ function CheckoutView({
         <div className="mt-4 space-y-3">
           {cart.map((item) => (
             <p key={item.product.id} className="flex justify-between gap-3 text-sm font-semibold">
-              <span>{item.quantity}x {item.product.name}</span>
+              <span>{item.quantity}x {displayNameFor(item.product)}</span>
               <span>{formatCurrency(item.product.price * item.quantity)}</span>
             </p>
           ))}
@@ -708,8 +708,8 @@ function badgeFor(product: ApiProduct, canCart: boolean) {
 }
 
 function descriptionFor(product: ApiProduct) {
-  if (product.category === 'sucos') return 'Goiaba ou maracuja geladinho.'
-  if (product.category === 'refil') return 'Goiaba e maracuja geladinhos.'
+  if (product.category === 'sucos') return 'Goiaba ou maracujá geladinho.'
+  if (product.category === 'refil') return 'Goiaba e maracujá geladinhos.'
   return product.description
 }
 
@@ -731,14 +731,14 @@ function JuiceRules() {
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD21F]">No balcao</p>
         <h3 className="mt-2 text-xl font-black">Sucos de copo</h3>
         <p className="mt-2 text-sm font-bold leading-6 text-white/82">
-          Goiaba e maracuja geladinhos para tomar no estabelecimento.
+          Goiaba e maracujá geladinhos para tomar no estabelecimento.
         </p>
       </div>
       <div className="rounded-[1.5rem] bg-[linear-gradient(135deg,#FFD21F,#FF8A00)] p-4 text-[#111111] shadow-[0_18px_38px_rgba(255,138,0,0.22)]">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[#9B000B]">Delivery</p>
         <h3 className="mt-2 text-xl font-black">Suco Natural</h3>
         <p className="mt-2 text-sm font-bold leading-6 text-[#4A2400]">
-          Goiaba ou maracuja geladinho para acompanhar seu pedido.
+          Goiaba ou maracujá geladinho.
         </p>
       </div>
     </div>
@@ -753,7 +753,7 @@ function RefillRules() {
         <div>
           <h3 className="text-3xl font-black leading-none">Refil de sucos naturais</h3>
           <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-white/85">
-            A partir de R$ 4,00. Goiaba e maracuja geladinhos.
+            A partir de R$ 4,00. Goiaba e maracujá geladinhos.
           </p>
         </div>
         <a href="/cardapio?categoria=sucos" className="rounded-2xl bg-[#FFD21F] px-5 py-4 text-center font-black text-[#111111] shadow-[0_18px_34px_rgba(255,210,31,0.32)]">
