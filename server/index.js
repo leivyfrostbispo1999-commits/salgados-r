@@ -481,10 +481,10 @@ async function initDb() {
     for (const product of productsSeed) {
       await query(
         `UPDATE products
-         SET description = CASE WHEN description = '' THEN $6 ELSE description END,
-             featured = featured OR $7
+         SET description = CASE WHEN description = '' THEN $2 ELSE description END,
+             featured = featured OR $3
          WHERE id = $1`,
-        product,
+        [product[0], product[5], product[6]],
       )
     }
   }
