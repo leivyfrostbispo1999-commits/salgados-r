@@ -249,26 +249,26 @@ function MenuView({
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
       <div className="grid gap-8">
         <section className="rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-4 shadow-[0_14px_40px_rgba(139,0,8,0.08)] sm:p-5">
-          <div className="mb-4 grid gap-3 rounded-[1.25rem] bg-[linear-gradient(135deg,#8B0008,#D90416)] p-5 text-white sm:grid-cols-[1fr_auto] sm:items-center">
-            <div>
+          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.25rem] bg-[linear-gradient(135deg,#8B0008,#D90416)] p-5 text-white sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+            <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD51E]">Escolha entre balcao e delivery</p>
               <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Cardapio digital da Salgados R</h2>
               <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-white/85">
                 Sucos de copo sao presenciais. Para entrega, escolha somente a garrafinha de 300 ml.
               </p>
             </div>
-            <a href="/cardapio-oficial" className="rounded-full border border-white/35 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white hover:text-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
+            <a href="/cardapio-oficial" className="w-full rounded-full border border-white/35 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white hover:text-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 sm:w-auto">
               Ver imagem oficial
             </a>
           </div>
-          <div className="grid gap-3 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
             <input
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar pastel, coxinha, suco..."
               className="min-h-12 rounded-full border border-[#EFE0C8] bg-white px-5 py-4 text-sm font-bold text-[#050505] outline-none transition placeholder:text-zinc-400 focus:border-[#D90416] focus:ring-4 focus:ring-[#FFD51E]/40"
             />
-            <a href="/cardapio-oficial" className="rounded-full bg-[#050505] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
+            <a href="/cardapio-oficial" className="w-full rounded-full bg-[#050505] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 lg:w-auto">
               Cardapio oficial
             </a>
           </div>
