@@ -155,21 +155,21 @@ export function PublicOrderFlow() {
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
 
   return (
-    <div className="min-h-screen bg-[#FFF8E8] text-[#1D1D1D]">
+    <div className="min-h-screen bg-[#9B000B] text-[#1D1D1D]">
       <PublicHeader />
-      <main className="bg-[radial-gradient(circle_at_top_left,#FFE047_0,#FFF8E8_26%,#FFFDF7_58%)] py-6 sm:py-8">
+      <main className="bg-[radial-gradient(circle_at_8%_0,#FFD21F_0,#FFC72C_14%,transparent_30%),linear-gradient(180deg,#9B000B_0%,#DA291C_38%,#FFC72C_100%)] py-6 sm:py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-5 flex flex-col gap-4 rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7]/95 p-5 shadow-[0_18px_50px_rgba(139,0,8,0.10)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-5 flex flex-col gap-4 rounded-[1.75rem] border border-white/15 bg-[#6E0008]/88 p-5 text-white shadow-[0_22px_58px_rgba(56,0,5,0.25)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <a href="/" className="text-sm font-black text-[#99000D] transition hover:text-[#D90416]">← Voltar para a home</a>
-              <h1 className="mt-2 text-4xl font-black leading-none tracking-tight text-[#050505] sm:text-5xl">
+              <a href="/" className="text-sm font-black text-[#FFD21F] transition hover:text-white">← Voltar para a home</a>
+              <h1 className="mt-2 text-4xl font-black leading-none tracking-tight text-white sm:text-5xl">
                 {path.startsWith('/checkout') ? 'Checkout' : path.startsWith('/carrinho') ? 'Carrinho' : 'Cardapio'}
               </h1>
-              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[#4A3329]">
-                Pastel crocante, salgado quentinho e suco do jeito certo: copo no balcao, garrafinha no delivery.
+              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-white/80">
+                Escolha, peça e confirme pelo WhatsApp.
               </p>
             </div>
-            <a href="/carrinho" className="rounded-full bg-[#FFD51E] px-5 py-3 text-center text-sm font-black text-[#050505] shadow-[0_10px_24px_rgba(255,213,30,0.35)] transition hover:bg-[#FFE047] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
+            <a href="/carrinho" className="rounded-full bg-[#FFD21F] px-5 py-3 text-center text-sm font-black text-[#111111] shadow-[0_16px_32px_rgba(255,210,31,0.34)] transition hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
               Carrinho: {cart.reduce((sum, item) => sum + item.quantity, 0)} item(ns)
             </a>
           </div>
@@ -248,8 +248,8 @@ function MenuView({
   return (
     <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="grid min-w-0 gap-8">
-        <section className="min-w-0 overflow-hidden rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-4 shadow-[0_14px_40px_rgba(139,0,8,0.08)] sm:p-5">
-          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.25rem] bg-[linear-gradient(135deg,#8B0008,#D90416)] p-5 text-white sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <section className="min-w-0 overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#6E0008]/90 p-4 text-white shadow-[0_24px_62px_rgba(56,0,5,0.26)] sm:p-5">
+          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(135deg,#DA291C,#FF8A00)] p-5 text-white shadow-[0_18px_38px_rgba(17,17,17,0.16)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD51E]">Escolha entre balcao e delivery</p>
               <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight sm:text-3xl">Cardapio digital da Salgados R</h2>
@@ -266,9 +266,9 @@ function MenuView({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar pastel, coxinha, suco..."
-              className="min-h-12 rounded-full border border-[#EFE0C8] bg-white px-5 py-4 text-sm font-bold text-[#050505] outline-none transition placeholder:text-zinc-400 focus:border-[#D90416] focus:ring-4 focus:ring-[#FFD51E]/40"
+              className="min-h-12 rounded-full border border-white/20 bg-white px-5 py-4 text-sm font-bold text-[#050505] outline-none transition placeholder:text-zinc-400 focus:border-[#FFD21F] focus:ring-4 focus:ring-[#FFD51E]/40"
             />
-            <a href="/cardapio-oficial" className="w-full rounded-full bg-[#050505] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 lg:w-auto">
+            <a href="/cardapio-oficial" className="w-full rounded-full bg-[#111111] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#9B000B] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 lg:w-auto">
               Cardapio oficial
             </a>
           </div>
@@ -278,7 +278,7 @@ function MenuView({
                 <a
                   key={item.id}
                   href="/cardapio-oficial"
-                  className="whitespace-nowrap rounded-full bg-[#050505] px-4 py-2.5 text-sm font-black text-white transition hover:bg-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
+                  className="whitespace-nowrap rounded-full bg-[#111111] px-4 py-2.5 text-sm font-black text-white transition hover:bg-[#9B000B] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
                 >
                   {item.label}
                 </a>
@@ -288,7 +288,7 @@ function MenuView({
                   type="button"
                   onClick={() => setCategory(item.id)}
                   className={`whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 ${
-                    category === item.id ? 'bg-[#FFD51E] text-[#050505] shadow-sm' : 'bg-[#050505] text-white hover:bg-[#99000D]'
+                    category === item.id ? 'bg-[#FFD21F] text-[#111111] shadow-sm' : 'bg-[#111111] text-white hover:bg-[#9B000B]'
                   }`}
                 >
                   {item.label}
@@ -318,51 +318,33 @@ function MenuView({
                 const canCart = !product.dineInOnly && product.availability !== 'presencial' && product.deliveryEnabled
                 const visual = productVisual(product)
                 return (
-                  <article
-                    key={product.id}
-                    className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[#F0D39B] bg-[linear-gradient(180deg,#FFF8EC_0%,#FFF4DD_58%,#FFEFC8_100%)] p-3 shadow-[0_18px_44px_rgba(83,38,0,0.12),0_0_0_1px_rgba(255,213,30,0.16)] transition duration-[250ms] hover:-translate-y-1 hover:shadow-[0_26px_70px_rgba(139,0,8,0.20),0_0_30px_rgba(255,213,30,0.16)]"
-                  >
-                    <div className="relative overflow-hidden rounded-[24px] bg-[radial-gradient(circle_at_50%_38%,#FFFDF7_0,#FFE7A3_46%,#F4B51A_100%)]">
-                      <div className="absolute inset-x-8 bottom-6 h-9 rounded-full bg-black/18 blur-xl transition duration-[250ms] group-hover:bg-black/24" />
+                  <article key={product.id} className="sr-food-card">
+                    <div className="sr-food-media">
                       <img
                         src={visual.imageUrl}
                         alt={visual.imageAlt}
                         width="900"
                         height="640"
                         loading="lazy"
-                        className="relative aspect-[1.08/1] w-full object-cover object-center drop-shadow-[0_18px_18px_rgba(75,35,0,0.18)] transition duration-[250ms] group-hover:scale-[1.045]"
+                        className="sr-food-image"
                       />
-                      <span className={`absolute left-4 top-4 rounded-full px-3.5 py-2 text-xs font-black uppercase tracking-wide shadow-[0_10px_22px_rgba(0,0,0,0.14)] backdrop-blur ${
-                        canCart ? 'bg-[#FFD51E] text-[#050505]' : 'bg-[#FFFDF7]/95 text-[#99000D]'
-                      }`}>
+                      <span className="sr-food-badge">
                         {badgeFor(product, canCart)}
                       </span>
                     </div>
-                    <div className="flex flex-1 flex-col p-4 pt-5">
-                      <p className="text-xs font-black tracking-[0.24em] text-[#99000D]">★★★★★</p>
-                      <h3 className="mt-2 text-2xl font-black leading-[1.02] tracking-tight text-[#050505]">{displayNameFor(product)}</h3>
-                      <p className="mt-2 min-h-12 text-sm font-medium leading-6 text-[#5F4030]">{descriptionFor(product)}</p>
-                      <div className="mt-4 flex items-center justify-between gap-3">
-                        <span className="rounded-full bg-[#FFD51E] px-5 py-2.5 text-xl font-black text-[#050505] shadow-[0_10px_22px_rgba(255,213,30,0.32)] transition duration-[250ms] group-hover:shadow-[0_12px_26px_rgba(255,213,30,0.48)]">
-                          {formatCurrency(product.price)}
-                        </span>
-                        <span className={`rounded-full px-3 py-1.5 text-[11px] font-black uppercase tracking-wide ${
-                          canCart ? 'bg-[#FFFDF7] text-[#99000D]' : 'bg-white/70 text-zinc-700'
-                        }`}>
-                          {canCart ? 'Online' : 'Balcao'}
-                        </span>
+                    <div className="sr-food-body">
+                      <p className="text-xs font-black tracking-[0.24em] text-[#FFD21F]">★★★★★</p>
+                      <h3 className="sr-food-name">{displayNameFor(product)}</h3>
+                      <p className="sr-food-description">{descriptionFor(product)}</p>
+                      <div className="flex items-center justify-between gap-3">
+                        <span className="sr-food-price">{visualPriceFor(product)}</span>
                       </div>
-                      <p className={`mt-3 rounded-2xl px-3 py-2 text-xs font-black leading-5 ${
-                        canCart ? 'bg-white/55 text-[#6B2D17]' : 'bg-zinc-100 text-zinc-700'
-                      }`}>
-                        {canCart ? 'Adicione ao carrinho ou peca direto pelo WhatsApp.' : 'Produto somente para consumo no estabelecimento.'}
-                      </p>
                       <div className="mt-auto grid gap-2 pt-4">
                       <button
                         type="button"
                         disabled={!canCart}
                         onClick={() => add(product)}
-                        className="min-h-14 rounded-2xl bg-[linear-gradient(135deg,#050505,#2A1610)] px-5 py-4 text-base font-black text-white shadow-[0_14px_28px_rgba(5,5,5,0.22)] transition duration-[250ms] hover:scale-[1.015] hover:bg-[#99000D] active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-none disabled:bg-zinc-200 disabled:text-zinc-500 disabled:shadow-none focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
+                        className="sr-food-action focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
                       >
                         + Adicionar
                       </button>
@@ -371,7 +353,7 @@ function MenuView({
                         target={canCart ? '_blank' : undefined}
                         rel="noreferrer"
                         className={`min-h-12 rounded-2xl px-4 py-3 text-center text-sm font-black transition duration-[250ms] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 ${
-                          canCart ? 'bg-[#D90416] text-white shadow-[0_12px_24px_rgba(217,4,22,0.20)] hover:bg-[#99000D]' : 'bg-zinc-100 text-zinc-500'
+                          canCart ? 'bg-[#111111]/78 text-white shadow-[0_12px_24px_rgba(17,17,17,0.22)] hover:bg-[#111111]' : 'bg-white/20 text-white/60'
                         }`}
                       >
                         Pedir no WhatsApp
@@ -718,31 +700,37 @@ function badgeFor(product: ApiProduct, canCart: boolean) {
 }
 
 function descriptionFor(product: ApiProduct) {
-  if (product.category === 'sucos') return 'Suco natural gelado.'
-  if (product.category === 'refil') return 'Refil de suco natural no balcao.'
+  if (product.category === 'sucos') return 'Goiaba ou maracuja geladinho.'
+  if (product.category === 'refil') return 'Goiaba e maracuja para acompanhar seus salgados.'
   return product.description
 }
 
 function displayNameFor(product: ApiProduct) {
-  if (product.id === 'suco-natural-garrafinha-300ml') return 'Suco Natural na Garrafinha'
+  if (product.category === 'sucos') return product.id === 'suco-natural-garrafinha-300ml' ? 'Suco Natural' : product.name.replace(' pequeno - copo', '').replace(' grande - copo', '')
+  if (product.category === 'refil') return 'Refil de sucos naturais'
   return product.name
+}
+
+function visualPriceFor(product: ApiProduct) {
+  if (product.category === 'refil' || product.id === 'suco-natural-garrafinha-300ml') return 'A partir de R$ 4,00'
+  return formatCurrency(product.price)
 }
 
 function JuiceRules() {
   return (
     <div className="mb-4 grid gap-3 md:grid-cols-2">
-      <div className="rounded-[1.25rem] border border-[#EFE0C8] bg-[#FFFDF7] p-4">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#99000D]">Consumo no estabelecimento</p>
-        <h3 className="mt-2 text-xl font-black text-[#050505]">Sucos de copo</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-[#4A3329]">
-          Copos pequenos e grandes de goiaba ou maracuja sao vendidos somente no balcao.
+      <div className="rounded-[1.5rem] bg-[linear-gradient(135deg,#6E0008,#DA291C)] p-4 text-white shadow-[0_18px_38px_rgba(110,0,8,0.24)]">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD21F]">No balcao</p>
+        <h3 className="mt-2 text-xl font-black">Sucos de copo</h3>
+        <p className="mt-2 text-sm font-bold leading-6 text-white/82">
+          Goiaba e maracuja geladinhos para tomar no estabelecimento.
         </p>
       </div>
-      <div className="rounded-[1.25rem] border border-[#FFD51E] bg-[#FFD51E] p-4">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#99000D]">Delivery</p>
-        <h3 className="mt-2 text-xl font-black text-[#050505]">Somente garrafinha 300 ml</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-[#4A3329]">
-          Para entrega, trabalhamos apenas com suco natural na garrafinha de 300 ml por R$ 4,00.
+      <div className="rounded-[1.5rem] bg-[linear-gradient(135deg,#FFD21F,#FF8A00)] p-4 text-[#111111] shadow-[0_18px_38px_rgba(255,138,0,0.22)]">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[#9B000B]">Delivery</p>
+        <h3 className="mt-2 text-xl font-black">Suco Natural</h3>
+        <p className="mt-2 text-sm font-bold leading-6 text-[#4A2400]">
+          Goiaba ou maracuja geladinho para acompanhar seu pedido.
         </p>
       </div>
     </div>
@@ -750,24 +738,19 @@ function JuiceRules() {
 }
 
 function RefillRules() {
-  const rules = [
-    'Devolvendo a garrafinha com tampa, voce paga apenas o suco.',
-    'Trouxe sua propria garrafa? Paga conforme o volume.',
-    'R$ 1,00 a cada 100 ml.',
-  ]
-
   return (
-    <div className="mb-4 rounded-[1.35rem] border border-[#EFE0C8] bg-[#050505] p-5 text-white shadow-[0_18px_45px_rgba(5,5,5,0.22)]">
-      <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD51E]">Como funciona o refil</p>
-      <div className="mt-4 grid gap-3 md:grid-cols-3">
-        {rules.map((rule, index) => (
-          <div key={rule} className="rounded-2xl bg-white/10 p-4">
-            <span className="grid h-9 w-9 place-items-center rounded-full bg-[#FFD51E] text-sm font-black text-[#050505]">
-              {index + 1}
-            </span>
-            <p className="mt-3 text-sm font-bold leading-6 text-white/90">{rule}</p>
-          </div>
-        ))}
+    <div className="mb-4 overflow-hidden rounded-[1.75rem] bg-[linear-gradient(135deg,#6E0008,#DA291C_58%,#FF8A00)] p-5 text-white shadow-[0_22px_58px_rgba(110,0,8,0.28)]">
+      <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD21F]">Sucos naturais</p>
+      <div className="mt-2 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+        <div>
+          <h3 className="text-3xl font-black leading-none">Refil de sucos naturais</h3>
+          <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-white/85">
+            Goiaba e maracuja geladinhos para acompanhar seus salgados.
+          </p>
+        </div>
+        <a href="/cardapio?categoria=sucos" className="rounded-2xl bg-[#FFD21F] px-5 py-4 text-center font-black text-[#111111] shadow-[0_18px_34px_rgba(255,210,31,0.32)]">
+          Ver opcoes
+        </a>
       </div>
     </div>
   )
