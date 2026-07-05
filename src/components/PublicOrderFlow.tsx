@@ -189,7 +189,7 @@ function MenuView({
               className="rounded-full border border-zinc-200 bg-[#F6F6F6] px-5 py-4 text-sm font-bold outline-none transition focus:border-[#FFC72C] focus:ring-4 focus:ring-[#FFC72C]/30"
             />
             <a href="/cardapio-oficial" className="rounded-full bg-zinc-100 px-5 py-4 text-center text-sm font-black text-[#DA291C]">
-              Cardapio oficial em imagem
+              Ver cardapio oficial
             </a>
           </div>
           <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
