@@ -340,7 +340,7 @@ function MenuView({
                     </div>
                     <div className="flex flex-1 flex-col p-4 pt-5">
                       <p className="text-xs font-black tracking-[0.24em] text-[#99000D]">★★★★★</p>
-                      <h3 className="mt-2 text-2xl font-black leading-[1.02] tracking-tight text-[#050505]">{product.name}</h3>
+                      <h3 className="mt-2 text-2xl font-black leading-[1.02] tracking-tight text-[#050505]">{displayNameFor(product)}</h3>
                       <p className="mt-2 min-h-12 text-sm font-medium leading-6 text-[#5F4030]">{descriptionFor(product)}</p>
                       <div className="mt-4 flex items-center justify-between gap-3">
                         <span className="rounded-full bg-[#FFD51E] px-5 py-2.5 text-xl font-black text-[#050505] shadow-[0_10px_22px_rgba(255,213,30,0.32)] transition duration-[250ms] group-hover:shadow-[0_12px_26px_rgba(255,213,30,0.48)]">
@@ -721,6 +721,11 @@ function descriptionFor(product: ApiProduct) {
   if (product.category === 'sucos') return 'Suco natural gelado.'
   if (product.category === 'refil') return 'Refil de suco natural no balcao.'
   return product.description
+}
+
+function displayNameFor(product: ApiProduct) {
+  if (product.id === 'suco-natural-garrafinha-300ml') return 'Suco Natural na Garrafinha'
+  return product.name
 }
 
 function JuiceRules() {
