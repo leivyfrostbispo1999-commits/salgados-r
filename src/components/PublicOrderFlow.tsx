@@ -84,12 +84,12 @@ const productVisuals: Record<string, { imageUrl: string; imageAlt: string; badge
     badge: 'Somente presencial',
   },
   'suco-natural-garrafinha-300ml': {
-    imageUrl: '/assets-reais/refil-sucos.png',
+    imageUrl: '/assets-reais/logo-salgados-r.png',
     imageAlt: 'Suco natural da Salgados R',
     badge: 'Unico suco para delivery',
   },
   'refil-suco-100ml': {
-    imageUrl: '/assets-reais/refil-sucos.png',
+    imageUrl: '/assets-reais/logo-salgados-r.png',
     imageAlt: 'Refil de sucos naturais',
     badge: 'Somente presencial',
   },
@@ -157,12 +157,12 @@ export function PublicOrderFlow() {
   return (
     <div className="min-h-screen bg-[var(--sr-red-dark)] text-[#1D1D1D]">
       <PublicHeader />
-      <main className="bg-[radial-gradient(circle_at_8%_0,var(--sr-yellow)_0,var(--sr-yellow)_14%,transparent_30%),linear-gradient(180deg,var(--sr-red-dark)_0%,var(--sr-red)_42%,var(--sr-yellow)_100%)] py-6 sm:py-8">
+      <main className="bg-[radial-gradient(circle_at_8%_0,var(--sr-yellow)_0,var(--sr-yellow)_12%,transparent_28%),linear-gradient(180deg,var(--sr-red-dark)_0%,var(--sr-red)_42%,var(--sr-yellow)_100%)] py-5 sm:py-7">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-5 flex flex-col gap-4 rounded-[var(--sr-radius-xl)] border border-white/15 bg-black/24 p-5 text-white shadow-[var(--sr-shadow-premium)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-5 flex flex-col gap-4 rounded-[24px] border border-white/15 bg-black/20 p-4 text-white shadow-[var(--sr-shadow-premium)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div>
               <a href="/" className="text-sm font-black text-[#FFD21F] transition hover:text-white">← Voltar para a home</a>
-              <h1 className="mt-2 text-4xl font-black leading-none tracking-tight text-white sm:text-5xl">
+              <h1 className="mt-2 text-3xl font-black leading-none tracking-tight text-white sm:text-4xl">
                 {path.startsWith('/checkout') ? 'Checkout' : path.startsWith('/carrinho') ? 'Carrinho' : 'Cardapio'}
               </h1>
               <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-white/80">
@@ -248,7 +248,7 @@ function MenuView({
   return (
     <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="grid min-w-0 gap-8">
-        <section className="min-w-0 overflow-hidden rounded-[var(--sr-radius-xl)] border border-white/15 bg-black/24 p-4 text-white shadow-[var(--sr-shadow-premium)] sm:p-5">
+        <section className="min-w-0 overflow-hidden rounded-[24px] border border-white/15 bg-black/20 p-4 text-white shadow-[var(--sr-shadow-premium)] sm:p-5">
           <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(135deg,var(--sr-red),var(--sr-orange))] p-5 text-white shadow-[0_18px_38px_rgba(17,17,17,0.16)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD51E]">Escolha entre balcao e delivery</p>
@@ -400,7 +400,7 @@ function CartView({
         <div className="mt-4 grid gap-4">
           {cart.length === 0 ? <p className="rounded-2xl bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-black)]">Seu carrinho esta vazio.</p> : null}
           {cart.map((item) => (
-            <article key={item.product.id} className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-sm backdrop-blur">
+            <article key={item.product.id} className={`rounded-2xl border border-white/15 bg-white/10 p-4 shadow-sm backdrop-blur ${textureClassFor(item.product)}`}>
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="font-black text-white">{displayNameFor(item.product)}</h3>
@@ -441,9 +441,9 @@ function CartView({
           ))}
         </div>
       </section>
-      <aside className="hidden h-fit rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-5 shadow-[0_14px_40px_rgba(139,0,8,0.08)] lg:block">
-        <p className="text-sm font-black uppercase tracking-wide text-[#99000D]">Total</p>
-        <p className="mt-2 text-4xl font-black text-[#050505]">{formatCurrency(total)}</p>
+      <aside className="hidden h-fit rounded-[1.5rem] border border-white/15 bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)] lg:block">
+        <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">Total</p>
+        <p className="mt-2 text-4xl font-black text-white">{formatCurrency(total)}</p>
         <a
           href={cart.length ? '/checkout' : '/cardapio'}
           className="mt-5 block rounded-xl bg-[#050505] px-5 py-4 text-center font-black text-white transition hover:bg-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
@@ -451,15 +451,15 @@ function CartView({
           {cart.length ? 'Ir para checkout' : 'Escolher produtos'}
         </a>
       </aside>
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[#EFE0C8] bg-[#FFFDF7] p-4 shadow-2xl lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/15 bg-[var(--sr-red-dark)] p-4 text-white shadow-2xl lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-wide text-[#99000D]">Total</p>
-            <p className="text-xl font-black text-[#050505]">{formatCurrency(total)}</p>
+            <p className="text-xs font-black uppercase tracking-wide text-[var(--sr-yellow)]">Total</p>
+            <p className="text-xl font-black text-white">{formatCurrency(total)}</p>
           </div>
           <a
             href={cart.length ? '/checkout' : '/cardapio'}
-            className="rounded-xl bg-[#FFD51E] px-5 py-3 text-sm font-black text-[#050505] transition hover:bg-[#FFE047] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
+            className="rounded-xl bg-[var(--sr-yellow)] px-5 py-3 text-sm font-black text-[var(--sr-black)] transition hover:bg-[#FFE047] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
           >
             {cart.length ? 'Finalizar' : 'Cardapio'}
           </a>
@@ -593,8 +593,8 @@ function CheckoutView({
         <textarea value={form.notes} onChange={(event) => setField('notes', event.target.value)} placeholder="Observacao geral do pedido" className="mt-4 min-h-28 w-full rounded-xl border border-[#EFE0C8] bg-white px-3 py-3 font-semibold outline-none focus:border-[#D90416] focus:ring-4 focus:ring-[#FFD51E]/40" />
       </section>
 
-      <aside className="h-fit rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-5 shadow-[0_14px_40px_rgba(139,0,8,0.08)] lg:sticky lg:top-24">
-        <h3 className="text-xl font-black text-[#050505]">Revisao</h3>
+      <aside className="h-fit rounded-[1.5rem] border border-white/15 bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)] lg:sticky lg:top-20">
+        <h3 className="text-xl font-black text-white">Revisao</h3>
         <div className="mt-4 space-y-3">
           {cart.map((item) => (
             <p key={item.product.id} className="flex justify-between gap-3 text-sm font-semibold">
@@ -603,10 +603,10 @@ function CheckoutView({
             </p>
           ))}
         </div>
-        <div className="mt-5 space-y-2 border-t border-zinc-100 pt-4 text-sm font-bold">
+        <div className="mt-5 space-y-2 border-t border-white/15 pt-4 text-sm font-bold">
           <p className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(total)}</span></p>
           <p className="flex justify-between"><span>Entrega</span><span>{formatCurrency(deliveryFee)}</span></p>
-          <p className="flex justify-between text-xl text-[#99000D]"><span>Total</span><span>{formatCurrency(grandTotal)}</span></p>
+          <p className="flex justify-between text-xl text-[var(--sr-yellow)]"><span>Total</span><span>{formatCurrency(grandTotal)}</span></p>
         </div>
         <button type="button" onClick={submit} className="mt-5 w-full rounded-xl bg-[#FFD51E] px-5 py-4 font-black text-[#050505] transition hover:bg-[#FFE047] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
           Confirmar pedido

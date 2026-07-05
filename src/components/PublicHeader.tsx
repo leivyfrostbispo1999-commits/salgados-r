@@ -39,13 +39,13 @@ export function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-white/10 bg-[var(--sr-red-dark)]/95 shadow-[0_18px_45px_rgba(48,0,5,0.22)] backdrop-blur">
-        <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[var(--sr-red-dark)]/92 shadow-[0_10px_28px_rgba(48,0,5,0.20)] backdrop-blur">
+        <div className="mx-auto flex h-[60px] max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white shadow-sm transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 lg:hidden"
+              className="grid h-10 w-10 place-items-center rounded-full border border-white/20 bg-white/10 text-white shadow-sm transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 lg:hidden"
               aria-label="Abrir menu"
             >
               <span className="space-y-1.5">
@@ -58,7 +58,7 @@ export function PublicHeader() {
               <img
                 src="/assets-reais/logo-salgados-r.png"
                 alt="SALGADOS R"
-                className="h-12 w-[150px] rounded-2xl object-cover object-center shadow-[0_10px_24px_rgba(0,0,0,0.24)] sm:w-[190px]"
+                className="h-10 w-[132px] rounded-xl object-cover object-center shadow-[0_8px_18px_rgba(0,0,0,0.22)] sm:w-[160px]"
               />
             </a>
           </div>
@@ -72,7 +72,7 @@ export function PublicHeader() {
           <div className="flex items-center gap-2">
             <a
               href="/carrinho"
-              className="relative grid h-11 min-w-11 place-items-center rounded-full bg-white/10 px-3 text-sm font-black text-white transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:block sm:h-auto sm:px-4 sm:py-3"
+              className="relative grid h-10 min-w-10 place-items-center rounded-full bg-white/10 px-3 text-sm font-black text-white transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:block sm:h-auto sm:px-4 sm:py-2.5"
               aria-label={`Carrinho com ${cartCount} itens`}
             >
               <span className="sm:hidden">{cartCount}</span>
@@ -85,7 +85,7 @@ export function PublicHeader() {
             </a>
             <a
               href="/cardapio"
-              className="hidden rounded-full bg-[var(--sr-yellow)] px-5 py-3 text-sm font-black text-[var(--sr-black)] shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:inline-flex"
+              className="hidden rounded-full bg-[var(--sr-yellow)] px-5 py-2.5 text-sm font-black text-[var(--sr-black)] shadow-[0_12px_22px_rgba(0,0,0,0.20)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:inline-flex"
             >
               Pedir agora
             </a>
@@ -101,9 +101,9 @@ export function PublicHeader() {
             onClick={close}
             aria-label="Fechar menu"
           />
-          <aside className="relative flex h-full w-[min(88vw,380px)] flex-col bg-[var(--sr-red-dark)] p-6 text-white shadow-2xl">
+          <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red-dark)] p-5 text-white shadow-2xl">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/logo-salgados-r.png" alt="SALGADOS R" className="h-14 w-44 rounded-2xl object-cover shadow-xl" />
+              <img src="/assets-reais/logo-salgados-r.png" alt="SALGADOS R" className="h-12 w-40 rounded-xl object-cover shadow-xl" />
               <button
                 type="button"
                 onClick={close}
