@@ -157,9 +157,9 @@ export function PublicOrderFlow() {
   return (
     <div className="min-h-screen bg-[var(--sr-red-dark)] text-[#1D1D1D]">
       <PublicHeader />
-      <main className="bg-[radial-gradient(circle_at_8%_0,var(--sr-yellow)_0,var(--sr-yellow)_12%,transparent_28%),linear-gradient(180deg,var(--sr-red-dark)_0%,var(--sr-red)_42%,var(--sr-yellow)_100%)] py-5 sm:py-7">
+      <main className="bg-[linear-gradient(180deg,var(--sr-red-dark)_0%,var(--sr-red)_48%,var(--sr-yellow-light)_100%)] py-5 sm:py-7">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-5 flex flex-col gap-4 rounded-[24px] border border-white/15 bg-black/20 p-4 text-white shadow-[var(--sr-shadow-premium)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="mb-5 flex flex-col gap-4 rounded-[24px] border border-white/12 bg-[var(--sr-red-deep)]/70 p-4 text-white shadow-[var(--sr-shadow-premium)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div>
               <a href="/" className="text-sm font-black text-[#FFD21F] transition hover:text-white">← Voltar para a home</a>
               <h1 className="mt-2 text-3xl font-black leading-none tracking-tight text-white sm:text-4xl">
@@ -248,8 +248,8 @@ function MenuView({
   return (
     <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="grid min-w-0 gap-8">
-        <section className="min-w-0 overflow-hidden rounded-[24px] border border-white/15 bg-black/20 p-4 text-white shadow-[var(--sr-shadow-premium)] sm:p-5">
-          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(135deg,var(--sr-red),var(--sr-orange))] p-5 text-white shadow-[0_18px_38px_rgba(17,17,17,0.16)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <section className="min-w-0 overflow-hidden rounded-[24px] border border-white/12 bg-[var(--sr-red-deep)]/64 p-4 text-white shadow-[var(--sr-shadow-premium)] sm:p-5">
+          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.25rem] bg-[var(--sr-red-dark)] p-5 text-white shadow-[0_14px_28px_rgba(17,17,17,0.14)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD51E]">Escolha entre balcao e delivery</p>
               <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight sm:text-4xl">Cardapio digital da Salgados R</h2>
@@ -318,7 +318,7 @@ function MenuView({
                 const canCart = !product.dineInOnly && product.availability !== 'presencial' && product.deliveryEnabled
                 const visual = productVisual(product)
                 return (
-                  <article key={product.id} className={`sr-food-card ${textureClassFor(product)}`}>
+                  <article key={product.id} className="sr-food-card">
                     <div className="sr-food-media">
                       <img
                         src={visual.imageUrl}
@@ -400,7 +400,7 @@ function CartView({
         <div className="mt-4 grid gap-4">
           {cart.length === 0 ? <p className="rounded-2xl bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-black)]">Seu carrinho esta vazio.</p> : null}
           {cart.map((item) => (
-            <article key={item.product.id} className={`rounded-2xl border border-white/15 bg-white/10 p-4 shadow-sm backdrop-blur ${textureClassFor(item.product)}`}>
+            <article key={item.product.id} className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-sm backdrop-blur">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="font-black text-white">{displayNameFor(item.product)}</h3>
@@ -691,14 +691,6 @@ function productVisual(product: ApiProduct) {
   }
 }
 
-function textureClassFor(product: ApiProduct) {
-  if (product.id.includes('pastel')) return 'sr-texture-pastel'
-  if (product.id.includes('coxinha')) return 'sr-texture-coxinha'
-  if (product.id.includes('enroladinho')) return 'sr-texture-enroladinho'
-  if (product.category === 'sucos' || product.category === 'refil') return 'sr-texture-coxinha'
-  return ''
-}
-
 function badgeFor(product: ApiProduct, canCart: boolean) {
   if (!canCart) return 'Presencial'
   if (product.featured) return product.category === 'salgados' ? '⭐ Favorito' : '🔥 Mais vendido'
@@ -747,7 +739,7 @@ function JuiceRules() {
 
 function RefillRules() {
   return (
-    <div className="mb-4 overflow-hidden rounded-[1.75rem] bg-[linear-gradient(135deg,var(--sr-red-dark),var(--sr-red)_58%,var(--sr-orange))] p-5 text-white shadow-[0_22px_58px_rgba(110,0,8,0.28)]">
+    <div className="mb-4 overflow-hidden rounded-[1.5rem] bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)]">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD21F]">Sucos naturais</p>
       <div className="mt-2 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
         <div>

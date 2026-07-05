@@ -5,14 +5,13 @@
   --sr-red-dark: #7b0007;
   --sr-red-deep: #3a0004;
   --sr-yellow: #ffbd0d;
-  --sr-yellow-strong: #ffd21f;
-  --sr-orange: #ff7a00;
+  --sr-yellow-dark: #d89100;
+  --sr-yellow-light: #fff3c4;
   --sr-black: #111111;
-  --sr-cream: #fff3cf;
+  --sr-cream: #fff8e6;
   --sr-radius-xl: 26px;
   --sr-shadow-premium: 0 20px 48px rgba(42, 0, 5, 0.30);
   --sr-shadow-card: 0 18px 44px rgba(42, 0, 5, 0.28);
-  --sr-shadow-glow: 0 0 26px rgba(255, 189, 13, 0.22);
   color: #18181b;
   background: #fafafa;
   font-family:
@@ -38,18 +37,14 @@ body {
 }
 
 .sr-hot-bg {
-  background:
-    radial-gradient(circle at 12% 8%, rgba(255, 189, 13, 0.95) 0 10%, transparent 28%),
-    radial-gradient(circle at 92% 18%, rgba(255, 138, 0, 0.55) 0 10%, transparent 30%),
-    linear-gradient(145deg, var(--sr-red-deep) 0%, var(--sr-red-dark) 40%, var(--sr-red) 100%);
+  background: linear-gradient(180deg, var(--sr-red-dark), var(--sr-red));
 }
 
 .sr-hero-stage {
   position: relative;
   background:
-    radial-gradient(circle at 82% 16%, rgba(255, 210, 31, 0.92) 0 10%, transparent 30%),
-    radial-gradient(circle at 14% 72%, rgba(255, 122, 0, 0.62) 0 12%, transparent 34%),
-    linear-gradient(135deg, var(--sr-red-deep) 0%, var(--sr-red-dark) 34%, var(--sr-red) 100%);
+    linear-gradient(90deg, rgba(58, 0, 4, 0.76), rgba(58, 0, 4, 0.24)),
+    var(--sr-red);
   isolation: isolate;
 }
 
@@ -57,10 +52,7 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background:
-    linear-gradient(120deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px),
-    radial-gradient(circle at 50% 105%, rgba(255, 189, 13, 0.26), transparent 38%);
-  background-size: 22px 22px, auto;
+  background: linear-gradient(180deg, transparent 0%, rgba(58, 0, 4, 0.18) 100%);
   content: "";
   opacity: 0.82;
 }
@@ -68,11 +60,11 @@ body {
 .sr-hero-plate {
   position: absolute;
   inset: 0;
-  min-height: 360px;
+  min-height: 340px;
   border-radius: 34px;
   background:
-    radial-gradient(circle at 50% 50%, rgba(255, 210, 31, 0.74), transparent 42%),
-    linear-gradient(135deg, rgba(255, 189, 13, 0.2), rgba(255, 255, 255, 0.06));
+    linear-gradient(180deg, var(--sr-yellow-light), var(--sr-yellow));
+  box-shadow: var(--sr-shadow-premium);
 }
 
 .sr-hero-plate::after {
@@ -82,7 +74,7 @@ body {
   left: 8%;
   height: 48px;
   border-radius: 999px;
-  background: rgba(20, 0, 0, 0.38);
+  background: rgba(20, 0, 0, 0.22);
   content: "";
   filter: blur(22px);
 }
@@ -97,22 +89,8 @@ body {
 .sr-hero-product-pastel {
   right: 8%;
   bottom: 16%;
-  width: min(58vw, 440px);
+  width: min(56vw, 430px);
   transform: rotate(-7deg);
-}
-
-.sr-hero-product-coxinha {
-  top: 7%;
-  left: 2%;
-  width: min(34vw, 260px);
-  transform: rotate(7deg);
-}
-
-.sr-hero-product-enroladinho {
-  right: 0;
-  top: 10%;
-  width: min(36vw, 285px);
-  transform: rotate(10deg);
 }
 
 .sr-price-burst {
@@ -212,16 +190,13 @@ body {
 .sr-food-card {
   position: relative;
   display: flex;
-  min-height: 360px;
+  min-height: 374px;
   overflow: hidden;
   flex-direction: column;
   border-radius: 24px;
   border: 1px solid rgba(255, 189, 13, 0.34);
-  color: white;
-  background:
-    radial-gradient(circle at 74% 6%, rgba(255, 189, 13, 0.82) 0 9%, transparent 27%),
-    radial-gradient(circle at 8% 28%, rgba(255, 138, 0, 0.32) 0 8%, transparent 25%),
-    linear-gradient(150deg, var(--sr-red-deep) 0%, var(--sr-red-dark) 45%, var(--sr-red) 100%);
+  color: var(--sr-black);
+  background: var(--sr-cream);
   box-shadow: var(--sr-shadow-card);
   isolation: isolate;
   transition:
@@ -234,12 +209,9 @@ body {
   position: absolute;
   inset: 0;
   z-index: -1;
-  background-image:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
-    radial-gradient(circle at 50% 100%, rgba(255, 189, 13, 0.26), transparent 42%);
-  background-size: 18px 18px, auto;
+  background: linear-gradient(180deg, var(--sr-red) 0 44%, transparent 44%);
   content: "";
-  opacity: 0.28;
+  opacity: 1;
 }
 
 .sr-food-card:hover {
@@ -249,7 +221,7 @@ body {
 
 .sr-food-media {
   position: relative;
-  min-height: 190px;
+  min-height: 188px;
   overflow: visible;
 }
 
@@ -260,7 +232,7 @@ body {
   left: 8%;
   height: 24px;
   border-radius: 999px;
-  background: rgba(17, 17, 17, 0.38);
+  background: rgba(17, 17, 17, 0.18);
   content: "";
   filter: blur(18px);
 }
@@ -288,7 +260,7 @@ body {
   left: 14px;
   z-index: 2;
   border-radius: 999px;
-  background: var(--sr-yellow-strong);
+  background: var(--sr-yellow);
   color: var(--sr-black);
   box-shadow: 0 14px 28px rgba(17, 17, 17, 0.2);
   font-size: 0.66rem;
@@ -307,18 +279,18 @@ body {
 }
 
 .sr-food-name {
-  color: #fff;
+  color: var(--sr-black);
   font-size: clamp(1.35rem, 3.5vw, 1.75rem);
   font-weight: 950;
   letter-spacing: -0.04em;
   line-height: 0.98;
-  text-shadow: 0 2px 14px rgba(0, 0, 0, 0.18);
+  text-shadow: none;
 }
 
 .sr-food-description {
   max-width: 24rem;
   overflow: hidden;
-  color: rgba(255, 255, 255, 0.82);
+  color: #5f382e;
   display: -webkit-box;
   font-size: 0.88rem;
   font-weight: 650;
@@ -332,34 +304,13 @@ body {
   width: fit-content;
   align-items: center;
   border-radius: 999px;
-  background: linear-gradient(135deg, var(--sr-yellow-strong), var(--sr-yellow));
+  background: var(--sr-yellow);
   color: var(--sr-black);
   box-shadow: 0 14px 28px rgba(255, 199, 44, 0.34);
   font-size: 1rem;
   font-weight: 950;
   padding: 0.58rem 0.9rem;
   transition: transform 250ms ease, box-shadow 250ms ease;
-}
-
-.sr-texture-pastel::before {
-  background-image:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
-    url("/assets-reais/textura-pastel.png");
-  background-size: 18px 18px, 230px auto;
-}
-
-.sr-texture-coxinha::before {
-  background-image:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
-    url("/assets-reais/textura-coxinha.png");
-  background-size: 18px 18px, 190px auto;
-}
-
-.sr-texture-enroladinho::before {
-  background-image:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
-    url("/assets-reais/textura-enroladinho.png");
-  background-size: 18px 18px, 190px auto;
 }
 
 .sr-official-preview {
@@ -390,8 +341,7 @@ body {
   border: 2px solid rgba(255, 189, 13, 0.42);
   border-radius: 24px;
   background:
-    radial-gradient(circle at 24% 16%, rgba(255, 189, 13, 0.72), transparent 32%),
-    linear-gradient(135deg, var(--sr-red), var(--sr-red-deep));
+    linear-gradient(180deg, var(--sr-red), var(--sr-red-dark));
   box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.10), 0 18px 34px rgba(0, 0, 0, 0.24);
   text-align: center;
 }
@@ -425,23 +375,11 @@ body {
   .sr-hero-product-pastel {
     right: -6%;
     bottom: 18%;
-    width: 74vw;
-  }
-
-  .sr-hero-product-coxinha {
-    top: 6%;
-    left: -4%;
-    width: 42vw;
-  }
-
-  .sr-hero-product-enroladinho {
-    right: -8%;
-    top: 5%;
-    width: 46vw;
+    width: 72vw;
   }
 
   .sr-food-card {
-    min-height: 348px;
+    min-height: 360px;
   }
 
   .sr-food-media {
@@ -464,9 +402,9 @@ body {
   align-items: center;
   justify-content: center;
   border-radius: 16px;
-  background: linear-gradient(135deg, var(--sr-yellow-strong), var(--sr-orange));
-  color: var(--sr-black);
-  box-shadow: 0 18px 34px rgba(255, 138, 0, 0.28);
+  background: var(--sr-red);
+  color: white;
+  box-shadow: 0 14px 26px rgba(123, 0, 7, 0.24);
   font-size: 0.95rem;
   font-weight: 950;
   padding: 0.75rem 1rem;
@@ -478,7 +416,7 @@ body {
 
 .sr-food-action:hover {
   transform: translateY(-2px);
-  box-shadow: 0 22px 42px rgba(255, 138, 0, 0.36);
+  box-shadow: 0 18px 32px rgba(123, 0, 7, 0.30);
   filter: saturate(1.08);
 }
 

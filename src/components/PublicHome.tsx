@@ -10,10 +10,10 @@ const realAssets = {
 }
 
 const categories = [
-  { label: 'Pasteis', href: '/cardapio?categoria=pasteis', image: realAssets.pastel, text: 'Massa crocante' },
-  { label: 'Salgados', href: '/cardapio?categoria=salgados', image: realAssets.coxinha, text: 'Quentinhos' },
-  { label: 'Sucos', href: '/cardapio?categoria=sucos', image: realAssets.logo, text: 'Goiaba e maracujá' },
-  { label: 'Refil', href: '/cardapio?categoria=refil', image: realAssets.logo, text: 'A partir de R$ 4,00' },
+  { label: 'Pasteis', href: '/cardapio?categoria=pasteis', mark: 'P', text: 'Massa crocante' },
+  { label: 'Salgados', href: '/cardapio?categoria=salgados', mark: 'S', text: 'Quentinhos' },
+  { label: 'Sucos', href: '/cardapio?categoria=sucos', mark: 'J', text: 'Goiaba e maracujá' },
+  { label: 'Refil', href: '/cardapio?categoria=refil', mark: 'R', text: 'A partir de R$ 4,00' },
 ]
 
 const featured = [
@@ -23,7 +23,6 @@ const featured = [
     price: 'R$ 5,00',
     href: '/cardapio?produto=pastel-carne',
     imageUrl: realAssets.pastel,
-    textureClass: 'sr-texture-pastel',
   },
   {
     name: 'Coxinha',
@@ -31,7 +30,6 @@ const featured = [
     price: 'R$ 4,00',
     href: '/cardapio?produto=coxinha',
     imageUrl: realAssets.coxinha,
-    textureClass: 'sr-texture-coxinha',
   },
   {
     name: 'Enroladinho',
@@ -39,7 +37,6 @@ const featured = [
     price: 'R$ 4,00',
     href: '/cardapio?produto=enroladinho',
     imageUrl: realAssets.enroladinho,
-    textureClass: 'sr-texture-enroladinho',
   },
   {
     name: 'Suco Natural',
@@ -47,7 +44,6 @@ const featured = [
     price: 'A partir de R$ 4,00',
     href: '/cardapio?produto=suco-natural-garrafinha-300ml',
     imageUrl: realAssets.logo,
-    textureClass: 'sr-juice-card',
   },
 ]
 
@@ -106,11 +102,9 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative min-h-[330px] lg:min-h-[440px]">
+        <div className="relative min-h-[300px] lg:min-h-[390px]">
           <div className="sr-hero-plate">
             <img src={realAssets.pastel} alt="Pastel crocante da Salgados R" className="sr-hero-product sr-hero-product-pastel" />
-            <img src={realAssets.coxinha} alt="Coxinha da Salgados R" className="sr-hero-product sr-hero-product-coxinha" />
-            <img src={realAssets.enroladinho} alt="Enroladinho da Salgados R" className="sr-hero-product sr-hero-product-enroladinho" />
             <div className="sr-price-burst">
               <span>A partir de</span>
               <strong>R$ 4,00</strong>
@@ -129,7 +123,9 @@ function CategoryStripHome() {
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
             <a key={category.label} href={category.href} className="group sr-category-tile">
-              <img src={category.image} alt="" className="h-16 w-20 object-contain drop-shadow-[0_12px_16px_rgba(0,0,0,0.22)] transition group-hover:scale-105" />
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--sr-yellow-light)] text-lg font-black text-[var(--sr-red-dark)]">
+                {category.mark}
+              </span>
               <span>
                 <strong>{category.label}</strong>
                 <small>{category.text}</small>
@@ -158,7 +154,7 @@ function FeaturedHome() {
 
         <div className="mt-7 grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {featured.map((item) => (
-            <article key={item.name} className={`sr-food-card ${item.textureClass}`}>
+            <article key={item.name} className="sr-food-card">
               <div className="sr-food-media">
                 <img src={item.imageUrl} alt={item.name} width="900" height="640" loading="lazy" className="sr-food-image" />
                 <span className="sr-food-badge">Mais pedido</span>
@@ -222,7 +218,7 @@ function HowItWorksHome() {
 
 function RefillBannerHome() {
   return (
-    <section id="refil" className="scroll-mt-20 bg-[linear-gradient(180deg,var(--sr-yellow),var(--sr-orange))] pb-12">
+    <section id="refil" className="scroll-mt-20 bg-[var(--sr-yellow-light)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-5 overflow-hidden rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-6 text-white shadow-[var(--sr-shadow-premium)] sm:p-8 lg:grid-cols-[1fr_260px] lg:items-center">
           <div>

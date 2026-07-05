@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salgados-r-v20260705-fix-visual-10-final'
+const CACHE_NAME = 'salgados-r-v20260705-art-direction-fix-final'
 const CORE_ASSETS = ['/', '/manifest.webmanifest', '/icon.svg']
 
 self.addEventListener('install', (event) => {
