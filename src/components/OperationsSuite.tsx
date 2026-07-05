@@ -11,6 +11,7 @@ import {
   formatCurrency,
 } from '../utils/api'
 import { buildOrderWhatsAppUrl } from '../utils/whatsapp'
+import { ProductionCalculator } from './ProductionCalculator'
 
 const tabs = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -18,6 +19,7 @@ const tabs = [
   { id: 'cozinha', label: 'Cozinha' },
   { id: 'produtos', label: 'Produtos' },
   { id: 'estoque', label: 'Estoque' },
+  { id: 'calculos', label: 'Calculadora', roles: ['SUPER_US', 'ADMIN', 'GERENTE'] },
   { id: 'clientes', label: 'Clientes' },
   { id: 'caixa', label: 'Caixa' },
   { id: 'relatorios', label: 'Relatorios' },
@@ -72,7 +74,10 @@ export function OperationsSuite() {
           return
         }
         return refresh()
-          .then(() => setUser({ id: 'session', name: 'Sessao ativa', email: '', role: 'ADMIN' }))
+          .then(async () => {
+            const sessionUser = await api.me()
+            setUser(sessionUser)
+          })
           .catch((error: Error) => {
             api.token.clear()
             setMessage(error.message)
@@ -138,7 +143,7 @@ export function OperationsSuite() {
 
         {user ? (
           <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
-            {tabs.map((tab) => (
+            {tabs.filter((tab) => !('roles' in tab) || (tab.roles as readonly string[]).includes(user.role)).map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -174,6 +179,9 @@ export function OperationsSuite() {
           {!loading && user && activeTab === 'estoque' ? (
             <StockPanel stock={stock} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
+          {!loading && user && activeTab === 'calculos' ? (
+            <ProductionCalculator products={products} user={user} setMessage={setMessage} />
+          ) : null}
           {!loading && user && activeTab === 'clientes' ? <SimpleListPanel title="Clientes" items={customers} empty="Ainda nao ha clientes cadastrados." /> : null}
           {!loading && user && activeTab === 'caixa' ? <FinancePanel finance={finance} onUpdated={refresh} setMessage={setMessage} /> : null}
           {!loading && user && activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
@@ -189,6 +197,7 @@ function pathToTab(path: string): TabId {
   if (path.includes('/pedidos')) return 'pedidos'
   if (path.includes('/produtos')) return 'produtos'
   if (path.includes('/estoque')) return 'estoque'
+  if (path.includes('/calculos') || path.includes('/producao')) return 'calculos'
   if (path.includes('/clientes')) return 'clientes'
   if (path.includes('/financeiro') || path.includes('/caixa')) return 'caixa'
   if (path.includes('/relatorios')) return 'relatorios'

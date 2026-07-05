@@ -31,7 +31,7 @@ app.use((req, res, next) => {
     res.setHeader('Vary', 'Origin')
   }
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization')
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, OPTIONS')
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PATCH, DELETE, OPTIONS')
   if (req.method === 'OPTIONS') return res.sendStatus(204)
   next()
 })
@@ -86,8 +86,8 @@ const stockSeed = [
 
 const permissions = {
   SUPER_US: ['*'],
-  ADMIN: ['products', 'orders', 'stock', 'reports', 'users', 'finance', 'audit', 'printing', 'settings', 'security'],
-  GERENTE: ['products', 'orders', 'stock', 'reports', 'finance', 'printing', 'settings'],
+  ADMIN: ['products', 'orders', 'stock', 'reports', 'users', 'finance', 'audit', 'printing', 'settings', 'security', 'production'],
+  GERENTE: ['products', 'orders', 'stock', 'reports', 'finance', 'printing', 'settings', 'production'],
   ATENDENTE: ['orders'],
 }
 
@@ -114,6 +114,178 @@ function productDto(row) {
     sortOrder: Number(row.sort_order || 0),
     active: row.active,
   }
+}
+
+const productionUnits = ['unidade', 'litro', 'ml', 'cento', 'pacote', 'kg', 'g']
+const productionRoundingModes = ['proporcional', 'cima', 'baixo']
+
+function safeNumber(value, fallback = 0) {
+  const parsed = Number(String(value ?? '').replace(',', '.'))
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function safeNonNegative(value, fallback = 0) {
+  return Math.max(0, safeNumber(value, fallback))
+}
+
+function safeCents(value, fallback = 0) {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed)) return fallback
+  return Math.max(0, Math.round(parsed))
+}
+
+function productionItemDto(row) {
+  const quantity = Number(row.quantity || 0)
+  const salePriceCents = row.sale_price_cents || 0
+  const unitCostCents = row.estimated_unit_cost_cents
+  return {
+    id: row.id,
+    forecastId: row.forecast_id,
+    productId: row.product_id,
+    customName: row.custom_name,
+    category: row.category,
+    unit: row.unit,
+    quantity,
+    salePriceCents,
+    salePrice: money(salePriceCents),
+    estimatedUnitCostCents: unitCostCents,
+    estimatedUnitCost: unitCostCents === null || unitCostCents === undefined ? null : money(unitCostCents),
+    notes: row.notes || '',
+    sortOrder: Number(row.sort_order || 0),
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  }
+}
+
+function calculateProductionSummary(items, options = {}) {
+  const roundingMode = productionRoundingModes.includes(options.roundingMode) ? options.roundingMode : 'proporcional'
+  const byCategory = {}
+  let revenueTotalCents = 0
+  let costTotalCents = 0
+  let profitTotalCents = 0
+  let totalUnits = 0
+  let totalMl = 0
+  let missingCostCount = 0
+
+  const calculatedItems = items.map((item) => {
+    const quantity = safeNonNegative(item.quantity)
+    const unit = productionUnits.includes(item.unit) ? item.unit : 'unidade'
+    const salePriceCents = safeCents(item.salePriceCents ?? item.sale_price_cents)
+    const unitCostRaw = item.estimatedUnitCostCents ?? item.estimated_unit_cost_cents
+    const hasCost = unitCostRaw !== null && unitCostRaw !== undefined && unitCostRaw !== ''
+    const estimatedUnitCostCents = hasCost ? safeCents(unitCostRaw) : null
+    const revenueCents = Math.round(quantity * salePriceCents)
+    const costCents = hasCost ? Math.round(quantity * estimatedUnitCostCents) : null
+    const profitCents = hasCost ? revenueCents - costCents : null
+    const marginPercent = revenueCents > 0 && profitCents !== null ? (profitCents / revenueCents) * 100 : null
+    const category = item.category || 'outros'
+    const ml = unit === 'litro' ? quantity * 1000 : unit === 'ml' ? quantity : 0
+    const bottleRaw = ml > 0 ? ml / 300 : null
+    const bottleEquivalent =
+      bottleRaw === null ? null : roundingMode === 'cima' ? Math.ceil(bottleRaw) : roundingMode === 'baixo' ? Math.floor(bottleRaw) : bottleRaw
+
+    revenueTotalCents += revenueCents
+    if (hasCost) {
+      costTotalCents += costCents
+      profitTotalCents += profitCents
+    } else {
+      missingCostCount += 1
+    }
+    if (unit === 'unidade' || unit === 'cento' || unit === 'pacote') totalUnits += quantity
+    totalMl += ml
+
+    byCategory[category] ||= {
+      category,
+      revenueTotalCents: 0,
+      revenueTotal: 0,
+      costTotalCents: 0,
+      costTotal: 0,
+      profitTotalCents: 0,
+      profitTotal: 0,
+      quantity: 0,
+      itemsCount: 0,
+      missingCostCount: 0,
+    }
+    byCategory[category].revenueTotalCents += revenueCents
+    if (hasCost) {
+      byCategory[category].costTotalCents += costCents
+      byCategory[category].profitTotalCents += profitCents
+    } else {
+      byCategory[category].missingCostCount += 1
+    }
+    byCategory[category].quantity += quantity
+    byCategory[category].itemsCount += 1
+
+    return {
+      ...item,
+      quantity,
+      unit,
+      salePriceCents,
+      salePrice: money(salePriceCents),
+      estimatedUnitCostCents,
+      estimatedUnitCost: estimatedUnitCostCents === null ? null : money(estimatedUnitCostCents),
+      revenueCents,
+      revenue: money(revenueCents),
+      costCents,
+      cost: costCents === null ? null : money(costCents),
+      profitCents,
+      profit: profitCents === null ? null : money(profitCents),
+      marginPercent,
+      bottleEquivalent,
+      bottleNote:
+        bottleRaw === null ? '' : `${quantity} ${unit} equivalem aproximadamente a ${bottleRaw.toFixed(2).replace('.', ',')} garrafinhas de 300 ml.`,
+    }
+  })
+
+  const byCategoryList = Object.values(byCategory).map((item) => ({
+    ...item,
+    revenueTotal: money(item.revenueTotalCents),
+    costTotal: money(item.costTotalCents),
+    profitTotal: money(item.profitTotalCents),
+  }))
+  const marginPercent = revenueTotalCents > 0 && missingCostCount < items.length ? (profitTotalCents / revenueTotalCents) * 100 : null
+
+  return {
+    revenueTotalCents,
+    revenueTotal: money(revenueTotalCents),
+    costTotalCents,
+    costTotal: money(costTotalCents),
+    profitTotalCents,
+    profitTotal: money(profitTotalCents),
+    marginPercent,
+    totalUnits,
+    totalMl,
+    totalLiters: totalMl / 1000,
+    itemsCount: items.length,
+    missingCostCount,
+    byCategory: byCategoryList,
+    importantItems: [...calculatedItems].sort((a, b) => b.revenueCents - a.revenueCents).slice(0, 5),
+    items: calculatedItems,
+  }
+}
+
+async function productionForecastDto(row, includeItems = false) {
+  const forecast = {
+    id: row.id,
+    name: row.name,
+    weekday: row.weekday,
+    dateReference: row.date_reference,
+    scenario: row.scenario,
+    notes: row.notes || '',
+    roundingMode: row.rounding_mode || 'proporcional',
+    createdBy: row.created_by,
+    updatedBy: row.updated_by,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+    items: [],
+  }
+
+  const items = includeItems
+    ? await query('SELECT * FROM production_forecast_items WHERE forecast_id = $1 ORDER BY sort_order, created_at, id', [row.id])
+    : { rows: [] }
+  const itemDtos = items.rows.map(productionItemDto)
+  const summary = calculateProductionSummary(itemDtos, { roundingMode: forecast.roundingMode })
+  return includeItems ? { ...forecast, items: itemDtos, summary } : { ...forecast, summary }
 }
 
 function userDto(row) {
@@ -412,6 +584,49 @@ async function initDb() {
       message TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS production_forecasts (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      weekday TEXT NOT NULL,
+      date_reference DATE,
+      scenario TEXT NOT NULL DEFAULT 'Personalizado',
+      notes TEXT NOT NULL DEFAULT '',
+      rounding_mode TEXT NOT NULL DEFAULT 'proporcional',
+      created_by TEXT,
+      updated_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS production_forecast_items (
+      id TEXT PRIMARY KEY,
+      forecast_id TEXT NOT NULL REFERENCES production_forecasts(id) ON DELETE CASCADE,
+      product_id TEXT REFERENCES products(id) ON DELETE SET NULL,
+      custom_name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      unit TEXT NOT NULL,
+      quantity NUMERIC NOT NULL DEFAULT 0,
+      sale_price_cents INTEGER NOT NULL DEFAULT 0,
+      estimated_unit_cost_cents INTEGER,
+      notes TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS production_item_templates (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      category TEXT NOT NULL,
+      unit TEXT NOT NULL,
+      default_sale_price_cents INTEGER NOT NULL DEFAULT 0,
+      default_estimated_unit_cost_cents INTEGER,
+      product_id TEXT REFERENCES products(id) ON DELETE SET NULL,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `)
 
   await query('ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS ip_address TEXT')
@@ -500,6 +715,61 @@ async function initDb() {
         `INSERT INTO stock_items (id, name, unit, quantity, min_quantity)
          VALUES ($1, $2, $3, $4, $5)`,
         [randomUUID(), ...item],
+      )
+    }
+  }
+
+  const templateCount = await query('SELECT COUNT(*)::int AS total FROM production_item_templates')
+  if (templateCount.rows[0].total === 0) {
+    for (const product of productsSeed) {
+      await query(
+        `INSERT INTO production_item_templates (
+          id, name, category, unit, default_sale_price_cents, default_estimated_unit_cost_cents, product_id
+        ) VALUES ($1, $2, $3, $4, $5, NULL, $6)
+        ON CONFLICT (id) DO NOTHING`,
+        [randomUUID(), product[1], product[2], product[2] === 'sucos' || product[2] === 'refil' ? 'litro' : 'unidade', product[4], product[0]],
+      )
+    }
+  }
+
+  const forecastCount = await query('SELECT COUNT(*)::int AS total FROM production_forecasts')
+  if (forecastCount.rows[0].total === 0) {
+    const forecastId = randomUUID()
+    await query(
+      `INSERT INTO production_forecasts (id, name, weekday, scenario, notes, rounding_mode)
+       VALUES ($1, 'Exemplo Segunda-feira', 'segunda', 'Segunda normal', 'Modelo inicial para previsao de producao.', 'proporcional')`,
+      [forecastId],
+    )
+    const juiceLiterPrice = Math.round(400 / 0.3)
+    const exampleItems = [
+      ['pastel-frango', 'Pastel de Frango', 'pasteis', 'unidade', 20, 500],
+      ['pastel-carne', 'Pastel de Carne', 'pasteis', 'unidade', 15, 500],
+      ['pastel-misto', 'Pastel Misto', 'pasteis', 'unidade', 12, 500],
+      ['pastel-frango-queijo', 'Pastel de Frango com Queijo', 'pasteis', 'unidade', 10, 700],
+      ['pastel-calabresa-queijo', 'Pastel de Calabresa com Queijo', 'pasteis', 'unidade', 10, 600],
+      ['coxinha', 'Coxinha', 'salgados', 'unidade', 5, 400],
+      ['enroladinho', 'Enroladinho', 'salgados', 'unidade', 3, 400],
+      [null, 'Suco de Maracuja', 'sucos', 'litro', 2, juiceLiterPrice],
+      [null, 'Suco de Goiaba', 'sucos', 'litro', 2, juiceLiterPrice],
+    ]
+    for (const [index, item] of exampleItems.entries()) {
+      await query(
+        `INSERT INTO production_forecast_items (
+          id, forecast_id, product_id, custom_name, category, unit, quantity, sale_price_cents,
+          estimated_unit_cost_cents, notes, sort_order
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NULL, $9, $10)`,
+        [
+          randomUUID(),
+          forecastId,
+          item[0],
+          item[1],
+          item[2],
+          item[3],
+          item[4],
+          item[5],
+          item[3] === 'litro' ? 'Preco equivalente da garrafinha 300 ml por R$ 4,00.' : '',
+          index,
+        ],
       )
     }
   }
@@ -722,6 +992,256 @@ app.patch('/api/products/:id/availability', auth('products'), async (req, res) =
   )
   await audit(req, 'availability', 'products', req.params.id, productDto(row), productDto(updated.rows[0]))
   res.json(productDto(updated.rows[0]))
+})
+
+function normalizeProductionItem(item, index = 0) {
+  const name = String(item.customName || item.name || '').trim()
+  const category = String(item.category || 'outros').trim()
+  const unit = productionUnits.includes(item.unit) ? item.unit : 'unidade'
+  const quantity = safeNonNegative(item.quantity)
+  const salePriceCents = safeCents(item.salePriceCents ?? item.sale_price_cents)
+  const hasCost = item.estimatedUnitCostCents !== null && item.estimatedUnitCostCents !== undefined && item.estimatedUnitCostCents !== ''
+  const estimatedUnitCostCents = hasCost ? safeCents(item.estimatedUnitCostCents ?? item.estimated_unit_cost_cents) : null
+  if (!name) throw new Error('Informe o nome do item.')
+  if (!category) throw new Error('Informe a categoria do item.')
+  return {
+    id: item.id || randomUUID(),
+    productId: item.productId || item.product_id || null,
+    customName: name,
+    category,
+    unit,
+    quantity,
+    salePriceCents,
+    estimatedUnitCostCents,
+    notes: String(item.notes || ''),
+    sortOrder: Number.isInteger(item.sortOrder) ? item.sortOrder : index,
+  }
+}
+
+async function replaceForecastItems(forecastId, items) {
+  await query('DELETE FROM production_forecast_items WHERE forecast_id = $1', [forecastId])
+  for (const [index, rawItem] of (items || []).entries()) {
+    const item = normalizeProductionItem(rawItem, index)
+    await query(
+      `INSERT INTO production_forecast_items (
+        id, forecast_id, product_id, custom_name, category, unit, quantity, sale_price_cents,
+        estimated_unit_cost_cents, notes, sort_order
+      ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)`,
+      [
+        item.id,
+        forecastId,
+        item.productId,
+        item.customName,
+        item.category,
+        item.unit,
+        item.quantity,
+        item.salePriceCents,
+        item.estimatedUnitCostCents,
+        item.notes,
+        item.sortOrder,
+      ],
+    )
+  }
+}
+
+app.get('/api/admin/production-forecasts', auth('production'), async (_req, res) => {
+  const result = await query('SELECT * FROM production_forecasts ORDER BY updated_at DESC, created_at DESC')
+  const forecasts = await Promise.all(result.rows.map((row) => productionForecastDto(row, true)))
+  res.json(forecasts)
+})
+
+app.get('/api/admin/production-forecasts/weekday/:weekday', auth('production'), async (req, res) => {
+  const result = await query('SELECT * FROM production_forecasts WHERE weekday = $1 ORDER BY updated_at DESC', [req.params.weekday])
+  const forecasts = await Promise.all(result.rows.map((row) => productionForecastDto(row, true)))
+  res.json(forecasts)
+})
+
+app.post('/api/admin/production-forecasts', auth('production'), async (req, res) => {
+  const name = String(req.body.name || '').trim()
+  const weekday = String(req.body.weekday || '').trim()
+  if (!name || !weekday) return res.status(400).json({ error: 'Informe nome e dia da semana.' })
+  const roundingMode = productionRoundingModes.includes(req.body.roundingMode) ? req.body.roundingMode : 'proporcional'
+  try {
+    ;(req.body.items || []).forEach((item, index) => normalizeProductionItem(item, index))
+  } catch (error) {
+    return res.status(400).json({ error: error.message || 'Item invalido.' })
+  }
+  const created = await query(
+    `INSERT INTO production_forecasts (
+      id, name, weekday, date_reference, scenario, notes, rounding_mode, created_by, updated_by
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
+    RETURNING *`,
+    [
+      randomUUID(),
+      name,
+      weekday,
+      req.body.dateReference || null,
+      req.body.scenario || 'Personalizado',
+      req.body.notes || '',
+      roundingMode,
+      req.user.id,
+    ],
+  )
+  await replaceForecastItems(created.rows[0].id, req.body.items || [])
+  const dto = await productionForecastDto(created.rows[0], true)
+  await audit(req, 'create', 'production_forecasts', created.rows[0].id, null, { name, weekday, items: dto.items.length })
+  res.status(201).json(dto)
+})
+
+app.get('/api/admin/production-forecasts/:id', auth('production'), async (req, res) => {
+  const result = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
+  if (!result.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
+  res.json(await productionForecastDto(result.rows[0], true))
+})
+
+app.patch('/api/admin/production-forecasts/:id', auth('production'), async (req, res) => {
+  const current = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
+  try {
+    if (req.body.items) req.body.items.forEach((item, index) => normalizeProductionItem(item, index))
+  } catch (error) {
+    return res.status(400).json({ error: error.message || 'Item invalido.' })
+  }
+  const row = current.rows[0]
+  const roundingMode = productionRoundingModes.includes(req.body.roundingMode) ? req.body.roundingMode : row.rounding_mode
+  const updated = await query(
+    `UPDATE production_forecasts
+     SET name = $1, weekday = $2, date_reference = $3, scenario = $4, notes = $5,
+         rounding_mode = $6, updated_by = $7, updated_at = NOW()
+     WHERE id = $8
+     RETURNING *`,
+    [
+      req.body.name ?? row.name,
+      req.body.weekday ?? row.weekday,
+      req.body.dateReference ?? row.date_reference,
+      req.body.scenario ?? row.scenario,
+      req.body.notes ?? row.notes,
+      roundingMode,
+      req.user.id,
+      req.params.id,
+    ],
+  )
+  if (req.body.items) await replaceForecastItems(req.params.id, req.body.items)
+  const dto = await productionForecastDto(updated.rows[0], true)
+  await audit(req, 'update', 'production_forecasts', req.params.id, row, { name: dto.name, weekday: dto.weekday, items: dto.items.length })
+  res.json(dto)
+})
+
+app.delete('/api/admin/production-forecasts/:id', auth('production'), async (req, res) => {
+  const current = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
+  await query('DELETE FROM production_forecasts WHERE id = $1', [req.params.id])
+  await audit(req, 'delete', 'production_forecasts', req.params.id, current.rows[0], null)
+  res.json({ ok: true })
+})
+
+app.post('/api/admin/production-forecasts/:id/duplicate', auth('production'), async (req, res) => {
+  const current = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
+  const source = await productionForecastDto(current.rows[0], true)
+  const created = await query(
+    `INSERT INTO production_forecasts (
+      id, name, weekday, date_reference, scenario, notes, rounding_mode, created_by, updated_by
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $8)
+    RETURNING *`,
+    [
+      randomUUID(),
+      req.body.name || `${source.name} (copia)`,
+      req.body.weekday || source.weekday,
+      req.body.dateReference || null,
+      req.body.scenario || source.scenario,
+      source.notes,
+      source.roundingMode,
+      req.user.id,
+    ],
+  )
+  await replaceForecastItems(created.rows[0].id, source.items)
+  const dto = await productionForecastDto(created.rows[0], true)
+  await audit(req, 'duplicate', 'production_forecasts', created.rows[0].id, { sourceId: req.params.id }, { name: dto.name, weekday: dto.weekday })
+  res.status(201).json(dto)
+})
+
+app.get('/api/admin/production-forecasts/:id/summary', auth('production'), async (req, res) => {
+  const result = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
+  if (!result.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
+  const dto = await productionForecastDto(result.rows[0], true)
+  res.json(dto.summary)
+})
+
+app.get('/api/admin/production-item-templates', auth('production'), async (_req, res) => {
+  const result = await query('SELECT * FROM production_item_templates ORDER BY category, name')
+  res.json(
+    result.rows.map((row) => ({
+      id: row.id,
+      name: row.name,
+      category: row.category,
+      unit: row.unit,
+      defaultSalePriceCents: row.default_sale_price_cents,
+      defaultSalePrice: money(row.default_sale_price_cents),
+      defaultEstimatedUnitCostCents: row.default_estimated_unit_cost_cents,
+      defaultEstimatedUnitCost:
+        row.default_estimated_unit_cost_cents === null ? null : money(row.default_estimated_unit_cost_cents),
+      productId: row.product_id,
+      active: row.active,
+    })),
+  )
+})
+
+app.post('/api/admin/production-item-templates', auth('production'), async (req, res) => {
+  const name = String(req.body.name || '').trim()
+  if (!name) return res.status(400).json({ error: 'Informe o nome do template.' })
+  const created = await query(
+    `INSERT INTO production_item_templates (
+      id, name, category, unit, default_sale_price_cents, default_estimated_unit_cost_cents, product_id
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+    RETURNING *`,
+    [
+      randomUUID(),
+      name,
+      req.body.category || 'outros',
+      productionUnits.includes(req.body.unit) ? req.body.unit : 'unidade',
+      safeCents(req.body.defaultSalePriceCents),
+      req.body.defaultEstimatedUnitCostCents === null || req.body.defaultEstimatedUnitCostCents === undefined
+        ? null
+        : safeCents(req.body.defaultEstimatedUnitCostCents),
+      req.body.productId || null,
+    ],
+  )
+  await audit(req, 'create', 'production_item_templates', created.rows[0].id, null, created.rows[0])
+  res.status(201).json(created.rows[0])
+})
+
+app.patch('/api/admin/production-item-templates/:id', auth('production'), async (req, res) => {
+  const current = await query('SELECT * FROM production_item_templates WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Template nao encontrado.' })
+  const row = current.rows[0]
+  const updated = await query(
+    `UPDATE production_item_templates
+     SET name = $1, category = $2, unit = $3, default_sale_price_cents = $4,
+         default_estimated_unit_cost_cents = $5, product_id = $6, active = $7, updated_at = NOW()
+     WHERE id = $8
+     RETURNING *`,
+    [
+      req.body.name ?? row.name,
+      req.body.category ?? row.category,
+      productionUnits.includes(req.body.unit) ? req.body.unit : row.unit,
+      Number.isInteger(req.body.defaultSalePriceCents) ? safeCents(req.body.defaultSalePriceCents) : row.default_sale_price_cents,
+      req.body.defaultEstimatedUnitCostCents === undefined ? row.default_estimated_unit_cost_cents : req.body.defaultEstimatedUnitCostCents === null ? null : safeCents(req.body.defaultEstimatedUnitCostCents),
+      req.body.productId ?? row.product_id,
+      typeof req.body.active === 'boolean' ? req.body.active : row.active,
+      req.params.id,
+    ],
+  )
+  await audit(req, 'update', 'production_item_templates', req.params.id, row, updated.rows[0])
+  res.json(updated.rows[0])
+})
+
+app.delete('/api/admin/production-item-templates/:id', auth('production'), async (req, res) => {
+  const current = await query('SELECT * FROM production_item_templates WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Template nao encontrado.' })
+  await query('UPDATE production_item_templates SET active = FALSE, updated_at = NOW() WHERE id = $1', [req.params.id])
+  await audit(req, 'delete', 'production_item_templates', req.params.id, current.rows[0], { active: false })
+  res.json({ ok: true })
 })
 
 app.get('/api/categories', async (_req, res) => {

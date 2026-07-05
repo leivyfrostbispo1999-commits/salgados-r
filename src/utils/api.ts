@@ -114,6 +114,92 @@ export type SecurityStatus = {
   recentLoginFailures: unknown[]
 }
 
+export type ProductionUnit = 'unidade' | 'litro' | 'ml' | 'cento' | 'pacote' | 'kg' | 'g'
+export type ProductionRoundingMode = 'proporcional' | 'cima' | 'baixo'
+
+export type ProductionForecastItem = {
+  id?: string
+  forecastId?: string
+  productId: string | null
+  customName: string
+  category: string
+  unit: ProductionUnit
+  quantity: number
+  salePriceCents: number
+  salePrice?: number
+  estimatedUnitCostCents: number | null
+  estimatedUnitCost?: number | null
+  notes: string
+  sortOrder: number
+  revenueCents?: number
+  revenue?: number
+  costCents?: number | null
+  cost?: number | null
+  profitCents?: number | null
+  profit?: number | null
+  marginPercent?: number | null
+  bottleEquivalent?: number | null
+  bottleNote?: string
+}
+
+export type ProductionForecastSummary = {
+  revenueTotalCents: number
+  revenueTotal: number
+  costTotalCents: number
+  costTotal: number
+  profitTotalCents: number
+  profitTotal: number
+  marginPercent: number | null
+  totalUnits: number
+  totalMl: number
+  totalLiters: number
+  itemsCount: number
+  missingCostCount: number
+  byCategory: Array<{
+    category: string
+    revenueTotalCents: number
+    revenueTotal: number
+    costTotalCents: number
+    costTotal: number
+    profitTotalCents: number
+    profitTotal: number
+    quantity: number
+    itemsCount: number
+    missingCostCount: number
+  }>
+  importantItems: ProductionForecastItem[]
+  items: ProductionForecastItem[]
+}
+
+export type ProductionForecast = {
+  id: string
+  name: string
+  weekday: string
+  dateReference: string | null
+  scenario: string
+  notes: string
+  roundingMode: ProductionRoundingMode
+  createdBy?: string
+  updatedBy?: string
+  createdAt?: string
+  updatedAt?: string
+  items: ProductionForecastItem[]
+  summary: ProductionForecastSummary
+}
+
+export type ProductionItemTemplate = {
+  id: string
+  name: string
+  category: string
+  unit: ProductionUnit
+  defaultSalePriceCents: number
+  defaultSalePrice: number
+  defaultEstimatedUnitCostCents: number | null
+  defaultEstimatedUnitCost: number | null
+  productId: string | null
+  active: boolean
+}
+
 const tokenStore = {
   get: () => localStorage.getItem('salgados-r-token') || '',
   set: (token: string) => localStorage.setItem('salgados-r-token', token),
@@ -219,6 +305,17 @@ export const api = {
   notifications: () => request<unknown[]>('/notifications'),
   backupsStatus: () => request<unknown>('/backups/status'),
   securityStatus: () => request<SecurityStatus>('/security/status'),
+  productionForecasts: () => request<ProductionForecast[]>('/admin/production-forecasts'),
+  productionForecast: (id: string) => request<ProductionForecast>(`/admin/production-forecasts/${id}`),
+  createProductionForecast: (payload: Partial<ProductionForecast> & { items: ProductionForecastItem[] }) =>
+    request<ProductionForecast>('/admin/production-forecasts', { method: 'POST', body: JSON.stringify(payload) }),
+  updateProductionForecast: (id: string, payload: Partial<ProductionForecast> & { items?: ProductionForecastItem[] }) =>
+    request<ProductionForecast>(`/admin/production-forecasts/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  deleteProductionForecast: (id: string) =>
+    request<{ ok: boolean }>(`/admin/production-forecasts/${id}`, { method: 'DELETE' }),
+  duplicateProductionForecast: (id: string, payload: { name?: string; weekday?: string; dateReference?: string | null }) =>
+    request<ProductionForecast>(`/admin/production-forecasts/${id}/duplicate`, { method: 'POST', body: JSON.stringify(payload) }),
+  productionTemplates: () => request<ProductionItemTemplate[]>('/admin/production-item-templates'),
   settings: () => request<{ delivery?: DeliverySettings }>('/settings'),
   updateSettings: (payload: { delivery: DeliverySettings }) =>
     request<{ delivery?: DeliverySettings }>('/settings', { method: 'PATCH', body: JSON.stringify(payload) }),
