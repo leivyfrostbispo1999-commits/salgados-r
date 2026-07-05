@@ -153,6 +153,7 @@ export function PublicOrderFlow() {
   }
 
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
+  const pageTitle = path.startsWith('/checkout') ? 'Checkout' : path.startsWith('/carrinho') ? 'Carrinho' : 'Cardapio'
 
   return (
     <div className="min-h-screen bg-[var(--sr-red-dark)] text-[#1D1D1D]">
@@ -161,9 +162,21 @@ export function PublicOrderFlow() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
           <div className="mb-5 flex flex-col gap-4 rounded-[24px] border border-white/12 bg-[var(--sr-red-deep)]/70 p-4 text-white shadow-[var(--sr-shadow-premium)] backdrop-blur sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div>
-              <a href="/" className="text-sm font-black text-[#FFD21F] transition hover:text-white">← Voltar para a home</a>
+              <nav className="flex flex-wrap items-center gap-2 text-sm font-black" aria-label="Breadcrumb">
+                <a href="/" className="rounded-full bg-white/10 px-3 py-1.5 text-[var(--sr-yellow)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)]">
+                  Inicio
+                </a>
+                <span className="text-white/45">/</span>
+                <span className="text-white/82">{pageTitle}</span>
+              </nav>
+              <a
+                href="/"
+                className="mt-3 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+              >
+                ← Voltar para a loja
+              </a>
               <h1 className="mt-2 text-3xl font-black leading-none tracking-tight text-white sm:text-4xl">
-                {path.startsWith('/checkout') ? 'Checkout' : path.startsWith('/carrinho') ? 'Carrinho' : 'Cardapio'}
+                {pageTitle}
               </h1>
               <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-white/80">
                 Cardapio visual, produtos destacados e pedido rapido.
@@ -226,7 +239,6 @@ function MenuView({
     { id: 'pasteis', label: 'Pasteis' },
     { id: 'salgados', label: 'Salgados' },
     { id: 'sucos', label: 'Sucos' },
-    { id: 'oficial', label: 'Cardapio oficial' },
     { id: 'refil', label: 'Refil' },
   ]
   const grouped = useMemo(
@@ -258,7 +270,7 @@ function MenuView({
               </p>
             </div>
             <a href="/cardapio-oficial" className="w-full rounded-full border border-white/35 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white hover:text-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 sm:w-auto">
-              Ver imagem oficial
+              Ver tabela de precos
             </a>
           </div>
           <div className="grid min-w-0 gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
@@ -269,31 +281,21 @@ function MenuView({
               className="min-h-12 rounded-full border border-white/20 bg-white px-5 py-4 text-sm font-bold text-[#050505] outline-none transition placeholder:text-zinc-400 focus:border-[#FFD21F] focus:ring-4 focus:ring-[#FFD51E]/40"
             />
             <a href="/cardapio-oficial" className="w-full rounded-full bg-[#111111] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[#9B000B] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 lg:w-auto">
-              Cardapio oficial
+              Ver cardapio impresso
             </a>
           </div>
           <div className="mt-4 flex min-w-0 max-w-full gap-2 overflow-x-auto pb-2">
             {categories.map((item) => (
-              item.id === 'oficial' ? (
-                <a
-                  key={item.id}
-                  href="/cardapio-oficial"
-                  className="whitespace-nowrap rounded-full bg-[#111111] px-4 py-2.5 text-sm font-black text-white transition hover:bg-[#9B000B] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
-                >
-                  {item.label}
-                </a>
-              ) : (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setCategory(item.id)}
-                  className={`whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 ${
-                    category === item.id ? 'bg-[#FFD21F] text-[#111111] shadow-sm' : 'bg-[#111111] text-white hover:bg-[#9B000B]'
-                  }`}
-                >
-                  {item.label}
-                </button>
-              )
+              <button
+                key={item.id}
+                type="button"
+                onClick={() => setCategory(item.id)}
+                className={`whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 ${
+                  category === item.id ? 'bg-[#FFD21F] text-[#111111] shadow-sm' : 'bg-[#111111] text-white hover:bg-[#9B000B]'
+                }`}
+              >
+                {item.label}
+              </button>
             ))}
           </div>
         </section>

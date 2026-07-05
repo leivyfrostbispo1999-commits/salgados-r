@@ -64,6 +64,7 @@ export function PublicHeader() {
           </div>
 
           <nav className="hidden items-center gap-6 text-sm font-black text-white lg:flex">
+            <a href="/" className="transition hover:text-[var(--sr-yellow)]">Inicio</a>
             <a href="/cardapio" className="transition hover:text-[var(--sr-yellow)]">Cardapio</a>
             <a href="/#como-pedir" className="transition hover:text-[var(--sr-yellow)]">Como pedir</a>
             <a href="/#refil" className="transition hover:text-[var(--sr-yellow)]">Refil</a>
