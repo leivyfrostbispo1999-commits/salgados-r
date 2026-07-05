@@ -246,13 +246,13 @@ function MenuView({
   )
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-      <div className="grid gap-8">
-        <section className="rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-4 shadow-[0_14px_40px_rgba(139,0,8,0.08)] sm:p-5">
+    <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid min-w-0 gap-8">
+        <section className="min-w-0 overflow-hidden rounded-[1.5rem] border border-[#EFE0C8] bg-[#FFFDF7] p-4 shadow-[0_14px_40px_rgba(139,0,8,0.08)] sm:p-5">
           <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.25rem] bg-[linear-gradient(135deg,#8B0008,#D90416)] p-5 text-white sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD51E]">Escolha entre balcao e delivery</p>
-              <h2 className="mt-2 text-2xl font-black leading-tight sm:text-3xl">Cardapio digital da Salgados R</h2>
+              <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight sm:text-3xl">Cardapio digital da Salgados R</h2>
               <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-white/85">
                 Sucos de copo sao presenciais. Para entrega, escolha somente a garrafinha de 300 ml.
               </p>
@@ -272,7 +272,7 @@ function MenuView({
               Cardapio oficial
             </a>
           </div>
-          <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+          <div className="mt-4 flex min-w-0 max-w-full gap-2 overflow-x-auto pb-2">
             {categories.map((item) => (
               item.id === 'oficial' ? (
                 <a
