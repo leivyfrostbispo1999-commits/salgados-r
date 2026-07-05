@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   api,
@@ -6,17 +6,11 @@ import {
   type ApiProduct,
   type AuthUser,
   type FinanceSummary,
-  type PrintStatus,
   type ReportSummary,
-  type SecurityStatus,
   type StockItem,
   formatCurrency,
 } from '../utils/api'
-
-type CartItem = {
-  product: ApiProduct
-  quantity: number
-}
+import { buildOrderWhatsAppUrl } from '../utils/whatsapp'
 
 const tabs = [
   { id: 'dashboard', label: 'Dashboard' },
@@ -25,17 +19,14 @@ const tabs = [
   { id: 'produtos', label: 'Produtos' },
   { id: 'estoque', label: 'Estoque' },
   { id: 'clientes', label: 'Clientes' },
-  { id: 'financeiro', label: 'Financeiro' },
+  { id: 'caixa', label: 'Caixa' },
   { id: 'relatorios', label: 'Relatorios' },
-  { id: 'impressao', label: 'Impressao' },
   { id: 'auditoria', label: 'Auditoria' },
-  { id: 'seguranca', label: 'Seguranca' },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
 
 const statusFlow: ApiOrder['status'][] = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA', 'FINALIZADO']
-
 export function OperationsSuite() {
   const [activeTab, setActiveTab] = useState<TabId>(() => pathToTab(window.location.pathname))
   const [authChecked, setAuthChecked] = useState(false)
@@ -48,13 +39,11 @@ export function OperationsSuite() {
   const [customers, setCustomers] = useState<unknown[]>([])
   const [auditLogs, setAuditLogs] = useState<unknown[]>([])
   const [finance, setFinance] = useState<FinanceSummary | null>(null)
-  const [printStatus, setPrintStatus] = useState<PrintStatus | null>(null)
-  const [security, setSecurity] = useState<SecurityStatus | null>(null)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
 
   async function refresh() {
-    const [nextProducts, nextOrders, nextStock, nextSummary, nextCustomers, nextAuditLogs, nextFinance, nextPrint, nextSecurity] = await Promise.all([
+    const [nextProducts, nextOrders, nextStock, nextSummary, nextCustomers, nextAuditLogs, nextFinance] = await Promise.all([
       api.products(),
       api.orders(),
       api.stock(),
@@ -62,8 +51,6 @@ export function OperationsSuite() {
       api.customers().catch(() => []),
       api.auditLogs().catch(() => []),
       api.financeSummary().catch(() => null),
-      api.printStatus().catch(() => null),
-      api.securityStatus().catch(() => null),
     ])
     setProducts(nextProducts)
     setOrders(nextOrders)
@@ -72,8 +59,6 @@ export function OperationsSuite() {
     setCustomers(nextCustomers)
     setAuditLogs(nextAuditLogs)
     setFinance(nextFinance)
-    setPrintStatus(nextPrint)
-    setSecurity(nextSecurity)
   }
 
   useEffect(() => {
@@ -116,6 +101,14 @@ export function OperationsSuite() {
     setSummary(null)
   }
 
+  useEffect(() => {
+    if (!user) return
+    const timer = window.setInterval(() => {
+      refresh().catch(() => undefined)
+    }, 15000)
+    return () => window.clearInterval(timer)
+  }, [user])
+
   return (
     <section id="sistema" className="min-h-screen bg-[#F5F5F5] py-6">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
@@ -129,7 +122,7 @@ export function OperationsSuite() {
         </div>
         <p className="mt-2 max-w-3xl text-sm font-medium leading-6 text-zinc-600">
           Primeira versao operacional do Salgados R: backend com PostgreSQL, login por perfis, painel de cozinha,
-          produtos, estoque, relatorios, financeiro, auditoria, impressao mock e base para PIX/PWA.
+          produtos, estoque, relatorios, caixa simples, auditoria e base para PIX manual/PWA.
         </p>
 
         {user ? (
@@ -170,7 +163,7 @@ export function OperationsSuite() {
           {!loading && authChecked && !user && hasUsers ? <LoginForm onReady={afterAuth} setMessage={setMessage} /> : null}
           {!loading && user && activeTab === 'dashboard' ? <ReportsPanel summary={summary} orders={orders} /> : null}
           {!loading && user && activeTab === 'pedidos' ? (
-            <OrderBuilder products={products} onCreated={refresh} setMessage={setMessage} />
+            <OrdersPanel orders={orders} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'cozinha' ? (
             <KitchenPanel orders={orders} onUpdated={refresh} setMessage={setMessage} />
@@ -182,13 +175,9 @@ export function OperationsSuite() {
             <StockPanel stock={stock} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'clientes' ? <SimpleListPanel title="Clientes" items={customers} empty="Ainda nao ha clientes cadastrados." /> : null}
-          {!loading && user && activeTab === 'financeiro' ? <FinancePanel finance={finance} /> : null}
+          {!loading && user && activeTab === 'caixa' ? <FinancePanel finance={finance} onUpdated={refresh} setMessage={setMessage} /> : null}
           {!loading && user && activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
-          {!loading && user && activeTab === 'impressao' ? (
-            <PrintingPanel status={printStatus} onTest={async () => { await api.testPrint(); await refresh(); }} setMessage={setMessage} />
-          ) : null}
           {!loading && user && activeTab === 'auditoria' ? <SimpleListPanel title="Auditoria" items={auditLogs} empty="Ainda nao ha eventos de auditoria." /> : null}
-          {!loading && user && activeTab === 'seguranca' ? <SecurityPanel security={security} /> : null}
         </div>
       </div>
     </section>
@@ -201,10 +190,9 @@ function pathToTab(path: string): TabId {
   if (path.includes('/produtos')) return 'produtos'
   if (path.includes('/estoque')) return 'estoque'
   if (path.includes('/clientes')) return 'clientes'
-  if (path.includes('/financeiro')) return 'financeiro'
+  if (path.includes('/financeiro') || path.includes('/caixa')) return 'caixa'
   if (path.includes('/relatorios')) return 'relatorios'
   if (path.includes('/auditoria')) return 'auditoria'
-  if (path.includes('/seguranca')) return 'seguranca'
   return 'dashboard'
 }
 
@@ -282,141 +270,122 @@ function AuthBox({ title, subtitle, children }: { title: string; subtitle: strin
   )
 }
 
-function OrderBuilder({
-  products,
-  onCreated,
+function OrdersPanel({
+  orders,
+  onUpdated,
   setMessage,
 }: {
-  products: ApiProduct[]
-  onCreated: () => Promise<void>
+  orders: ApiOrder[]
+  onUpdated: () => Promise<void>
   setMessage: (message: string) => void
 }) {
-  const [customerName, setCustomerName] = useState('')
-  const [phone, setPhone] = useState('')
-  const [channel, setChannel] = useState('delivery')
-  const [notes, setNotes] = useState('')
-  const [selectedProduct, setSelectedProduct] = useState('')
-  const [quantity, setQuantity] = useState(1)
-  const [cart, setCart] = useState<CartItem[]>([])
+  const [search, setSearch] = useState('')
+  const today = new Date().toISOString().slice(0, 10)
+  const filtered = orders.filter((order) => {
+    const haystack = `${order.orderNumber || ''} ${order.id} ${order.customerName} ${order.phone}`.toLowerCase()
+    return order.createdAt.startsWith(today) && haystack.includes(search.toLowerCase())
+  })
+  const received = filtered.filter((order) => order.status === 'RECEBIDO').length
 
-  const orderableProducts = useMemo(
-    () => products.filter((product) => channel !== 'delivery' || product.availability !== 'presencial'),
-    [channel, products],
-  )
-  const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
-
-  function addItem() {
-    const product = products.find((item) => item.id === selectedProduct)
-    if (!product) return
-    setCart((current) => [...current, { product, quantity }])
-    setSelectedProduct('')
-    setQuantity(1)
+  async function setStatus(order: ApiOrder, status: ApiOrder['status']) {
+    await api.updateOrderStatus(order.id, status)
+    setMessage(`Pedido #${order.orderNumber || order.id.slice(0, 8)} atualizado para ${status}.`)
+    await onUpdated()
   }
 
-  async function submitOrder() {
-    try {
-      const order = await api.createOrder({
-        customerName,
-        phone,
-        channel,
-        notes,
-        items: cart.map((item) => ({ productId: item.product.id, quantity: item.quantity })),
-      })
-      setMessage(`Pedido ${order.id.slice(0, 8)} criado com sucesso.`)
-      setCustomerName('')
-      setPhone('')
-      setNotes('')
-      setCart([])
-      await onCreated()
-    } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Erro ao criar pedido.')
-    }
+  async function copy(order: ApiOrder) {
+    const summary = [
+      `Pedido #${order.orderNumber || order.id.slice(0, 8)}`,
+      `Cliente: ${order.customerName}`,
+      `WhatsApp: ${order.phone}`,
+      `Tipo: ${labelChannel(order.channel)}`,
+      `Pagamento: ${labelPayment(order.paymentMethod)}`,
+      ...order.items.map((item) => `${item.quantity}x ${item.productName}`),
+      `Total: ${formatCurrency(order.total)}`,
+      order.notes ? `Obs: ${order.notes}` : '',
+    ]
+      .filter(Boolean)
+      .join('\n')
+    await navigator.clipboard.writeText(summary)
+    setMessage('Resumo do pedido copiado.')
   }
 
   return (
-    <div className="grid gap-5 lg:grid-cols-[1fr_0.8fr]">
-      <div className="rounded-lg border border-zinc-200 p-5">
-        <h3 className="text-xl font-black">Novo pedido</h3>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2">
-          <input
-            value={customerName}
-            onChange={(event) => setCustomerName(event.target.value)}
-            placeholder="Nome do cliente"
-            className="rounded border border-zinc-300 px-3 py-3 font-semibold"
-          />
-          <input
-            value={phone}
-            onChange={(event) => setPhone(event.target.value)}
-            placeholder="Telefone"
-            className="rounded border border-zinc-300 px-3 py-3 font-semibold"
-          />
-          <select
-            value={channel}
-            onChange={(event) => setChannel(event.target.value)}
-            className="rounded border border-zinc-300 px-3 py-3 font-semibold"
-          >
-            <option value="delivery">Delivery</option>
-            <option value="presencial">Balcao / estabelecimento</option>
-          </select>
-          <input
-            value={notes}
-            onChange={(event) => setNotes(event.target.value)}
-            placeholder="Observacoes"
-            className="rounded border border-zinc-300 px-3 py-3 font-semibold"
-          />
-        </div>
-
-        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_120px_auto]">
-          <select
-            value={selectedProduct}
-            onChange={(event) => setSelectedProduct(event.target.value)}
-            className="rounded border border-zinc-300 px-3 py-3 font-semibold"
-          >
-            <option value="">Escolha um produto</option>
-            {orderableProducts.map((product) => (
-              <option key={product.id} value={product.id}>
-                {product.name} - {formatCurrency(product.price)}
-              </option>
-            ))}
-          </select>
-          <input
-            type="number"
-            min="1"
-            value={quantity}
-            onChange={(event) => setQuantity(Number(event.target.value))}
-            className="rounded border border-zinc-300 px-3 py-3 font-semibold"
-          />
-          <button type="button" onClick={addItem} className="rounded bg-black px-4 py-3 font-black text-yellow-300">
-            Adicionar
-          </button>
-        </div>
+    <div className="grid gap-4">
+      <div className="grid gap-3 rounded-lg bg-white p-4 shadow-sm sm:grid-cols-[1fr_auto_auto] sm:items-center">
+        <input
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Buscar por cliente, telefone ou numero"
+          className="rounded border border-zinc-300 px-3 py-3 font-semibold"
+        />
+        <span className="rounded-full bg-[#FFC72C] px-4 py-2 text-sm font-black">Novos: {received}</span>
+        <button type="button" onClick={onUpdated} className="rounded-full bg-[#1D1D1D] px-4 py-3 text-sm font-black text-white">
+          Atualizar agora
+        </button>
       </div>
 
-      <div className="rounded-lg bg-zinc-950 p-5 text-white">
-        <h3 className="text-xl font-black text-yellow-300">Resumo</h3>
-        <div className="mt-4 space-y-3">
-          {cart.length === 0 ? <p className="text-sm font-semibold text-zinc-300">Nenhum item ainda.</p> : null}
-          {cart.map((item, index) => (
-            <div key={`${item.product.id}-${index}`} className="flex justify-between gap-3 text-sm font-semibold">
-              <span>
-                {item.quantity}x {item.product.name}
-              </span>
-              <span>{formatCurrency(item.product.price * item.quantity)}</span>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {filtered.length === 0 ? <EmptyState text="Ainda nao ha pedidos hoje." /> : null}
+        {filtered.map((order) => (
+          <article key={order.id} className="rounded-lg border border-zinc-100 bg-white p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-black uppercase tracking-wide text-[#DA291C]">
+                  Pedido #{order.orderNumber || order.id.slice(0, 8)}
+                </p>
+                <h3 className="text-xl font-black text-[#1D1D1D]">{order.customerName}</h3>
+                <p className="text-sm font-semibold text-zinc-600">{new Date(order.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+              </div>
+              <StatusBadge status={order.status} />
             </div>
-          ))}
-        </div>
-        <p className="mt-5 flex justify-between text-lg font-black">
-          <span>Total</span>
-          <span>{formatCurrency(total)}</span>
-        </p>
-        <button
-          type="button"
-          disabled={!customerName || cart.length === 0}
-          onClick={submitOrder}
-          className="mt-5 w-full rounded bg-yellow-300 px-4 py-3 font-black text-black disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          Enviar para cozinha
-        </button>
+            <div className="mt-3 grid gap-1 text-sm font-semibold text-zinc-700">
+              <p>WhatsApp: {order.phone}</p>
+              <p>Tipo: {labelChannel(order.channel)}</p>
+              <p>Pagamento: {labelPayment(order.paymentMethod)}</p>
+            </div>
+            <ul className="mt-3 space-y-2 rounded-lg bg-zinc-50 p-3 text-sm font-semibold">
+              {order.items.map((item) => (
+                <li key={item.id}>
+                  {item.quantity}x {item.productName}
+                  {item.notes ? <span className="block text-xs text-[#DA291C]">Obs: {item.notes}</span> : null}
+                </li>
+              ))}
+            </ul>
+            {order.notes ? <p className="mt-3 rounded bg-yellow-50 p-3 text-sm font-bold">Obs geral: {order.notes}</p> : null}
+            <p className="mt-4 flex justify-between text-lg font-black">
+              <span>Total</span>
+              <span>{formatCurrency(order.total)}</span>
+            </p>
+            <div className="mt-4 grid gap-2">
+              <div className="grid grid-cols-2 gap-2">
+                {nextActions(order.status).map((action) => (
+                  <button
+                    key={action.status}
+                    type="button"
+                    onClick={() => setStatus(order, action.status)}
+                    className="rounded bg-[#1D1D1D] px-3 py-3 text-xs font-black text-white"
+                  >
+                    {action.label}
+                  </button>
+                ))}
+                {order.status !== 'CANCELADO' && order.status !== 'FINALIZADO' ? (
+                  <button type="button" onClick={() => setStatus(order, 'CANCELADO')} className="rounded bg-[#DA291C] px-3 py-3 text-xs font-black text-white">
+                    Cancelar
+                  </button>
+                ) : null}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <a href={buildOrderWhatsAppUrl(order)} target="_blank" rel="noreferrer" className="rounded bg-[#FFC72C] px-3 py-3 text-center text-xs font-black text-[#1D1D1D]">
+                  WhatsApp
+                </a>
+                <button type="button" onClick={() => copy(order)} className="rounded bg-zinc-100 px-3 py-3 text-xs font-black text-zinc-800">
+                  Copiar resumo
+                </button>
+              </div>
+            </div>
+          </article>
+        ))}
       </div>
     </div>
   )
@@ -497,6 +466,12 @@ function AdminPanel({
     await onCreated()
   }
 
+  async function toggleProduct(product: ApiProduct) {
+    await api.updateProduct(product.id, { active: !product.active })
+    setMessage(product.active ? 'Produto desativado.' : 'Produto ativado.')
+    await onCreated()
+  }
+
   return (
     <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
       <div className="rounded-lg border border-zinc-200 p-5">
@@ -524,10 +499,13 @@ function AdminPanel({
       </div>
       <div className="overflow-hidden rounded-lg border border-zinc-200">
         {products.map((product) => (
-          <div key={product.id} className="grid gap-2 border-b border-zinc-100 p-4 text-sm font-semibold sm:grid-cols-[1fr_auto_auto]">
+          <div key={product.id} className="grid gap-2 border-b border-zinc-100 p-4 text-sm font-semibold sm:grid-cols-[1fr_auto_auto_auto]">
             <span>{product.name}</span>
-            <span>{product.availability}</span>
+            <span>{product.active ? 'ativo' : 'inativo'}</span>
             <span className="font-black">{formatCurrency(product.price)}</span>
+            <button type="button" onClick={() => toggleProduct(product)} className="rounded bg-zinc-100 px-3 py-2 text-xs font-black">
+              {product.active ? 'Desativar' : 'Ativar'}
+            </button>
           </div>
         ))}
       </div>
@@ -544,36 +522,90 @@ function StockPanel({
   onUpdated: () => Promise<void>
   setMessage: (message: string) => void
 }) {
+  const [name, setName] = useState('')
+  const [unit, setUnit] = useState('unidade')
+  const [quantity, setQuantity] = useState('')
+  const [minQuantity, setMinQuantity] = useState('')
+  const [movementQuantity, setMovementQuantity] = useState('')
+
   async function update(item: StockItem, quantity: number) {
     await api.updateStock(item.id, { quantity, minQuantity: item.minQuantity })
     setMessage(`${item.name} atualizado.`)
     await onUpdated()
   }
 
+  async function createItem() {
+    await api.createStockItem({
+      name,
+      unit,
+      quantity: Number(quantity.replace(',', '.')),
+      minQuantity: Number(minQuantity.replace(',', '.')),
+    })
+    setMessage('Item de estoque criado.')
+    setName('')
+    setQuantity('')
+    setMinQuantity('')
+    await onUpdated()
+  }
+
+  async function move(item: StockItem, type: 'entrada' | 'saida') {
+    await api.moveStock(item.id, { type, quantity: Number(movementQuantity.replace(',', '.')), reason: 'Movimento manual' })
+    setMessage(`${item.name} movimentado.`)
+    setMovementQuantity('')
+    await onUpdated()
+  }
+
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {stock.map((item) => (
-        <article key={item.id} className={`rounded-lg border p-5 ${item.low ? 'border-red-500 bg-red-50' : 'border-zinc-200 bg-white'}`}>
-          <div className="flex items-start justify-between gap-3">
-            <div>
-              <h3 className="text-lg font-black">{item.name}</h3>
-              <p className="text-sm font-semibold text-zinc-600">
-                Minimo: {item.minQuantity} {item.unit}
-              </p>
+    <div className="grid gap-5">
+      <div className="rounded-lg bg-white p-5 shadow-sm">
+        <h3 className="text-xl font-black">Novo item de estoque</h3>
+        <div className="mt-4 grid gap-3 sm:grid-cols-5">
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold sm:col-span-2" />
+          <select value={unit} onChange={(event) => setUnit(event.target.value)} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+            <option value="unidade">unidade</option>
+            <option value="kg">kg</option>
+            <option value="g">g</option>
+            <option value="litro">litro</option>
+            <option value="ml">ml</option>
+            <option value="pacote">pacote</option>
+          </select>
+          <input value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder="Qtd atual" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={minQuantity} onChange={(event) => setMinQuantity(event.target.value)} placeholder="Qtd minima" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+        </div>
+        <button type="button" onClick={createItem} className="mt-3 rounded bg-[#1D1D1D] px-4 py-3 text-sm font-black text-white">
+          Cadastrar item
+        </button>
+      </div>
+
+      <div className="grid gap-4 md:grid-cols-2">
+        {stock.map((item) => (
+          <article key={item.id} className={`rounded-lg border p-5 ${item.low ? 'border-red-500 bg-red-50' : 'border-zinc-200 bg-white'}`}>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <h3 className="text-lg font-black">{item.name}</h3>
+                <p className="text-sm font-semibold text-zinc-600">
+                  Minimo: {item.minQuantity} {item.unit}
+                </p>
+              </div>
+              {item.low ? <span className="rounded bg-red-700 px-2 py-1 text-xs font-black text-white">Baixo</span> : null}
             </div>
-            {item.low ? <span className="rounded bg-red-700 px-2 py-1 text-xs font-black text-white">Baixo</span> : null}
-          </div>
-          <div className="mt-4 flex gap-3">
-            <input
-              type="number"
-              defaultValue={item.quantity}
-              onBlur={(event) => update(item, Number(event.target.value))}
-              className="w-full rounded border border-zinc-300 px-3 py-3 font-semibold"
-            />
-            <span className="grid place-items-center rounded bg-zinc-100 px-3 text-sm font-black">{item.unit}</span>
-          </div>
-        </article>
-      ))}
+            <div className="mt-4 flex gap-3">
+              <input
+                type="number"
+                defaultValue={item.quantity}
+                onBlur={(event) => update(item, Number(event.target.value))}
+                className="w-full rounded border border-zinc-300 px-3 py-3 font-semibold"
+              />
+              <span className="grid place-items-center rounded bg-zinc-100 px-3 text-sm font-black">{item.unit}</span>
+            </div>
+            <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+              <input value={movementQuantity} onChange={(event) => setMovementQuantity(event.target.value)} placeholder="Qtd movimento" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+              <button type="button" onClick={() => move(item, 'entrada')} className="rounded bg-green-100 px-3 py-3 text-xs font-black text-green-900">Entrada</button>
+              <button type="button" onClick={() => move(item, 'saida')} className="rounded bg-red-100 px-3 py-3 text-xs font-black text-red-900">Saida</button>
+            </div>
+          </article>
+        ))}
+      </div>
     </div>
   )
 }
@@ -641,9 +673,55 @@ function ReportsPanel({ summary, orders }: { summary: ReportSummary | null; orde
   )
 }
 
-function FinancePanel({ finance }: { finance: FinanceSummary | null }) {
+function FinancePanel({
+  finance,
+  onUpdated,
+  setMessage,
+}: {
+  finance: FinanceSummary | null
+  onUpdated: () => Promise<void>
+  setMessage: (message: string) => void
+}) {
+  const [amount, setAmount] = useState('')
+  const [description, setDescription] = useState('')
+
   if (!finance) {
     return <EmptyState text="Modulo financeiro aguardando permissao ou dados." />
+  }
+
+  async function openCash() {
+    await api.cashOpen({ openingAmountCents: toCents(amount) })
+    setMessage('Caixa aberto.')
+    setAmount('')
+    await onUpdated()
+  }
+
+  async function closeCash() {
+    await api.cashClose({ closingAmountCents: toCents(amount) })
+    setMessage('Caixa fechado.')
+    setAmount('')
+    await onUpdated()
+  }
+
+  async function movement(type: 'entrada' | 'saida') {
+    await api.cashMovement({
+      type,
+      amountCents: toCents(amount),
+      paymentMethod: 'dinheiro',
+      description: description || (type === 'entrada' ? 'Entrada manual' : 'Saida manual'),
+    })
+    setMessage('Movimento registrado.')
+    setAmount('')
+    setDescription('')
+    await onUpdated()
+  }
+
+  async function expense() {
+    await api.cashExpense({ description: description || 'Despesa', amountCents: toCents(amount) })
+    setMessage('Despesa registrada.')
+    setAmount('')
+    setDescription('')
+    await onUpdated()
   }
 
   return (
@@ -656,8 +734,26 @@ function FinancePanel({ finance }: { finance: FinanceSummary | null }) {
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <h3 className="text-xl font-black">Caixa</h3>
         <p className="mt-2 text-sm font-semibold text-zinc-600">
-          {finance.openSession ? 'Ha um caixa aberto.' : 'Nenhum caixa aberto no momento.'}
+          {finance.openSession ? 'Caixa aberto. Pedidos finalizados entram no controle.' : 'Caixa fechado. Abra o caixa para controle financeiro correto.'}
         </p>
+        <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto]">
+          <input value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Valor, ex: 50,00" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Descricao" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <button type="button" onClick={finance.openSession ? closeCash : openCash} className="rounded bg-[#1D1D1D] px-4 py-3 text-sm font-black text-white">
+            {finance.openSession ? 'Fechar caixa' : 'Abrir caixa'}
+          </button>
+          <button type="button" onClick={expense} className="rounded bg-[#DA291C] px-4 py-3 text-sm font-black text-white">
+            Despesa
+          </button>
+        </div>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          <button type="button" onClick={() => movement('entrada')} className="rounded bg-green-100 px-4 py-3 text-sm font-black text-green-900">
+            Entrada manual
+          </button>
+          <button type="button" onClick={() => movement('saida')} className="rounded bg-yellow-100 px-4 py-3 text-sm font-black text-yellow-900">
+            Saida manual
+          </button>
+        </div>
         <div className="mt-4 space-y-3">
           {finance.byMethod.length === 0 ? <p className="text-sm font-semibold text-zinc-600">Sem movimentos financeiros hoje.</p> : null}
           {finance.byMethod.map((item) => (
@@ -668,58 +764,6 @@ function FinancePanel({ finance }: { finance: FinanceSummary | null }) {
           ))}
         </div>
       </div>
-    </div>
-  )
-}
-
-function PrintingPanel({
-  status,
-  onTest,
-  setMessage,
-}: {
-  status: PrintStatus | null
-  onTest: () => Promise<void>
-  setMessage: (message: string) => void
-}) {
-  async function test() {
-    await onTest()
-    setMessage('Teste de impressao criado na fila mock.')
-  }
-
-  return (
-    <div className="rounded-lg border border-zinc-200 bg-white p-5">
-      <h3 className="text-xl font-black">Impressao termica ESC/POS</h3>
-      <p className="mt-2 text-sm font-semibold leading-6 text-zinc-600">
-        {status?.message ?? 'Agente de impressao ainda nao configurado nesta maquina.'}
-      </p>
-      <div className="mt-4 grid gap-4 sm:grid-cols-3">
-        <Metric label="Modo" value={status?.mode ?? 'mock'} />
-        <Metric label="Pendentes" value={String(status?.pending ?? 0)} />
-        <Metric label="Falhas" value={String(status?.failed ?? 0)} />
-      </div>
-      <button type="button" onClick={test} className="mt-5 rounded bg-black px-4 py-3 font-black text-yellow-300">
-        Criar teste de impressao
-      </button>
-    </div>
-  )
-}
-
-function SecurityPanel({ security }: { security: SecurityStatus | null }) {
-  if (!security) return <EmptyState text="Area de seguranca disponivel para SUPER_US ou ADMIN." />
-
-  return (
-    <div className="grid gap-5">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric label="API" value={security.api} />
-        <Metric label="Banco" value={security.database} />
-        <Metric label="Auth" value={security.auth} />
-        <Metric label="Rate limit" value={security.loginRateLimit} />
-      </div>
-      <SimpleListPanel
-        title="Falhas recentes de login"
-        items={security.recentLoginFailures}
-        empty="Nao ha falhas recentes de login."
-      />
     </div>
   )
 }
@@ -751,4 +795,46 @@ function Metric({ label, value }: { label: string; value: string }) {
       <p className="mt-2 text-3xl font-black">{value}</p>
     </div>
   )
+}
+
+function StatusBadge({ status }: { status: ApiOrder['status'] }) {
+  const color =
+    status === 'RECEBIDO'
+      ? 'bg-yellow-100 text-yellow-900'
+      : status === 'PREPARANDO'
+        ? 'bg-red-100 text-red-900'
+        : status === 'PRONTO'
+          ? 'bg-green-100 text-green-900'
+          : status === 'FINALIZADO'
+            ? 'bg-zinc-900 text-white'
+            : status === 'CANCELADO'
+              ? 'bg-zinc-200 text-zinc-700'
+              : 'bg-blue-100 text-blue-900'
+
+  return <span className={`rounded-full px-3 py-1 text-xs font-black ${color}`}>{status}</span>
+}
+
+function nextActions(status: ApiOrder['status']) {
+  if (status === 'RECEBIDO') return [{ label: 'Aceitar', status: 'ACEITO' as const }]
+  if (status === 'ACEITO') return [{ label: 'Preparar', status: 'PREPARANDO' as const }]
+  if (status === 'PREPARANDO') return [{ label: 'Pronto', status: 'PRONTO' as const }]
+  if (status === 'PRONTO') return [{ label: 'Finalizar', status: 'FINALIZADO' as const }]
+  return []
+}
+
+function labelChannel(channel: string) {
+  if (channel === 'delivery') return 'Entrega'
+  if (channel === 'local' || channel === 'presencial') return 'Consumo no local'
+  return 'Retirada'
+}
+
+function labelPayment(payment: string) {
+  if (payment === 'pix') return 'PIX'
+  if (payment === 'dinheiro') return 'Dinheiro'
+  if (payment === 'cartao') return 'Cartao'
+  return payment
+}
+
+function toCents(value: string) {
+  return Math.round(Number(value.replace(',', '.')) * 100) || 0
 }

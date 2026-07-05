@@ -26,10 +26,10 @@ export function HeroFastFood() {
               Peca pelo WhatsApp
             </a>
             <a
-              href="#cardapio"
+              href="/cardapio"
               className="rounded-full bg-white px-7 py-4 text-center text-base font-black text-[#1D1D1D] shadow-lg transition hover:translate-y-[-1px] focus:outline-none focus:ring-4 focus:ring-white/70"
             >
-              Ver cardapio
+              Montar pedido
             </a>
           </div>
         </div>

@@ -14,7 +14,7 @@ export function FeaturedProducts() {
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[#DA291C]">Mais pedidos</p>
             <h2 className="mt-2 text-4xl font-black tracking-tight text-[#1D1D1D]">Mais pedidos da Salgados R</h2>
           </div>
-          <a href="#cardapio" className="font-black text-[#DA291C] underline decoration-[#FFC72C] decoration-4 underline-offset-4">
+          <a href="/cardapio" className="font-black text-[#DA291C] underline decoration-[#FFC72C] decoration-4 underline-offset-4">
             Ver cardapio completo
           </a>
         </div>

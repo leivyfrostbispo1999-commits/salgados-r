@@ -8,6 +8,7 @@ import { MenuSection } from './components/MenuSection'
 import { OfficialMenu } from './components/OfficialMenu'
 import { OperationsSuite } from './components/OperationsSuite'
 import { PublicHeader } from './components/PublicHeader'
+import { PublicOrderFlow } from './components/PublicOrderFlow'
 import { RefillSection } from './components/RefillSection'
 import { products } from './data/products'
 
@@ -16,6 +17,10 @@ function App() {
 
   if (path.startsWith('/admin') || path.startsWith('/login') || path.startsWith('/sistema')) {
     return <OperationsSuite />
+  }
+
+  if (path.startsWith('/cardapio') || path.startsWith('/carrinho') || path.startsWith('/checkout') || path.startsWith('/pedido')) {
+    return <PublicOrderFlow />
   }
 
   return (

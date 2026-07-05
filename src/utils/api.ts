@@ -1,10 +1,17 @@
 export type ApiProduct = {
   id: string
   name: string
+  description: string
   category: string
   availability: 'delivery' | 'presencial' | 'ambos'
   priceCents: number
   price: number
+  featured: boolean
+  deliveryEnabled: boolean
+  pickupEnabled: boolean
+  dineInOnly: boolean
+  stockControlled: boolean
+  sortOrder: number
   active: boolean
 }
 
@@ -17,17 +24,28 @@ export type ApiOrderItem = {
   quantity: number
   totalCents: number
   total: number
+  notes: string
 }
 
 export type ApiOrder = {
   id: string
+  orderNumber: number | null
   customerName: string
   phone: string
+  address: string
+  number: string
+  complement: string
+  reference: string
+  neighborhood: string
   channel: string
+  paymentMethod: 'pix' | 'dinheiro' | 'cartao'
+  changeFor: number | null
   notes: string
   status: 'RECEBIDO' | 'ACEITO' | 'PREPARANDO' | 'PRONTO' | 'SAIU_PARA_ENTREGA' | 'FINALIZADO' | 'CANCELADO'
   totalCents: number
   total: number
+  subtotal: number
+  deliveryFee: number
   createdAt: string
   items: ApiOrderItem[]
 }
@@ -46,6 +64,7 @@ export type ReportSummary = {
   revenue: number
   monthRevenue: number
   orders: number
+  finalizedOrders: number
   averageTicket: number
   pendingOrders: number
   deliveredOrders: number
@@ -69,6 +88,13 @@ export type FinanceSummary = {
   estimatedProfit: number
   openSession: unknown | null
   byMethod: Array<{ method: string; total: number }>
+}
+
+export type DeliverySettings = {
+  delivery_enabled: boolean
+  delivery_fee_default: number
+  delivery_notes: string
+  updatedAt?: string
 }
 
 export type PrintStatus = {
@@ -132,27 +158,59 @@ export const api = {
     tokenStore.set(result.token)
     return result
   },
+  me: () => request<AuthUser>('/auth/me'),
   products: () => request<ApiProduct[]>('/products'),
+  publicProducts: () => request<ApiProduct[]>('/products/public'),
   createProduct: (payload: {
     name: string
+    description?: string
     category: string
     availability: string
     priceCents: number
+    active?: boolean
+    featured?: boolean
+    deliveryEnabled?: boolean
+    pickupEnabled?: boolean
+    dineInOnly?: boolean
+    stockControlled?: boolean
+    sortOrder?: number
   }) => request<ApiProduct>('/products', { method: 'POST', body: JSON.stringify(payload) }),
+  updateProduct: (id: string, payload: Partial<ApiProduct> & { priceCents?: number }) =>
+    request<ApiProduct>(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   orders: () => request<ApiOrder[]>('/orders'),
   createOrder: (payload: {
     customerName: string
     phone: string
+    address?: string
+    number?: string
+    complement?: string
+    reference?: string
+    neighborhood?: string
     channel: string
+    paymentMethod?: string
+    changeFor?: string
     notes: string
-    items: Array<{ productId: string; quantity: number }>
+    items: Array<{ productId: string; quantity: number; notes?: string }>
   }) => request<ApiOrder>('/orders', { method: 'POST', body: JSON.stringify(payload) }),
   updateOrderStatus: (id: string, status: ApiOrder['status']) =>
     request<ApiOrder>(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
   stock: () => request<StockItem[]>('/stock'),
+  createStockItem: (payload: { name: string; unit: string; quantity: number; minQuantity: number }) =>
+    request<StockItem>('/inventory', { method: 'POST', body: JSON.stringify(payload) }),
+  moveStock: (id: string, payload: { type: 'entrada' | 'saida' | 'ajuste'; quantity: number; reason?: string }) =>
+    request<StockItem>(`/inventory/${id}/movement`, { method: 'POST', body: JSON.stringify(payload) }),
   updateStock: (id: string, payload: { quantity: number; minQuantity: number }) =>
     request<StockItem>(`/stock/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
   summary: () => request<ReportSummary>('/reports/summary'),
+  cashCurrent: () => request<{ openSession: unknown | null; movements: unknown[] }>('/cash/current'),
+  cashOpen: (payload: { openingAmountCents: number }) =>
+    request<unknown>('/cash/open', { method: 'POST', body: JSON.stringify(payload) }),
+  cashClose: (payload: { closingAmountCents: number }) =>
+    request<unknown>('/cash/close', { method: 'POST', body: JSON.stringify(payload) }),
+  cashMovement: (payload: { type: 'entrada' | 'saida'; amountCents: number; paymentMethod: string; description: string }) =>
+    request<unknown>('/cash/movements', { method: 'POST', body: JSON.stringify(payload) }),
+  cashExpense: (payload: { description: string; amountCents: number }) =>
+    request<unknown>('/cash/expenses', { method: 'POST', body: JSON.stringify(payload) }),
   customers: () => request<unknown[]>('/customers'),
   auditLogs: () => request<unknown[]>('/audit-logs'),
   financeSummary: () => request<FinanceSummary>('/finance/summary'),
@@ -161,6 +219,9 @@ export const api = {
   notifications: () => request<unknown[]>('/notifications'),
   backupsStatus: () => request<unknown>('/backups/status'),
   securityStatus: () => request<SecurityStatus>('/security/status'),
+  settings: () => request<{ delivery?: DeliverySettings }>('/settings'),
+  updateSettings: (payload: { delivery: DeliverySettings }) =>
+    request<{ delivery?: DeliverySettings }>('/settings', { method: 'PATCH', body: JSON.stringify(payload) }),
 }
 
 export function formatCurrency(value: number) {
