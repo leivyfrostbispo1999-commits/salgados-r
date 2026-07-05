@@ -1,11 +1,11 @@
 const menuImages = [
   {
-    src: '/cardapio/cardapio-principal.jpeg',
+    src: '/assets-reais/cardapio-oficial.png',
     alt: 'Cardapio oficial com pasteis, salgados e sucos de copo para consumo presencial.',
     title: 'Cardapio principal',
   },
   {
-    src: '/cardapio/refil-sucos-naturais.jpeg',
+    src: '/assets-reais/refil-sucos.png',
     alt: 'Cardapio oficial do refil de sucos naturais de goiaba e maracuja.',
     title: 'Refil de sucos naturais',
   },

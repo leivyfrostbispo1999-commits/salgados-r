@@ -29,37 +29,37 @@ const cartKey = 'salgados-r-cart'
 
 const productVisuals: Record<string, { imageUrl: string; imageAlt: string; badge: string }> = {
   'pastel-carne': {
-    imageUrl: '/produtos/pastel-carne.png',
+    imageUrl: '/assets-reais/pastel.png',
     imageAlt: 'Pastel crocante recheado com carne',
     badge: 'Delivery e presencial',
   },
   'pastel-frango': {
-    imageUrl: '/produtos/pastel-frango.png',
+    imageUrl: '/assets-reais/pastel.png',
     imageAlt: 'Pastel crocante recheado com frango',
     badge: 'Delivery e presencial',
   },
   'pastel-misto': {
-    imageUrl: '/produtos/pastel-misto.png',
+    imageUrl: '/assets-reais/pastel.png',
     imageAlt: 'Pastel misto com queijo e presunto',
     badge: 'Delivery e presencial',
   },
   'pastel-calabresa-queijo': {
-    imageUrl: '/produtos/pastel-calabresa-queijo.png',
+    imageUrl: '/assets-reais/pastel.png',
     imageAlt: 'Pastel de calabresa com queijo derretido',
     badge: 'Delivery e presencial',
   },
   'pastel-frango-queijo': {
-    imageUrl: '/produtos/pastel-frango-queijo.png',
+    imageUrl: '/assets-reais/pastel.png',
     imageAlt: 'Pastel de frango com queijo',
     badge: 'Delivery e presencial',
   },
   coxinha: {
-    imageUrl: '/produtos/coxinha.png',
+    imageUrl: '/assets-reais/coxinha.png',
     imageAlt: 'Coxinha dourada e crocante',
     badge: 'Delivery e presencial',
   },
   enroladinho: {
-    imageUrl: '/produtos/enroladinho.png',
+    imageUrl: '/assets-reais/enroladinho.png',
     imageAlt: 'Enroladinho dourado',
     badge: 'Delivery e presencial',
   },
@@ -84,13 +84,13 @@ const productVisuals: Record<string, { imageUrl: string; imageAlt: string; badge
     badge: 'Somente presencial',
   },
   'suco-natural-garrafinha-300ml': {
-    imageUrl: '/produtos/garrafinha-refil.png',
-    imageAlt: 'Garrafinha de suco natural 300 ml',
+    imageUrl: '/assets-reais/refil-sucos.png',
+    imageAlt: 'Suco natural da Salgados R',
     badge: 'Unico suco para delivery',
   },
   'refil-suco-100ml': {
-    imageUrl: '/produtos/garrafinha-refil.png',
-    imageAlt: 'Refil de sucos naturais por volume',
+    imageUrl: '/assets-reais/refil-sucos.png',
+    imageAlt: 'Refil de sucos naturais',
     badge: 'Somente presencial',
   },
 }
@@ -155,21 +155,21 @@ export function PublicOrderFlow() {
   const total = cart.reduce((sum, item) => sum + item.product.price * item.quantity, 0)
 
   return (
-    <div className="min-h-screen bg-[#9B000B] text-[#1D1D1D]">
+    <div className="min-h-screen bg-[var(--sr-red-dark)] text-[#1D1D1D]">
       <PublicHeader />
-      <main className="bg-[radial-gradient(circle_at_8%_0,#FFD21F_0,#FFC72C_14%,transparent_30%),linear-gradient(180deg,#9B000B_0%,#DA291C_38%,#FFC72C_100%)] py-6 sm:py-8">
+      <main className="bg-[radial-gradient(circle_at_8%_0,var(--sr-yellow)_0,var(--sr-yellow)_14%,transparent_30%),linear-gradient(180deg,var(--sr-red-dark)_0%,var(--sr-red)_42%,var(--sr-yellow)_100%)] py-6 sm:py-8">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-5 flex flex-col gap-4 rounded-[1.75rem] border border-white/15 bg-[#6E0008]/88 p-5 text-white shadow-[0_22px_58px_rgba(56,0,5,0.25)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
+          <div className="mb-5 flex flex-col gap-4 rounded-[var(--sr-radius-xl)] border border-white/15 bg-black/24 p-5 text-white shadow-[var(--sr-shadow-premium)] backdrop-blur sm:flex-row sm:items-center sm:justify-between">
             <div>
               <a href="/" className="text-sm font-black text-[#FFD21F] transition hover:text-white">← Voltar para a home</a>
               <h1 className="mt-2 text-4xl font-black leading-none tracking-tight text-white sm:text-5xl">
                 {path.startsWith('/checkout') ? 'Checkout' : path.startsWith('/carrinho') ? 'Carrinho' : 'Cardapio'}
               </h1>
               <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-white/80">
-                Escolha, peça e confirme pelo WhatsApp.
+                Cardapio visual, produtos destacados e pedido rapido.
               </p>
             </div>
-            <a href="/carrinho" className="rounded-full bg-[#FFD21F] px-5 py-3 text-center text-sm font-black text-[#111111] shadow-[0_16px_32px_rgba(255,210,31,0.34)] transition hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50">
+            <a href="/carrinho" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 text-center text-sm font-black text-[var(--sr-black)] shadow-[0_16px_32px_rgba(255,189,13,0.34)] transition hover:scale-[1.02] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
               Carrinho: {cart.reduce((sum, item) => sum + item.quantity, 0)} item(ns)
             </a>
           </div>
@@ -248,13 +248,13 @@ function MenuView({
   return (
     <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="grid min-w-0 gap-8">
-        <section className="min-w-0 overflow-hidden rounded-[1.75rem] border border-white/15 bg-[#6E0008]/90 p-4 text-white shadow-[0_24px_62px_rgba(56,0,5,0.26)] sm:p-5">
-          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(135deg,#DA291C,#FF8A00)] p-5 text-white shadow-[0_18px_38px_rgba(17,17,17,0.16)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <section className="min-w-0 overflow-hidden rounded-[var(--sr-radius-xl)] border border-white/15 bg-black/24 p-4 text-white shadow-[var(--sr-shadow-premium)] sm:p-5">
+          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.5rem] bg-[linear-gradient(135deg,var(--sr-red),var(--sr-orange))] p-5 text-white shadow-[0_18px_38px_rgba(17,17,17,0.16)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD51E]">Escolha entre balcao e delivery</p>
-              <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight sm:text-3xl">Cardapio digital da Salgados R</h2>
+              <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight sm:text-4xl">Cardapio digital da Salgados R</h2>
               <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-white/85">
-                Sucos de copo sao presenciais. Para entrega, escolha somente a garrafinha de 300 ml.
+                Sucos de copo sao presenciais. Para delivery, escolha Suco Natural.
               </p>
             </div>
             <a href="/cardapio-oficial" className="w-full rounded-full border border-white/35 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white hover:text-[#99000D] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 sm:w-auto">
@@ -318,7 +318,7 @@ function MenuView({
                 const canCart = !product.dineInOnly && product.availability !== 'presencial' && product.deliveryEnabled
                 const visual = productVisual(product)
                 return (
-                  <article key={product.id} className="sr-food-card">
+                  <article key={product.id} className={`sr-food-card ${textureClassFor(product)}`}>
                     <div className="sr-food-media">
                       <img
                         src={visual.imageUrl}
@@ -679,16 +679,24 @@ function eyebrowCategory(category: string) {
   if (category === 'pasteis') return 'Massa crocante'
   if (category === 'salgados') return 'Quentinhos de balcao'
   if (category === 'sucos') return 'Presencial x delivery'
-  if (category === 'refil') return 'Sucao por volume'
+  if (category === 'refil') return 'Sucos naturais'
   return 'Salgados R'
 }
 
 function productVisual(product: ApiProduct) {
   return productVisuals[product.id] || {
-    imageUrl: '/cardapio/cardapio-principal.jpeg',
+    imageUrl: '/assets-reais/cardapio-oficial.png',
     imageAlt: product.name,
     badge: product.availability === 'presencial' ? 'Somente presencial' : 'Delivery e presencial',
   }
+}
+
+function textureClassFor(product: ApiProduct) {
+  if (product.id.includes('pastel')) return 'sr-texture-pastel'
+  if (product.id.includes('coxinha')) return 'sr-texture-coxinha'
+  if (product.id.includes('enroladinho')) return 'sr-texture-enroladinho'
+  if (product.category === 'sucos' || product.category === 'refil') return 'sr-texture-coxinha'
+  return ''
 }
 
 function badgeFor(product: ApiProduct, canCart: boolean) {
@@ -701,7 +709,7 @@ function badgeFor(product: ApiProduct, canCart: boolean) {
 
 function descriptionFor(product: ApiProduct) {
   if (product.category === 'sucos') return 'Goiaba ou maracuja geladinho.'
-  if (product.category === 'refil') return 'Goiaba e maracuja para acompanhar seus salgados.'
+  if (product.category === 'refil') return 'Goiaba e maracuja geladinhos.'
   return product.description
 }
 
@@ -739,13 +747,13 @@ function JuiceRules() {
 
 function RefillRules() {
   return (
-    <div className="mb-4 overflow-hidden rounded-[1.75rem] bg-[linear-gradient(135deg,#6E0008,#DA291C_58%,#FF8A00)] p-5 text-white shadow-[0_22px_58px_rgba(110,0,8,0.28)]">
+    <div className="mb-4 overflow-hidden rounded-[1.75rem] bg-[linear-gradient(135deg,var(--sr-red-dark),var(--sr-red)_58%,var(--sr-orange))] p-5 text-white shadow-[0_22px_58px_rgba(110,0,8,0.28)]">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-[#FFD21F]">Sucos naturais</p>
       <div className="mt-2 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
         <div>
           <h3 className="text-3xl font-black leading-none">Refil de sucos naturais</h3>
           <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-white/85">
-            Goiaba e maracuja geladinhos para acompanhar seus salgados.
+            A partir de R$ 4,00. Goiaba e maracuja geladinhos.
           </p>
         </div>
         <a href="/cardapio?categoria=sucos" className="rounded-2xl bg-[#FFD21F] px-5 py-4 text-center font-black text-[#111111] shadow-[0_18px_34px_rgba(255,210,31,0.32)]">

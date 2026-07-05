@@ -1,17 +1,18 @@
 @import "tailwindcss";
 
 :root {
-  --sr-red: #da291c;
-  --sr-red-dark: #9b000b;
-  --sr-red-deep: #6e0008;
-  --sr-yellow: #ffc72c;
+  --sr-red: #dc0008;
+  --sr-red-dark: #7b0007;
+  --sr-red-deep: #3a0004;
+  --sr-yellow: #ffbd0d;
   --sr-yellow-strong: #ffd21f;
-  --sr-orange: #ff8a00;
+  --sr-orange: #ff7a00;
   --sr-black: #111111;
-  --sr-cream: #fff1cf;
+  --sr-cream: #fff3cf;
   --sr-radius-xl: 32px;
-  --sr-shadow-card: 0 24px 60px rgba(68, 0, 8, 0.28);
-  --sr-shadow-glow: 0 0 42px rgba(255, 199, 44, 0.28);
+  --sr-shadow-premium: 0 28px 70px rgba(42, 0, 5, 0.36);
+  --sr-shadow-card: 0 28px 70px rgba(42, 0, 5, 0.34);
+  --sr-shadow-glow: 0 0 48px rgba(255, 189, 13, 0.34);
   color: #18181b;
   background: #fafafa;
   font-family:
@@ -38,22 +39,187 @@ body {
 
 .sr-hot-bg {
   background:
-    radial-gradient(circle at 12% 8%, rgba(255, 210, 31, 0.95) 0 10%, transparent 28%),
+    radial-gradient(circle at 12% 8%, rgba(255, 189, 13, 0.95) 0 10%, transparent 28%),
     radial-gradient(circle at 92% 18%, rgba(255, 138, 0, 0.55) 0 10%, transparent 30%),
     linear-gradient(145deg, var(--sr-red-deep) 0%, var(--sr-red-dark) 40%, var(--sr-red) 100%);
+}
+
+.sr-hero-stage {
+  position: relative;
+  background:
+    radial-gradient(circle at 82% 16%, rgba(255, 210, 31, 0.92) 0 10%, transparent 30%),
+    radial-gradient(circle at 14% 72%, rgba(255, 122, 0, 0.62) 0 12%, transparent 34%),
+    linear-gradient(135deg, var(--sr-red-deep) 0%, var(--sr-red-dark) 34%, var(--sr-red) 100%);
+  isolation: isolate;
+}
+
+.sr-hero-stage::before {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px),
+    radial-gradient(circle at 50% 105%, rgba(255, 189, 13, 0.26), transparent 38%);
+  background-size: 22px 22px, auto;
+  content: "";
+  opacity: 0.82;
+}
+
+.sr-hero-plate {
+  position: absolute;
+  inset: 0;
+  min-height: 430px;
+  border-radius: 46px;
+  background:
+    radial-gradient(circle at 50% 50%, rgba(255, 210, 31, 0.74), transparent 42%),
+    linear-gradient(135deg, rgba(255, 189, 13, 0.2), rgba(255, 255, 255, 0.06));
+}
+
+.sr-hero-plate::after {
+  position: absolute;
+  right: 8%;
+  bottom: 10%;
+  left: 8%;
+  height: 72px;
+  border-radius: 999px;
+  background: rgba(20, 0, 0, 0.38);
+  content: "";
+  filter: blur(22px);
+}
+
+.sr-hero-product {
+  position: absolute;
+  z-index: 1;
+  object-fit: contain;
+  filter: drop-shadow(0 34px 28px rgba(20, 0, 0, 0.44));
+}
+
+.sr-hero-product-pastel {
+  right: 10%;
+  bottom: 20%;
+  width: min(68vw, 520px);
+  transform: rotate(-7deg);
+}
+
+.sr-hero-product-coxinha {
+  top: 8%;
+  left: 2%;
+  width: min(42vw, 340px);
+  transform: rotate(7deg);
+}
+
+.sr-hero-product-enroladinho {
+  right: 0;
+  top: 10%;
+  width: min(46vw, 370px);
+  transform: rotate(10deg);
+}
+
+.sr-price-burst {
+  position: absolute;
+  bottom: 6%;
+  left: 8%;
+  z-index: 2;
+  display: grid;
+  min-width: 180px;
+  place-items: center;
+  border: 5px solid white;
+  border-radius: 999px;
+  background: var(--sr-yellow);
+  color: var(--sr-black);
+  padding: 1.1rem 1.3rem;
+  box-shadow: 0 22px 42px rgba(0, 0, 0, 0.3);
+  transform: rotate(-7deg);
+}
+
+.sr-price-burst span {
+  font-size: 0.78rem;
+  font-weight: 950;
+  text-transform: uppercase;
+}
+
+.sr-price-burst strong {
+  font-size: clamp(1.75rem, 5vw, 2.7rem);
+  font-weight: 950;
+  letter-spacing: -0.06em;
+  line-height: 1;
+}
+
+.sr-primary-cta,
+.sr-secondary-cta {
+  min-height: 56px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  font-weight: 950;
+  padding: 1rem 1.65rem;
+  transition: transform 220ms ease, box-shadow 220ms ease, background 220ms ease;
+}
+
+.sr-primary-cta {
+  display: inline-flex;
+  background: var(--sr-yellow);
+  color: var(--sr-black);
+  box-shadow: 0 20px 42px rgba(255, 189, 13, 0.3);
+}
+
+.sr-secondary-cta {
+  display: inline-flex;
+  border: 1px solid rgba(255, 255, 255, 0.36);
+  background: rgba(255, 255, 255, 0.12);
+  color: white;
+  box-shadow: 0 18px 34px rgba(20, 0, 0, 0.16);
+}
+
+.sr-primary-cta:hover,
+.sr-secondary-cta:hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.sr-category-tile {
+  display: flex;
+  min-height: 132px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  overflow: hidden;
+  border-radius: var(--sr-radius-xl);
+  background: linear-gradient(135deg, var(--sr-red-dark), var(--sr-red));
+  color: white;
+  padding: 1rem;
+  box-shadow: var(--sr-shadow-premium);
+}
+
+.sr-category-tile strong,
+.sr-category-tile small {
+  display: block;
+}
+
+.sr-category-tile strong {
+  font-size: 1.55rem;
+  font-weight: 950;
+  letter-spacing: -0.05em;
+  line-height: 1;
+}
+
+.sr-category-tile small {
+  margin-top: 0.35rem;
+  color: rgba(255, 255, 255, 0.76);
+  font-size: 0.8rem;
+  font-weight: 850;
 }
 
 .sr-food-card {
   position: relative;
   display: flex;
-  min-height: 430px;
+  min-height: 455px;
   overflow: hidden;
   flex-direction: column;
   border-radius: var(--sr-radius-xl);
-  border: 1px solid rgba(255, 199, 44, 0.26);
+  border: 1px solid rgba(255, 189, 13, 0.34);
   color: white;
   background:
-    radial-gradient(circle at 74% 6%, rgba(255, 210, 31, 0.75) 0 9%, transparent 27%),
+    radial-gradient(circle at 74% 6%, rgba(255, 189, 13, 0.82) 0 9%, transparent 27%),
     radial-gradient(circle at 8% 28%, rgba(255, 138, 0, 0.32) 0 8%, transparent 25%),
     linear-gradient(150deg, var(--sr-red-deep) 0%, var(--sr-red-dark) 45%, var(--sr-red) 100%);
   box-shadow: var(--sr-shadow-card), var(--sr-shadow-glow);
@@ -70,7 +236,7 @@ body {
   z-index: -1;
   background-image:
     linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
-    radial-gradient(circle at 50% 100%, rgba(255, 199, 44, 0.24), transparent 42%);
+    radial-gradient(circle at 50% 100%, rgba(255, 189, 13, 0.26), transparent 42%);
   background-size: 18px 18px, auto;
   content: "";
   opacity: 0.7;
@@ -83,7 +249,7 @@ body {
 
 .sr-food-media {
   position: relative;
-  min-height: 250px;
+  min-height: 270px;
   overflow: visible;
 }
 
@@ -103,8 +269,8 @@ body {
   position: relative;
   z-index: 1;
   width: 100%;
-  height: 275px;
-  object-fit: cover;
+  height: 295px;
+  object-fit: contain;
   object-position: center;
   transform: scale(1.1);
   filter: drop-shadow(0 24px 20px rgba(20, 0, 0, 0.32));
@@ -137,7 +303,7 @@ body {
   flex: 1;
   flex-direction: column;
   gap: 12px;
-  padding: 0 20px 20px;
+  padding: 0 20px 22px;
 }
 
 .sr-food-name {
@@ -173,6 +339,89 @@ body {
   font-weight: 950;
   padding: 0.72rem 1.1rem;
   transition: transform 250ms ease, box-shadow 250ms ease;
+}
+
+.sr-texture-pastel::before {
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
+    url("/assets-reais/textura-pastel.png");
+  background-size: 18px 18px, 230px auto;
+}
+
+.sr-texture-coxinha::before {
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
+    url("/assets-reais/textura-coxinha.png");
+  background-size: 18px 18px, 190px auto;
+}
+
+.sr-texture-enroladinho::before {
+  background-image:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.07) 0 1px, transparent 1px),
+    url("/assets-reais/textura-enroladinho.png");
+  background-size: 18px 18px, 190px auto;
+}
+
+.sr-official-preview {
+  display: block;
+  overflow: hidden;
+  border: 6px solid var(--sr-yellow);
+  border-radius: var(--sr-radius-xl);
+  background: var(--sr-red-dark);
+  box-shadow: var(--sr-shadow-premium);
+  transform: rotate(1.5deg);
+  transition: transform 220ms ease;
+}
+
+.sr-official-preview:hover {
+  transform: rotate(0deg) translateY(-4px);
+}
+
+.sr-official-preview img {
+  width: 100%;
+  max-height: 560px;
+  object-fit: cover;
+}
+
+@media (max-width: 720px) {
+  .sr-hero-stage {
+    text-align: left;
+  }
+
+  .sr-hero-plate {
+    position: relative;
+    min-height: 420px;
+  }
+
+  .sr-hero-product-pastel {
+    right: -8%;
+    bottom: 22%;
+    width: 86vw;
+  }
+
+  .sr-hero-product-coxinha {
+    top: 6%;
+    left: -8%;
+    width: 52vw;
+  }
+
+  .sr-hero-product-enroladinho {
+    right: -12%;
+    top: 4%;
+    width: 58vw;
+  }
+
+  .sr-food-card {
+    min-height: 430px;
+  }
+
+  .sr-food-media {
+    min-height: 238px;
+  }
+
+  .sr-food-image {
+    height: 260px;
+  }
 }
 
 .sr-food-card:hover .sr-food-price {

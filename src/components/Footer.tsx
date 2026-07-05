@@ -1,9 +1,9 @@
 export function Footer() {
   return (
-    <footer id="atendimento" className="bg-[linear-gradient(135deg,#6E0008,#9B000B)] py-12 text-white">
+    <footer id="atendimento" className="bg-[linear-gradient(135deg,#3A0004,var(--sr-red-dark))] py-12 text-white">
       <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
         <div>
-          <p className="text-xl font-black text-[#FFD21F]">SALGADOS R</p>
+          <img src="/assets-reais/logo-salgados-r.png" alt="SALGADOS R" className="h-16 w-52 rounded-2xl object-cover shadow-xl" />
           <p className="mt-2 text-sm font-semibold leading-6 text-white/75">Salgados, pasteis e sucos naturais.</p>
         </div>
         <div>
@@ -21,10 +21,10 @@ export function Footer() {
           <p className="mt-2 text-sm font-semibold text-white/75">Escolha, peça e confirme pelo WhatsApp.</p>
         </div>
         <div>
-          <p className="font-black">Sistema</p>
-          <a href="/admin" className="mt-3 inline-flex text-sm font-black text-[#FFD21F]">
-            Area administrativa
-          </a>
+          <p className="font-black">Salgados R</p>
+          <p className="mt-3 text-sm font-semibold leading-6 text-white/75">
+            Lanchonete popular com cardapio digital, retirada, consumo no local e delivery.
+          </p>
         </div>
       </div>
       <div className="mx-auto mt-8 max-w-7xl border-t border-white/15 px-4 pt-6 text-sm font-semibold text-white/60 sm:px-6">

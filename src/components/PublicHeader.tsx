@@ -8,7 +8,6 @@ const menuItems = [
   { href: '/#como-pedir', icon: '3', label: 'Como pedir' },
   { href: '/#refil', icon: 'R', label: 'Refil' },
   { href: buildWhatsAppUrl({ name: 'Atendimento Salgados R', price: 'consulta', quantity: 1 }), icon: 'W', label: 'WhatsApp' },
-  { href: '/admin', icon: 'A', label: 'Area administrativa' },
 ]
 
 export function PublicHeader() {
@@ -40,13 +39,13 @@ export function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[#EFE0C8] bg-[#FFFDF7]/95 shadow-sm backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-white/10 bg-[var(--sr-red-dark)]/95 shadow-[0_18px_45px_rgba(48,0,5,0.22)] backdrop-blur">
         <div className="mx-auto flex h-[72px] max-w-7xl items-center justify-between px-4 py-3 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="grid h-11 w-11 place-items-center rounded-full border border-[#EFE0C8] bg-white text-[#050505] shadow-sm transition hover:border-[#D90416] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 lg:hidden"
+              className="grid h-11 w-11 place-items-center rounded-full border border-white/20 bg-white/10 text-white shadow-sm transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 lg:hidden"
               aria-label="Abrir menu"
             >
               <span className="space-y-1.5">
@@ -55,42 +54,38 @@ export function PublicHeader() {
                 <span className="block h-0.5 w-5 rounded bg-current" />
               </span>
             </button>
-            <a href="/" className="flex min-w-0 items-center gap-2 sm:gap-3" aria-label="Salgados R - inicio">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[linear-gradient(135deg,#8B0008,#D90416)] text-2xl font-black text-[#FFD51E] shadow-sm sm:h-12 sm:w-12">
-                R
-              </span>
-              <span className="min-w-0">
-                <span className="block whitespace-nowrap text-base font-black tracking-tight text-[#050505] sm:text-xl">SALGADOS R</span>
-                <span className="block whitespace-nowrap text-[10px] font-black uppercase tracking-[0.18em] text-[#99000D] sm:text-xs">
-                  pasteis e sucos
-                </span>
-              </span>
+            <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Salgados R - inicio">
+              <img
+                src="/assets-reais/logo-salgados-r.png"
+                alt="SALGADOS R"
+                className="h-12 w-[150px] rounded-2xl object-cover object-center shadow-[0_10px_24px_rgba(0,0,0,0.24)] sm:w-[190px]"
+              />
             </a>
           </div>
 
-          <nav className="hidden items-center gap-6 text-sm font-black text-[#050505] lg:flex">
-            <a href="/cardapio" className="transition hover:text-[#99000D]">Cardapio</a>
-            <a href="/#como-pedir" className="transition hover:text-[#99000D]">Como pedir</a>
-            <a href="/#refil" className="transition hover:text-[#99000D]">Refil</a>
+          <nav className="hidden items-center gap-6 text-sm font-black text-white lg:flex">
+            <a href="/cardapio" className="transition hover:text-[var(--sr-yellow)]">Cardapio</a>
+            <a href="/#como-pedir" className="transition hover:text-[var(--sr-yellow)]">Como pedir</a>
+            <a href="/#refil" className="transition hover:text-[var(--sr-yellow)]">Refil</a>
           </nav>
 
           <div className="flex items-center gap-2">
             <a
               href="/carrinho"
-              className="relative grid h-11 min-w-11 place-items-center rounded-full bg-[#FFF3B0] px-3 text-sm font-black text-[#050505] transition hover:bg-[#FFD51E] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 sm:block sm:h-auto sm:px-4 sm:py-3"
+              className="relative grid h-11 min-w-11 place-items-center rounded-full bg-white/10 px-3 text-sm font-black text-white transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:block sm:h-auto sm:px-4 sm:py-3"
               aria-label={`Carrinho com ${cartCount} itens`}
             >
               <span className="sm:hidden">{cartCount}</span>
               <span className="hidden sm:inline">Carrinho</span>
               {cartCount > 0 ? (
-                <span className="absolute -right-1 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-[#D90416] px-1 text-xs text-white">
+                <span className="absolute -right-1 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-[var(--sr-yellow)] px-1 text-xs text-[var(--sr-black)]">
                   {cartCount}
                 </span>
               ) : null}
             </a>
             <a
               href="/cardapio"
-              className="hidden rounded-full bg-[#FFD51E] px-5 py-3 text-sm font-black text-[#050505] shadow-sm transition hover:bg-[#FFE047] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50 sm:inline-flex"
+              className="hidden rounded-full bg-[var(--sr-yellow)] px-5 py-3 text-sm font-black text-[var(--sr-black)] shadow-[0_16px_30px_rgba(0,0,0,0.22)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:inline-flex"
             >
               Pedir agora
             </a>
@@ -106,18 +101,13 @@ export function PublicHeader() {
             onClick={close}
             aria-label="Fechar menu"
           />
-          <aside className="relative flex h-full w-[min(88vw,380px)] flex-col bg-[#FFFDF7] p-6 shadow-2xl">
+          <aside className="relative flex h-full w-[min(88vw,380px)] flex-col bg-[var(--sr-red-dark)] p-6 text-white shadow-2xl">
             <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <span className="grid h-11 w-11 place-items-center rounded-2xl bg-[linear-gradient(135deg,#8B0008,#D90416)] text-xl font-black text-[#FFD51E]">
-                  R
-                </span>
-                <strong className="text-lg font-black text-[#050505]">SALGADOS R</strong>
-              </div>
+              <img src="/assets-reais/logo-salgados-r.png" alt="SALGADOS R" className="h-14 w-44 rounded-2xl object-cover shadow-xl" />
               <button
                 type="button"
                 onClick={close}
-                className="grid h-10 w-10 place-items-center rounded-full bg-[#FFF3B0] text-xl font-black text-[#050505]"
+                className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-black)]"
                 aria-label="Fechar menu"
               >
                 x
@@ -132,9 +122,9 @@ export function PublicHeader() {
                   onClick={close}
                   target={item.label === 'WhatsApp' ? '_blank' : undefined}
                   rel={item.label === 'WhatsApp' ? 'noreferrer' : undefined}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-base font-black text-[#050505] transition hover:bg-[#FFD51E] focus:outline-none focus:ring-4 focus:ring-[#FFD51E]/50"
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-base font-black text-white transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
                 >
-                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#FFF3B0] text-sm text-[#99000D]">
+                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--sr-yellow)] text-sm text-[var(--sr-black)]">
                     {item.icon}
                   </span>
                   {item.label}
@@ -142,7 +132,7 @@ export function PublicHeader() {
               ))}
             </nav>
 
-            <div className="mt-auto rounded-2xl bg-[#050505] p-4">
+            <div className="mt-auto rounded-2xl bg-black/28 p-4">
               <p className="text-sm font-bold leading-6 text-white/85">
                 Monte seu pedido no site ou chame no WhatsApp: +55 71 99702-1801.
               </p>
