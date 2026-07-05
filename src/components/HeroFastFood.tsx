@@ -1,4 +1,3 @@
-import heroImage from '../assets/hero.png'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 
 export function HeroFastFood() {
@@ -40,9 +39,9 @@ export function HeroFastFood() {
           <div className="absolute -right-8 bottom-8 h-40 w-40 rounded-full bg-[#FFC72C]/70" />
           <div className="relative overflow-hidden rounded-[2rem] bg-white p-4 shadow-2xl">
             <img
-              src={heroImage}
-              alt="Salgados e pasteis da Salgados R em destaque"
-              className="aspect-[4/3] w-full rounded-[1.5rem] object-cover"
+              src="/cardapio/cardapio-principal.jpeg"
+              alt="Pasteis, coxinha, enroladinho e sucos do cardapio oficial da Salgados R"
+              className="aspect-[4/3] w-full rounded-[1.5rem] object-cover object-top"
             />
             <div className="absolute bottom-8 left-8 rounded-lg bg-white px-5 py-4 shadow-xl">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-[#DA291C]">Delivery</p>
