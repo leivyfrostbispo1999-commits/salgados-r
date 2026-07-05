@@ -482,9 +482,13 @@ async function initDb() {
       await query(
         `UPDATE products
          SET description = CASE WHEN description = '' THEN $2 ELSE description END,
-             featured = featured OR $3
+             featured = featured OR $3,
+             availability = $4,
+             delivery_enabled = $4 IN ('delivery', 'ambos'),
+             pickup_enabled = TRUE,
+             dine_in_only = $4 = 'presencial'
          WHERE id = $1`,
-        [product[0], product[5], product[6]],
+        [product[0], product[5], product[6], product[3]],
       )
     }
   }
