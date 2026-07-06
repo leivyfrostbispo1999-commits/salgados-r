@@ -2,7 +2,7 @@ import { Footer } from './Footer'
 import { PublicHeader } from './PublicHeader'
 
 const realAssets = {
-  logo: '/assets-reais/cutouts/logo-salgados-r.png',
+  logo: '/assets-reais/logomarca-oficial.png',
   pastel: '/assets-reais/cutouts/pastel.png',
   coxinha: '/assets-reais/cutouts/coxinha.png',
   enroladinho: '/assets-reais/cutouts/enroladinho.png',

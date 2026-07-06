@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260706-direcao-arte-final'
-const CORE_ASSETS = ['/', '/manifest.webmanifest', '/icon.svg']
+const CACHE_NAME = 'salgados-r-v20260706-logomarca-oficial-transparente'
+const CORE_ASSETS = ['/', '/manifest.webmanifest', '/icon.png', '/og-image.png', '/assets-reais/logomarca-oficial.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(CORE_ASSETS)))

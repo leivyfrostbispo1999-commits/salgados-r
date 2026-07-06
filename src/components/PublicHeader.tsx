@@ -40,7 +40,7 @@ export function PublicHeader() {
   return (
     <>
       <header className="sticky top-0 z-40 border-b border-[var(--sr-white)]/10 bg-[var(--sr-red)]">
-        <div className="mx-auto flex h-[60px] max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
+        <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -56,9 +56,9 @@ export function PublicHeader() {
             </button>
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Salgados R - inicio">
               <img
-                src="/assets-reais/cutouts/logo-salgados-r.png"
+                src="/assets-reais/logomarca-oficial.png"
                 alt="SALGADOS R"
-                className="sr-logo-mark h-11 w-[150px] object-contain object-left sm:w-[176px]"
+                className="sr-logo-mark h-14 w-[188px] object-contain object-left sm:h-[60px] sm:w-[212px]"
               />
             </a>
           </div>
@@ -104,7 +104,7 @@ export function PublicHeader() {
           />
           <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/cutouts/logo-salgados-r.png" alt="SALGADOS R" className="sr-logo-mark h-12 w-44 object-contain object-left" />
+              <img src="/assets-reais/logomarca-oficial.png" alt="SALGADOS R" className="sr-logo-mark h-16 w-[224px] object-contain object-left" />
               <button
                 type="button"
                 onClick={close}
