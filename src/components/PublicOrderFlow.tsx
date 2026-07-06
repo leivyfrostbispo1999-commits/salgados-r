@@ -156,39 +156,39 @@ export function PublicOrderFlow() {
   const pageTitle = path.startsWith('/checkout') ? 'Checkout' : path.startsWith('/carrinho') ? 'Carrinho' : 'Cardapio'
 
   return (
-    <div className="min-h-screen bg-[var(--sr-neutral)] text-[var(--sr-ink)]">
+    <div className="min-h-screen bg-[var(--sr-red)] text-[var(--sr-white)]">
       <PublicHeader />
-      <main className="bg-[var(--sr-neutral)] py-5 sm:py-7">
+      <main className="bg-[var(--sr-red)] py-5 sm:py-7">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-5 flex flex-col gap-4 rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-4 text-white shadow-[var(--sr-shadow-premium)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="mb-5 flex flex-col gap-4 rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div>
               <nav className="flex flex-wrap items-center gap-2 text-sm font-black" aria-label="Breadcrumb">
-                <a href="/" className="rounded-full bg-white/10 px-3 py-1.5 text-[var(--sr-yellow)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-black)]">
+                <a href="/" className="rounded-full bg-[var(--sr-red)] px-3 py-1.5 text-[var(--sr-yellow)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)]">
                   Inicio
                 </a>
-                <span className="text-white/45">/</span>
-                <span className="text-white/82">{pageTitle}</span>
+                <span className="text-[var(--sr-white)] opacity-45">/</span>
+                <span className="text-[var(--sr-white)] opacity-80">{pageTitle}</span>
               </nav>
               <a
                 href="/"
-                className="mt-3 inline-flex rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-black text-white transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-ink)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                className="mt-3 inline-flex rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-4 py-2 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
               >
                 ← Voltar para a loja
               </a>
-              <h1 className="mt-2 text-3xl font-black leading-none tracking-tight text-white sm:text-4xl">
+              <h1 className="mt-2 text-3xl font-black leading-none tracking-tight text-[var(--sr-white)] sm:text-4xl">
                 {pageTitle}
               </h1>
-              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-white/80">
+              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-80">
                 Cardapio visual, produtos destacados e pedido rapido.
               </p>
             </div>
-            <a href="/carrinho" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 text-center text-sm font-black text-[var(--sr-ink)] transition hover:bg-[var(--sr-yellow-light)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+            <a href="/carrinho" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 text-center text-sm font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
               Carrinho: {cart.reduce((sum, item) => sum + item.quantity, 0)} item(ns)
             </a>
           </div>
 
-          {message ? <p className="mb-5 rounded-2xl border border-[var(--sr-yellow)] bg-[var(--sr-yellow-light)] p-4 text-sm font-black text-[var(--sr-ink)]">{message}</p> : null}
-          {loading ? <p className="rounded-2xl bg-white p-5 font-black shadow-[var(--sr-shadow-card)]">Carregando cardapio...</p> : null}
+          {message ? <p className="mb-5 rounded-2xl border border-[var(--sr-yellow)] bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-red)]">{message}</p> : null}
+          {loading ? <p className="rounded-2xl border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 font-black shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">Carregando cardapio...</p> : null}
 
           {!loading && path.startsWith('/checkout') ? (
             <CheckoutView
@@ -260,16 +260,16 @@ function MenuView({
   return (
     <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="grid min-w-0 gap-8">
-        <section className="min-w-0 overflow-hidden rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-4 text-white shadow-[var(--sr-shadow-premium)] sm:p-5">
-          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.25rem] bg-[var(--sr-red)] p-5 text-white sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+        <section className="min-w-0 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] sm:p-5">
+          <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.25rem] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Escolha entre balcao e delivery</p>
               <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight sm:text-4xl">Cardapio digital da Salgados R</h2>
-              <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-white/85">
+              <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-85">
                 Sucos de copo sao presenciais. Para delivery, escolha Suco Natural.
               </p>
             </div>
-            <a href="/cardapio-oficial" className="w-full rounded-full border border-white/35 px-5 py-3 text-center text-sm font-black text-white transition hover:bg-white hover:text-[var(--sr-red-dark)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:w-auto">
+            <a href="/cardapio-oficial" className="w-full rounded-full border border-[var(--sr-white)]/35 px-5 py-3 text-center text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:w-auto">
               Ver tabela de precos
             </a>
           </div>
@@ -278,9 +278,9 @@ function MenuView({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar pastel, coxinha, suco..."
-              className="min-h-12 rounded-full border border-white/20 bg-white px-5 py-4 text-sm font-bold text-[var(--sr-ink)] outline-none transition placeholder:text-zinc-400 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40"
+              className="min-h-12 rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-white)] px-5 py-4 text-sm font-bold text-[var(--sr-red)] outline-none transition placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40"
             />
-            <a href="/cardapio-oficial" className="w-full rounded-full bg-[var(--sr-ink)] px-5 py-4 text-center text-sm font-black text-white transition hover:bg-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 lg:w-auto">
+            <a href="/cardapio-oficial" className="w-full rounded-full bg-[var(--sr-yellow)] px-5 py-4 text-center text-sm font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 lg:w-auto">
               Ver cardapio impresso
             </a>
           </div>
@@ -291,7 +291,7 @@ function MenuView({
                 type="button"
                 onClick={() => setCategory(item.id)}
                 className={`whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 ${
-                  category === item.id ? 'bg-[var(--sr-yellow)] text-[var(--sr-ink)] shadow-sm' : 'bg-white/10 text-white hover:bg-white/20'
+                  category === item.id ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)] shadow-sm' : 'bg-[var(--sr-red)] text-[var(--sr-white)] hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)]'
                 }`}
               >
                 {item.label}
@@ -304,11 +304,11 @@ function MenuView({
           <section key={group.category} className="scroll-mt-24">
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-red-dark)]">{eyebrowCategory(group.category)}</p>
-                <h2 className="text-3xl font-black capitalize leading-tight text-[var(--sr-ink)]">{labelCategory(group.category)}</h2>
+                <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">{eyebrowCategory(group.category)}</p>
+                <h2 className="text-3xl font-black capitalize leading-tight text-[var(--sr-white)]">{labelCategory(group.category)}</h2>
               </div>
               {group.category === 'sucos' ? (
-                <span className="rounded-full bg-[var(--sr-yellow)] px-4 py-2 text-xs font-black text-[var(--sr-ink)]">
+                <span className="rounded-full bg-[var(--sr-yellow)] px-4 py-2 text-xs font-black text-[var(--sr-red)]">
                   Copo presencial. Delivery so garrafinha.
                 </span>
               ) : null}
@@ -351,7 +351,7 @@ function MenuView({
                         target={canCart ? '_blank' : undefined}
                         rel="noreferrer"
                         className={`min-h-12 rounded-2xl px-4 py-3 text-center text-sm font-black transition duration-[250ms] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 ${
-                          canCart ? 'bg-[var(--sr-ink)] text-white hover:bg-[var(--sr-red-dark)]' : 'bg-[var(--sr-red-dark)]/20 text-[var(--sr-ink)]/50'
+                          canCart ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)] hover:opacity-90' : 'bg-[var(--sr-red)] text-[var(--sr-white)] opacity-50'
                         }`}
                       >
                         Pedir no WhatsApp
@@ -365,13 +365,13 @@ function MenuView({
           </section>
         ))}
       </div>
-      <aside className="hidden h-fit rounded-[var(--sr-radius-xl)] bg-white p-5 shadow-[var(--sr-shadow-card)] lg:sticky lg:top-24 lg:block">
-        <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red-dark)]">Resumo</p>
-        <p className="mt-2 text-4xl font-black text-[var(--sr-ink)]">{formatCurrency(cartTotal)}</p>
-        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--sr-ink)] opacity-70">
+      <aside className="hidden h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 shadow-[0_14px_32px_rgb(0_0_0_/_14%)] lg:sticky lg:top-24 lg:block">
+        <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">Resumo</p>
+        <p className="mt-2 text-4xl font-black text-[var(--sr-white)]">{formatCurrency(cartTotal)}</p>
+        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--sr-white)] opacity-75">
           Sucos de copo e refil presencial nao entram no delivery.
         </p>
-        <a href="/carrinho" className="mt-5 block rounded-xl bg-[var(--sr-ink)] px-5 py-4 text-center font-black text-white transition hover:bg-[var(--sr-red-dark)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+        <a href="/carrinho" className="mt-5 block rounded-xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
           Ver carrinho
         </a>
       </aside>
@@ -393,27 +393,27 @@ function CartView({
 }) {
   return (
     <div className="grid gap-5 pb-24 lg:grid-cols-[1fr_320px] lg:pb-0">
-      <section className="rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)]">
-        <h2 className="text-3xl font-black text-white">Carrinho</h2>
+      <section className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)]">
+        <h2 className="text-3xl font-black text-[var(--sr-white)]">Carrinho</h2>
         <div className="mt-4 grid gap-4">
-          {cart.length === 0 ? <p className="rounded-2xl bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-black)]">Seu carrinho esta vazio.</p> : null}
+          {cart.length === 0 ? <p className="rounded-2xl bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-red)]">Seu carrinho esta vazio.</p> : null}
           {cart.map((item) => (
-            <article key={item.product.id} className="rounded-2xl border border-white/15 bg-white/10 p-4 shadow-sm backdrop-blur">
+            <article key={item.product.id} className="rounded-2xl border border-[var(--sr-white)]/15 bg-[var(--sr-red)] p-4 shadow-sm backdrop-blur">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                  <h3 className="font-black text-white">{displayNameFor(item.product)}</h3>
-                  <p className="text-sm font-semibold text-white/75">{visualPriceFor(item.product)} cada</p>
+                  <h3 className="font-black text-[var(--sr-white)]">{displayNameFor(item.product)}</h3>
+                  <p className="text-sm font-semibold text-[var(--sr-white)] opacity-75">{visualPriceFor(item.product)} cada</p>
                 </div>
-                <button type="button" onClick={() => remove(item.product.id)} className="text-sm font-black text-[var(--sr-yellow)] transition hover:text-white focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+                <button type="button" onClick={() => remove(item.product.id)} className="text-sm font-black text-[var(--sr-yellow)] transition hover:text-[var(--sr-white)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
                   Remover
                 </button>
               </div>
               <div className="mt-3 grid gap-3 sm:grid-cols-[160px_1fr]">
-                <div className="flex items-center justify-between rounded-full bg-[var(--sr-neutral)] p-1">
+                <div className="flex items-center justify-between rounded-full bg-[var(--sr-white)] p-1 text-[var(--sr-red)]">
                   <button
                     type="button"
                     onClick={() => update(item.product.id, { quantity: Math.max(1, item.quantity - 1) })}
-                    className="grid h-10 w-10 place-items-center rounded-full bg-white font-black shadow-sm transition hover:bg-[var(--sr-yellow-light)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-white)] font-black shadow-sm transition hover:bg-[var(--sr-yellow)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
                     aria-label={`Diminuir ${displayNameFor(item.product)}`}
                   >
                     -
@@ -422,7 +422,7 @@ function CartView({
                   <button
                     type="button"
                     onClick={() => update(item.product.id, { quantity: item.quantity + 1 })}
-                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-yellow)] font-black transition hover:bg-[var(--sr-yellow-light)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-yellow)] font-black transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
                     aria-label={`Aumentar ${displayNameFor(item.product)}`}
                   >
                     +
@@ -432,32 +432,32 @@ function CartView({
                   value={item.notes}
                   onChange={(event) => update(item.product.id, { notes: event.target.value })}
                   placeholder="Observacao do item, ex: sem cebola"
-                  className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40"
+                  className="rounded-xl border border-[var(--sr-white)] bg-[var(--sr-white)] px-3 py-3 font-semibold text-[var(--sr-red)] outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40"
                 />
               </div>
             </article>
           ))}
         </div>
       </section>
-      <aside className="hidden h-fit rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)] lg:block">
+      <aside className="hidden h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] lg:block">
         <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">Total</p>
-        <p className="mt-2 text-4xl font-black text-white">{formatCurrency(total)}</p>
+        <p className="mt-2 text-4xl font-black text-[var(--sr-white)]">{formatCurrency(total)}</p>
         <a
           href={cart.length ? '/checkout' : '/cardapio'}
-          className="mt-5 block rounded-xl bg-[var(--sr-ink)] px-5 py-4 text-center font-black text-white transition hover:bg-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+          className="mt-5 block rounded-xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
         >
           {cart.length ? 'Ir para checkout' : 'Escolher produtos'}
         </a>
       </aside>
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-white/15 bg-[var(--sr-red-dark)] p-4 text-white shadow-2xl lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--sr-white)]/15 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-2xl lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-[var(--sr-yellow)]">Total</p>
-            <p className="text-xl font-black text-white">{formatCurrency(total)}</p>
+            <p className="text-xl font-black text-[var(--sr-white)]">{formatCurrency(total)}</p>
           </div>
           <a
             href={cart.length ? '/checkout' : '/cardapio'}
-            className="rounded-xl bg-[var(--sr-yellow)] px-5 py-3 text-sm font-black text-[var(--sr-ink)] transition hover:bg-[var(--sr-yellow-light)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+            className="rounded-xl bg-[var(--sr-yellow)] px-5 py-3 text-sm font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
           >
             {cart.length ? 'Finalizar' : 'Cardapio'}
           </a>
@@ -534,32 +534,32 @@ function CheckoutView({
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-      <section className="rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)]">
+      <section className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)]">
         <div className="flex flex-wrap gap-2">
           {['Seus dados', 'Tipo de pedido', 'Pagamento', 'Revisao'].map((step, index) => (
-            <span key={step} className="rounded-full bg-[var(--sr-yellow-light)] px-3 py-2 text-xs font-black text-[var(--sr-ink)]">
+            <span key={step} className="rounded-full bg-[var(--sr-yellow)] px-3 py-2 text-xs font-black text-[var(--sr-red)]">
               {index + 1}. {step}
             </span>
           ))}
         </div>
-        <h2 className="mt-5 text-3xl font-black text-white">Checkout</h2>
-        <div className="mt-4 rounded-2xl bg-white p-4">
-          <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red-dark)]">1. Seus dados</p>
+        <h2 className="mt-5 text-3xl font-black text-[var(--sr-white)]">Checkout</h2>
+        <div className="mt-4 rounded-2xl bg-[var(--sr-white)] p-4 text-[var(--sr-red)]">
+          <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red)]">1. Seus dados</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <input value={form.customerName} onChange={(event) => setField('customerName', event.target.value)} placeholder="Nome do cliente" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-          <input value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="WhatsApp do cliente" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+          <input value={form.customerName} onChange={(event) => setField('customerName', event.target.value)} placeholder="Nome do cliente" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+          <input value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="WhatsApp do cliente" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
           </div>
         </div>
 
-        <div className="mt-4 rounded-2xl bg-white p-4">
-          <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red-dark)]">2. Tipo e pagamento</p>
+        <div className="mt-4 rounded-2xl bg-[var(--sr-white)] p-4 text-[var(--sr-red)]">
+          <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red)]">2. Tipo e pagamento</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <select value={form.channel} onChange={(event) => setField('channel', event.target.value as CheckoutForm['channel'])} className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40">
+          <select value={form.channel} onChange={(event) => setField('channel', event.target.value as CheckoutForm['channel'])} className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40">
             <option value="retirada">Retirada</option>
             <option value="local">Consumo no local</option>
             {settings.delivery_enabled ? <option value="delivery">Entrega</option> : null}
           </select>
-          <select value={form.paymentMethod} onChange={(event) => setField('paymentMethod', event.target.value as CheckoutForm['paymentMethod'])} className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40">
+          <select value={form.paymentMethod} onChange={(event) => setField('paymentMethod', event.target.value as CheckoutForm['paymentMethod'])} className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40">
             <option value="pix">PIX</option>
             <option value="dinheiro">Dinheiro</option>
             <option value="cartao">Cartao</option>
@@ -568,31 +568,31 @@ function CheckoutView({
         </div>
 
         {form.channel === 'delivery' ? (
-          <div className="mt-4 grid gap-3 rounded-2xl bg-white p-4 sm:grid-cols-2">
-            <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red-dark)] sm:col-span-2">Endereco da entrega</p>
-            <input value={form.neighborhood} onChange={(event) => setField('neighborhood', event.target.value)} placeholder="Bairro" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.address} onChange={(event) => setField('address', event.target.value)} placeholder="Endereco" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.number} onChange={(event) => setField('number', event.target.value)} placeholder="Numero" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.complement} onChange={(event) => setField('complement', event.target.value)} placeholder="Complemento" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.reference} onChange={(event) => setField('reference', event.target.value)} placeholder="Referencia" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40 sm:col-span-2" />
+          <div className="mt-4 grid gap-3 rounded-2xl bg-[var(--sr-white)] p-4 text-[var(--sr-red)] sm:grid-cols-2">
+            <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red)] sm:col-span-2">Endereco da entrega</p>
+            <input value={form.neighborhood} onChange={(event) => setField('neighborhood', event.target.value)} placeholder="Bairro" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+            <input value={form.address} onChange={(event) => setField('address', event.target.value)} placeholder="Endereco" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+            <input value={form.number} onChange={(event) => setField('number', event.target.value)} placeholder="Numero" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+            <input value={form.complement} onChange={(event) => setField('complement', event.target.value)} placeholder="Complemento" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+            <input value={form.reference} onChange={(event) => setField('reference', event.target.value)} placeholder="Referencia" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40 sm:col-span-2" />
           </div>
         ) : null}
 
         {form.paymentMethod === 'dinheiro' ? (
-          <div className="mt-4 grid gap-3 rounded-2xl bg-white p-4 sm:grid-cols-[auto_1fr] sm:items-center">
+          <div className="mt-4 grid gap-3 rounded-2xl bg-[var(--sr-white)] p-4 text-[var(--sr-red)] sm:grid-cols-[auto_1fr] sm:items-center">
             <label className="flex items-center gap-2 text-sm font-bold">
               <input type="checkbox" checked={form.needsChange} onChange={(event) => setField('needsChange', event.target.checked)} />
               Precisa de troco
             </label>
-            <input value={form.changeFor} onChange={(event) => setField('changeFor', event.target.value)} placeholder="Troco para quanto? Ex: 50,00" className="rounded-xl border border-[var(--sr-yellow-light)] bg-[var(--sr-neutral)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+            <input value={form.changeFor} onChange={(event) => setField('changeFor', event.target.value)} placeholder="Troco para quanto? Ex: 50,00" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
           </div>
         ) : null}
 
-        <textarea value={form.notes} onChange={(event) => setField('notes', event.target.value)} placeholder="Observacao geral do pedido" className="mt-4 min-h-28 w-full rounded-xl border border-[var(--sr-yellow-light)] bg-white px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+        <textarea value={form.notes} onChange={(event) => setField('notes', event.target.value)} placeholder="Observacao geral do pedido" className="mt-4 min-h-28 w-full rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold text-[var(--sr-red)] outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
       </section>
 
-      <aside className="h-fit rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-premium)] lg:sticky lg:top-20">
-        <h3 className="text-xl font-black text-white">Revisao</h3>
+      <aside className="h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] lg:sticky lg:top-20">
+        <h3 className="text-xl font-black text-[var(--sr-white)]">Revisao</h3>
         <div className="mt-4 space-y-3">
           {cart.map((item) => (
             <p key={item.product.id} className="flex justify-between gap-3 text-sm font-semibold">
@@ -606,7 +606,7 @@ function CheckoutView({
           <p className="flex justify-between"><span>Entrega</span><span>{formatCurrency(deliveryFee)}</span></p>
           <p className="flex justify-between text-xl text-[var(--sr-yellow)]"><span>Total</span><span>{formatCurrency(grandTotal)}</span></p>
         </div>
-        <button type="button" onClick={submit} className="mt-5 w-full rounded-xl bg-[var(--sr-yellow)] px-5 py-4 font-black text-[var(--sr-ink)] transition hover:bg-[var(--sr-yellow-light)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+        <button type="button" onClick={submit} className="mt-5 w-full rounded-xl bg-[var(--sr-yellow)] px-5 py-4 font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
           Confirmar pedido
         </button>
       </aside>
@@ -617,26 +617,26 @@ function CheckoutView({
 function SuccessView({ order }: { order: ApiOrder | null }) {
   if (!order) {
     return (
-      <section className="rounded-lg bg-white p-5 shadow-sm">
+      <section className="rounded-lg border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
         <h2 className="text-2xl font-black">Pedido criado</h2>
-        <p className="mt-2 text-sm font-semibold text-zinc-600">Se voce acabou de criar um pedido, ele ja foi enviado para a loja.</p>
-        <a href="/cardapio" className="mt-5 inline-flex rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-ink)]">Voltar ao cardapio</a>
+        <p className="mt-2 text-sm font-semibold text-[var(--sr-white)] opacity-75">Se voce acabou de criar um pedido, ele ja foi enviado para a loja.</p>
+        <a href="/cardapio" className="mt-5 inline-flex rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-red)]">Voltar ao cardapio</a>
       </section>
     )
   }
 
   return (
-    <section className="mx-auto max-w-2xl rounded-lg bg-white p-6 text-center shadow-sm">
-      <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red-dark)]">Pedido recebido</p>
+    <section className="mx-auto max-w-2xl rounded-lg border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-6 text-center text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+      <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">Pedido recebido</p>
       <h2 className="mt-2 text-4xl font-black">Pedido #{order.orderNumber || order.id.slice(0, 8)}</h2>
-      <p className="mt-3 text-sm font-semibold leading-6 text-zinc-600">
+      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--sr-white)] opacity-75">
         Seu pedido foi gravado no sistema da Salgados R. Voce tambem pode enviar a confirmacao pelo WhatsApp.
       </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <a href={buildOrderWhatsAppUrl(order)} target="_blank" rel="noreferrer" className="rounded-full bg-[var(--sr-ink)] px-5 py-4 font-black text-white">
+        <a href={buildOrderWhatsAppUrl(order)} target="_blank" rel="noreferrer" className="rounded-full bg-[var(--sr-yellow)] px-5 py-4 font-black text-[var(--sr-red)]">
           Enviar pedido pelo WhatsApp
         </a>
-        <a href="/cardapio" className="rounded-full bg-[var(--sr-yellow)] px-5 py-4 font-black text-[var(--sr-ink)]">
+        <a href="/cardapio" className="rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-5 py-4 font-black text-[var(--sr-white)]">
           Fazer outro pedido
         </a>
       </div>
@@ -656,11 +656,11 @@ function FloatingCart({ count, total }: { count: number; total: number }) {
   return (
     <a
       href="/carrinho"
-      className="fixed bottom-4 left-4 right-4 z-30 flex items-center justify-between rounded-full bg-[var(--sr-ink)] px-5 py-4 font-black text-white shadow-[var(--sr-shadow-premium)] lg:hidden"
+      className="fixed bottom-4 left-4 right-4 z-30 flex items-center justify-between rounded-full bg-[var(--sr-red)] px-5 py-4 font-black text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] lg:hidden"
     >
       <span>{count} item(ns)</span>
       <span>{formatCurrency(total)}</span>
-      <span className="rounded-full bg-[var(--sr-yellow)] px-3 py-1 text-[var(--sr-ink)]">Ver</span>
+      <span className="rounded-full bg-[var(--sr-yellow)] px-3 py-1 text-[var(--sr-red)]">Ver</span>
     </a>
   )
 }
@@ -709,17 +709,17 @@ function visualPriceFor(product: ApiProduct) {
 function JuiceRules() {
   return (
     <div className="mb-4 grid gap-3 md:grid-cols-2">
-      <div className="rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-4 text-white shadow-[var(--sr-shadow-card)]">
+      <div className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">No balcao</p>
         <h3 className="mt-2 text-xl font-black">Sucos de copo</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-white/82">
+        <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-white)] opacity-80">
           Goiaba e maracujá geladinhos para tomar no estabelecimento.
         </p>
       </div>
-      <div className="rounded-[var(--sr-radius-xl)] bg-[var(--sr-yellow-light)] p-4 text-[var(--sr-ink)] shadow-[var(--sr-shadow-card)]">
-        <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-red-dark)]">Delivery</p>
+      <div className="rounded-[22px] bg-[var(--sr-yellow)] p-4 text-[var(--sr-red)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+        <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-red)]">Delivery</p>
         <h3 className="mt-2 text-xl font-black">Suco Natural</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-ink)] opacity-75">
+        <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-red)] opacity-75">
           Goiaba ou maracujá geladinho.
         </p>
       </div>
@@ -729,16 +729,16 @@ function JuiceRules() {
 
 function RefillRules() {
   return (
-    <div className="mb-4 overflow-hidden rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-5 text-white shadow-[var(--sr-shadow-card)]">
+    <div className="mb-4 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Sucos naturais</p>
       <div className="mt-2 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
         <div>
           <h3 className="text-3xl font-black leading-none">Refil de sucos naturais</h3>
-          <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-white/85">
+          <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-85">
             A partir de R$ 4,00. Goiaba e maracujá geladinhos.
           </p>
         </div>
-        <a href="/cardapio?categoria=sucos" className="rounded-2xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-ink)]">
+        <a href="/cardapio?categoria=sucos" className="rounded-2xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)]">
           Ver opcoes
         </a>
       </div>

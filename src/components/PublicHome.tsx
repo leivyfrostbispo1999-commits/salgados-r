@@ -55,7 +55,7 @@ const steps = [
 
 export function PublicHome() {
   return (
-    <div className="min-h-screen bg-[var(--sr-red-dark)] text-white">
+    <div className="min-h-screen bg-[var(--sr-red)] text-[var(--sr-white)]">
       <PublicHeader />
       <main>
         <Hero />
@@ -73,16 +73,16 @@ export function PublicHome() {
 
 function Hero() {
   return (
-    <section className="sr-hero-stage overflow-hidden text-white">
+    <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
       <div className="mx-auto grid min-h-[500px] max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:py-10">
         <div className="relative z-10 max-w-2xl">
-          <span className="inline-flex rounded-full bg-[var(--sr-yellow)] px-5 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-ink)]">
+          <span className="inline-flex rounded-full bg-[var(--sr-yellow)] px-5 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-red)]">
             Loja popular, quente e saborosa
           </span>
           <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[0.92] tracking-tight sm:text-5xl lg:text-6xl">
             Pastel crocante, coxinha dourada e suco geladinho.
           </h1>
-          <p className="mt-4 max-w-xl text-base font-black leading-7 text-white/88 sm:text-lg">
+          <p className="mt-4 max-w-xl text-base font-black leading-7 text-[var(--sr-white)] opacity-90 sm:text-lg">
             Cardapio forte, pedido rapido e aquele visual de fome na hora.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -95,7 +95,7 @@ function Hero() {
           </div>
           <div className="mt-6 grid max-w-xl grid-cols-3 gap-3">
             {['Pasteis R$ 5', 'Coxinha R$ 4', 'Suco R$ 4'].map((item) => (
-              <span key={item} className="rounded-2xl border border-white/15 bg-white/10 px-3 py-3 text-center text-sm font-black text-white">
+              <span key={item} className="rounded-2xl border border-[var(--sr-white)]/15 bg-[var(--sr-red)] px-3 py-3 text-center text-sm font-black text-[var(--sr-white)]">
                 {item}
               </span>
             ))}
@@ -104,6 +104,7 @@ function Hero() {
 
         <div className="relative min-h-[300px] lg:min-h-[390px]">
           <div className="sr-hero-plate">
+            <img src={realAssets.enroladinho} alt="Enroladinho dourado da Salgados R" className="sr-hero-product sr-hero-product-enroladinho" />
             <img src={realAssets.pastel} alt="Pastel crocante da Salgados R" className="sr-hero-product sr-hero-product-pastel" />
             <img src={realAssets.coxinha} alt="Coxinha dourada da Salgados R" className="sr-hero-product sr-hero-product-coxinha" />
           </div>
@@ -115,12 +116,12 @@ function Hero() {
 
 function CategoryStripHome() {
   return (
-    <section className="bg-[var(--sr-yellow)] py-5 text-[var(--sr-black)]">
+    <section className="bg-[var(--sr-yellow)] py-5 text-[var(--sr-red)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
             <a key={category.label} href={category.href} className="group sr-category-tile">
-              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--sr-yellow-light)] text-lg font-black text-[var(--sr-red-dark)]">
+              <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--sr-yellow)] text-lg font-black text-[var(--sr-red)]">
                 {category.mark}
               </span>
               <span>
@@ -137,14 +138,14 @@ function CategoryStripHome() {
 
 function FeaturedHome() {
   return (
-    <section className="sr-hot-bg scroll-mt-20 py-12 text-white">
+    <section className="sr-hot-bg scroll-mt-20 py-12 text-[var(--sr-white)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Mais pedidos</p>
-            <h2 className="mt-2 text-3xl font-black tracking-tight text-white sm:text-4xl">Fome bateu, pediu.</h2>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-[var(--sr-white)] sm:text-4xl">Fome bateu, pediu.</h2>
           </div>
-          <a href="/cardapio" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-ink)] transition hover:bg-[var(--sr-yellow-light)]">
+          <a href="/cardapio" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-red)] transition hover:opacity-90">
             Ver todos
           </a>
         </div>
@@ -173,12 +174,12 @@ function FeaturedHome() {
 
 function OfficialMenuHome() {
   return (
-    <section className="bg-[var(--sr-red-dark)] py-10">
+    <section className="bg-[var(--sr-red)] py-10">
       <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div className="text-white">
+        <div className="text-[var(--sr-white)]">
           <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Cardapio oficial</p>
           <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">Imagem oficial como consulta.</h2>
-          <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-white/78">
+          <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-80">
             Para pedir, use o cardapio digital.
           </p>
         </div>
@@ -192,18 +193,18 @@ function OfficialMenuHome() {
 
 function HowItWorksHome() {
   return (
-    <section id="como-pedir" className="scroll-mt-20 bg-[var(--sr-neutral)] py-12 text-[var(--sr-ink)]">
+    <section id="como-pedir" className="scroll-mt-20 bg-[var(--sr-red)] py-12 text-[var(--sr-white)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-red-dark)]">Como funciona</p>
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Como funciona</p>
         <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Pedido rapido, sem cara de sistema.</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
-            <article key={step.title} className="rounded-[var(--sr-radius-xl)] bg-white p-5 text-[var(--sr-ink)] shadow-[var(--sr-shadow-card)]">
-              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-ink)]">
+            <article key={step.title} className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-red)]">
                 {index + 1}
               </span>
               <h3 className="mt-5 text-2xl font-black">{step.title}</h3>
-              <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-ink)] opacity-70">{step.text}</p>
+              <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-white)] opacity-75">{step.text}</p>
             </article>
           ))}
         </div>
@@ -214,13 +215,13 @@ function HowItWorksHome() {
 
 function RefillBannerHome() {
   return (
-    <section id="refil" className="scroll-mt-20 bg-[var(--sr-yellow-light)] py-12">
+    <section id="refil" className="scroll-mt-20 bg-[var(--sr-red)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-5 overflow-hidden rounded-[var(--sr-radius-xl)] bg-[var(--sr-red-dark)] p-6 text-white shadow-[var(--sr-shadow-premium)] sm:p-8 lg:grid-cols-[1fr_260px] lg:items-center">
+        <div className="grid gap-5 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-6 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] sm:p-8 lg:grid-cols-[1fr_260px] lg:items-center">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Refil de sucos naturais</p>
-            <h2 className="mt-2 text-4xl font-black tracking-tight text-white">A partir de R$ 4,00</h2>
-            <p className="mt-2 max-w-2xl text-lg font-black leading-7 text-white/86">Goiaba e maracujá geladinhos.</p>
+            <h2 className="mt-2 text-4xl font-black tracking-tight text-[var(--sr-white)]">A partir de R$ 4,00</h2>
+            <p className="mt-2 max-w-2xl text-lg font-black leading-7 text-[var(--sr-white)] opacity-85">Goiaba e maracujá geladinhos.</p>
           </div>
           <div className="sr-refill-visual" aria-hidden="true">
             <span>Refil</span>
@@ -234,7 +235,7 @@ function RefillBannerHome() {
 
 function FinalCta() {
   return (
-    <section className="bg-[var(--sr-red-dark)] py-12 text-white">
+    <section className="bg-[var(--sr-red)] py-12 text-[var(--sr-white)]">
       <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-center">
         <div>
           <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Bateu a fome?</p>
