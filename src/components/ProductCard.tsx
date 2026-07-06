@@ -27,7 +27,7 @@ export function ProductCard({ product }: ProductCardProps) {
           <span
             className={`mt-2 inline-flex rounded-full px-3 py-1 text-xs font-black uppercase tracking-wide ${
               product.availability === 'presencial'
-                ? 'border border-[var(--sr-white)]/20 bg-[var(--sr-red)] text-[var(--sr-white)]'
+                ? 'border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] text-[var(--sr-white)]'
                 : product.availability === 'delivery'
                   ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)]'
                   : 'bg-[var(--sr-yellow)] text-[var(--sr-red)]'
@@ -53,7 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
           Pedir no WhatsApp
         </a>
       ) : (
-        <p className="mt-5 rounded-full border-2 border-[var(--sr-white)]/20 px-4 py-3 text-center text-sm font-black text-[var(--sr-white)]">
+        <p className="mt-5 rounded-full border-2 border-[var(--sr-yellow)] px-4 py-3 text-center text-sm font-black text-[var(--sr-white)]">
           Disponivel apenas no balcao
         </p>
       )}

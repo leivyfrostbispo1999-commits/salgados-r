@@ -39,13 +39,13 @@ export function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--sr-white)]/10 bg-[var(--sr-red)]">
-        <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
+      <header className="sticky top-0 z-40 border-b-2 border-[var(--sr-yellow)] bg-[var(--sr-red)]">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] lg:hidden"
+              className="grid h-10 w-10 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] lg:hidden"
               aria-label="Abrir menu"
             >
               <span className="space-y-1.5">
@@ -56,9 +56,9 @@ export function PublicHeader() {
             </button>
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Salgados R - inicio">
               <img
-                src="/assets-reais/logomarca-oficial.png"
+                src="/assets-reais/logomarca-oficial-v2.png"
                 alt="SALGADOS R"
-                className="sr-logo-mark h-14 w-[188px] object-contain object-left sm:h-[60px] sm:w-[212px]"
+                className="sr-logo-mark h-16 w-[212px] object-contain object-left sm:h-[64px] sm:w-[236px]"
               />
             </a>
           </div>
@@ -73,7 +73,7 @@ export function PublicHeader() {
           <div className="flex items-center gap-2">
             <a
               href="/carrinho"
-              className="relative grid h-10 min-w-10 place-items-center rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-4 sm:py-2.5"
+              className="relative grid h-10 min-w-10 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-4 sm:py-2.5"
               aria-label={`Carrinho com ${cartCount} itens`}
             >
               <span className="sm:hidden">{cartCount}</span>
@@ -104,7 +104,7 @@ export function PublicHeader() {
           />
           <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/logomarca-oficial.png" alt="SALGADOS R" className="sr-logo-mark h-16 w-[224px] object-contain object-left" />
+              <img src="/assets-reais/logomarca-oficial-v2.png" alt="SALGADOS R" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
               <button
                 type="button"
                 onClick={close}
@@ -133,7 +133,7 @@ export function PublicHeader() {
               ))}
             </nav>
 
-            <div className="mt-auto rounded-2xl border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4">
+            <div className="mt-auto rounded-2xl border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] p-4">
               <p className="text-sm font-bold leading-6 text-[var(--sr-white)]">
                 Monte seu pedido no site ou chame no WhatsApp: +55 71 99702-1801.
               </p>

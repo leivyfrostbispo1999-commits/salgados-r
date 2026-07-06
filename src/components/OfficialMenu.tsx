@@ -18,7 +18,7 @@ export function OfficialMenu() {
 
         <div className="mt-6 grid gap-5 lg:grid-cols-2">
           {menuImages.map((image) => (
-            <a key={image.src} href={image.src} target="_blank" rel="noreferrer" className="group rounded-[1.25rem] border border-[var(--sr-white)]/10 bg-[var(--sr-red)] p-3 transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]">
+            <a key={image.src} href={image.src} target="_blank" rel="noreferrer" className="group rounded-[1.25rem] border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] p-3 transition hover:-translate-y-1 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]">
               <figure className="overflow-hidden rounded-[1.25rem]">
                 <img src={image.src} alt={image.alt} className="h-[min(54vw,420px)] w-full object-cover object-top transition duration-200 group-hover:scale-[1.015]" loading="lazy" />
                 <figcaption className="flex items-center justify-between gap-3 px-2 py-4 text-sm font-black text-[var(--sr-white)]">
@@ -28,9 +28,9 @@ export function OfficialMenu() {
               </figure>
             </a>
           ))}
-          <article className="rounded-[1.25rem] border border-[var(--sr-white)]/10 bg-[var(--sr-red)] p-3">
+          <article className="rounded-[1.25rem] border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] p-3">
             <figure className="sr-refill-art h-72 sm:h-[420px]">
-              <img src="/assets-reais/refil-sucos.png" alt="Refil de sucos naturais da Salgados R" loading="lazy" />
+              <img src="/assets-reais/refil-sucos-v2.png" alt="Refil de sucos naturais da Salgados R" loading="lazy" />
             </figure>
             <div className="flex items-center justify-between gap-3 px-2 py-4 text-sm font-black text-[var(--sr-white)]">
               <span>Goiaba e maracujá geladinhos.</span>

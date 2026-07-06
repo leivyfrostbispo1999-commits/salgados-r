@@ -10,7 +10,7 @@ export function DeliveryNotice() {
           <p className="text-lg font-black text-yellow-300">Para delivery</p>
           <p className="mt-2 text-base font-semibold leading-7">
             Os sucos de copo sao vendidos apenas no estabelecimento. Para entrega, trabalhamos somente
-            com suco natural na garrafinha de 300 ml por R$ 4,00.
+            com suco natural geladinho a partir de R$ 4,00.
           </p>
         </div>
       </div>

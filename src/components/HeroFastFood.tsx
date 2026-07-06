@@ -45,7 +45,7 @@ export function HeroFastFood() {
             />
             <div className="absolute bottom-8 left-8 rounded-lg bg-white px-5 py-4 shadow-xl">
               <p className="text-xs font-black uppercase tracking-[0.16em] text-[#DA291C]">Delivery</p>
-              <p className="text-lg font-black text-[#1D1D1D]">Suco so na garrafinha 300 ml</p>
+              <p className="text-lg font-black text-[#1D1D1D]">Suco natural geladinho</p>
             </div>
           </div>
         </div>

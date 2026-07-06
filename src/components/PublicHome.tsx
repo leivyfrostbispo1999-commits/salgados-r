@@ -2,12 +2,12 @@ import { Footer } from './Footer'
 import { PublicHeader } from './PublicHeader'
 
 const realAssets = {
-  logo: '/assets-reais/logomarca-oficial.png',
-  pastel: '/assets-reais/cutouts/pastel.png',
-  coxinha: '/assets-reais/cutouts/coxinha.png',
-  enroladinho: '/assets-reais/cutouts/enroladinho.png',
+  logo: '/assets-reais/logomarca-oficial-v2.png',
+  pastel: '/assets-reais/produto-pastel-v2.png',
+  coxinha: '/assets-reais/produto-coxinha-v2.png',
+  enroladinho: '/assets-reais/produto-enroladinho-v2.png',
   cardapio: '/assets-reais/cardapio-oficial.png',
-  refil: '/assets-reais/refil-sucos.png',
+  refil: '/assets-reais/refil-sucos-v2.png',
 }
 
 const categories = [
@@ -76,12 +76,12 @@ export function PublicHome() {
 function Hero() {
   return (
     <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
-      <div className="mx-auto grid min-h-[500px] max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.95fr_1.05fr] lg:py-10">
+      <div className="mx-auto grid min-h-[520px] max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:py-10">
         <div className="relative z-10 max-w-2xl">
           <span className="inline-flex rounded-full bg-[var(--sr-yellow)] px-5 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-red)]">
             Loja popular, quente e saborosa
           </span>
-          <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[0.92] tracking-tight sm:text-5xl lg:text-6xl">
+          <h1 className="mt-5 max-w-2xl text-5xl font-black leading-[0.9] tracking-tight sm:text-6xl lg:text-7xl">
             Pastel crocante, coxinha dourada e suco geladinho.
           </h1>
           <p className="mt-4 max-w-xl text-base font-black leading-7 text-[var(--sr-white)] sm:text-lg">
@@ -97,14 +97,14 @@ function Hero() {
           </div>
           <div className="mt-6 grid max-w-xl grid-cols-3 gap-3">
             {['Pasteis R$ 5', 'Coxinha R$ 4', 'Suco R$ 4'].map((item) => (
-              <span key={item} className="rounded-2xl border border-[var(--sr-white)]/15 bg-[var(--sr-red)] px-3 py-3 text-center text-sm font-black text-[var(--sr-white)]">
+              <span key={item} className="rounded-2xl border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 py-3 text-center text-sm font-black text-[var(--sr-white)]">
                 {item}
               </span>
             ))}
           </div>
         </div>
 
-        <div className="relative min-h-[300px] lg:min-h-[390px]">
+        <div className="relative min-h-[330px] lg:min-h-[430px]">
           <div className="sr-hero-plate">
             <img src={realAssets.enroladinho} alt="Enroladinho dourado da Salgados R" className="sr-hero-product sr-hero-product-enroladinho" />
             <img src={realAssets.pastel} alt="Pastel crocante da Salgados R" className="sr-hero-product sr-hero-product-pastel" />
@@ -118,7 +118,7 @@ function Hero() {
 
 function CategoryStripHome() {
   return (
-    <section className="bg-[var(--sr-yellow)] py-5 text-[var(--sr-red)]">
+    <section className="bg-[var(--sr-red)] py-5 text-[var(--sr-white)]">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
@@ -201,7 +201,7 @@ function HowItWorksHome() {
         <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Pedido rapido, sem cara de sistema.</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
-            <article key={step.title} className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
+            <article key={step.title} className="rounded-[22px] border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
               <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-red)]">
                 {index + 1}
               </span>
@@ -219,7 +219,7 @@ function RefillBannerHome() {
   return (
     <section id="refil" className="scroll-mt-20 bg-[var(--sr-red)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-5 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-6 text-[var(--sr-white)] sm:p-8 lg:grid-cols-[1fr_260px] lg:items-center">
+        <div className="grid gap-6 overflow-hidden rounded-[28px] border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] p-6 text-[var(--sr-white)] sm:p-8 lg:grid-cols-[1fr_320px] lg:items-center">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Refil de sucos naturais</p>
             <h2 className="mt-2 text-4xl font-black tracking-tight text-[var(--sr-white)]">A partir de R$ 4,00</h2>

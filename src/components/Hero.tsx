@@ -37,7 +37,7 @@ export function Hero() {
               <p className="text-sm font-black uppercase tracking-[0.2em] text-red-700">Combo popular</p>
               <h2 className="mt-2 text-3xl font-black">Balcao + Delivery</h2>
               <p className="mt-2 text-sm font-semibold text-zinc-700">
-                Sucos de copo ficam no estabelecimento. Para entrega, vai a garrafinha de 300 ml.
+                Sucos de copo ficam no estabelecimento. Para entrega, vai suco natural geladinho.
               </p>
               <div className="mt-5 grid grid-cols-3 gap-3 text-center">
                 <span className="rounded bg-black px-3 py-5 text-sm font-black text-yellow-300">Pastel</span>

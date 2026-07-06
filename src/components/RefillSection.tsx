@@ -13,7 +13,7 @@ export function RefillSection() {
         </div>
 
         <figure className="sr-refill-art">
-          <img src="/assets-reais/refil-sucos.png" alt="Refil de sucos naturais da Salgados R" loading="lazy" />
+          <img src="/assets-reais/refil-sucos-v2.png" alt="Refil de sucos naturais da Salgados R" loading="lazy" />
         </figure>
 
         <a

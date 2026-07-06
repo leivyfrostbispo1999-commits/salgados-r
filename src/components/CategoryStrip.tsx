@@ -9,14 +9,14 @@ const categories = [
 
 export function CategoryStrip() {
   return (
-    <section className="border-b border-[var(--sr-white)]/10 bg-[var(--sr-red)]">
+    <section className="border-b-2 border-[var(--sr-yellow)] bg-[var(--sr-red)]">
       <div className="mx-auto max-w-7xl overflow-x-auto px-4 py-5 sm:px-6">
         <div className="flex min-w-max gap-3">
           {categories.map((category) => (
             <a
               key={category.href}
               href={category.href}
-              className="flex min-w-32 flex-col items-center gap-2 rounded-lg border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-5 py-4 text-center transition hover:-translate-y-1"
+              className="flex min-w-32 flex-col items-center gap-2 rounded-lg border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] px-5 py-4 text-center transition hover:-translate-y-1"
             >
               <span className="grid h-12 w-12 place-items-center rounded-full bg-[var(--sr-yellow)] text-lg font-black text-[var(--sr-red)]">
                 {category.icon}

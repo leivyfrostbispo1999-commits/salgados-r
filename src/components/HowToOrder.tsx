@@ -9,7 +9,7 @@ const steps = [
   },
   {
     title: 'Confira a regra dos sucos',
-    description: 'Copo e apenas presencial. Delivery de suco somente na garrafinha de 300 ml.',
+    description: 'Copo e apenas presencial. Delivery de suco natural geladinho.',
   },
 ]
 
