@@ -2,11 +2,12 @@ import { Footer } from './Footer'
 import { PublicHeader } from './PublicHeader'
 
 const realAssets = {
-  logo: '/assets-reais/logo-salgados-r.png',
-  pastel: '/assets-reais/pastel.png',
-  coxinha: '/assets-reais/coxinha.png',
-  enroladinho: '/assets-reais/enroladinho.png',
+  logo: '/assets-reais/cutouts/logo-salgados-r.png',
+  pastel: '/assets-reais/cutouts/pastel.png',
+  coxinha: '/assets-reais/cutouts/coxinha.png',
+  enroladinho: '/assets-reais/cutouts/enroladinho.png',
   cardapio: '/assets-reais/cardapio-oficial.png',
+  refil: '/assets-reais/refil-sucos.png',
 }
 
 const categories = [
@@ -43,7 +44,8 @@ const featured = [
     description: 'Goiaba ou maracujá geladinho.',
     price: 'A partir de R$ 4,00',
     href: '/cardapio?produto=suco-natural-garrafinha-300ml',
-    imageUrl: realAssets.logo,
+    imageUrl: realAssets.refil,
+    imageClassName: 'sr-food-image sr-food-image-refil',
   },
 ]
 
@@ -82,7 +84,7 @@ function Hero() {
           <h1 className="mt-5 max-w-2xl text-4xl font-black leading-[0.92] tracking-tight sm:text-5xl lg:text-6xl">
             Pastel crocante, coxinha dourada e suco geladinho.
           </h1>
-          <p className="mt-4 max-w-xl text-base font-black leading-7 text-[var(--sr-white)] opacity-90 sm:text-lg">
+          <p className="mt-4 max-w-xl text-base font-black leading-7 text-[var(--sr-white)] sm:text-lg">
             Cardapio forte, pedido rapido e aquele visual de fome na hora.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -145,7 +147,7 @@ function FeaturedHome() {
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Mais pedidos</p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-[var(--sr-white)] sm:text-4xl">Fome bateu, pediu.</h2>
           </div>
-          <a href="/cardapio" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-red)] transition hover:opacity-90">
+          <a href="/cardapio" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-red)] transition">
             Ver todos
           </a>
         </div>
@@ -154,7 +156,7 @@ function FeaturedHome() {
           {featured.map((item) => (
             <article key={item.name} className="sr-food-card">
               <div className="sr-food-media">
-                <img src={item.imageUrl} alt={item.name} width="900" height="640" loading="lazy" className="sr-food-image" />
+                <img src={item.imageUrl} alt={item.name} width="900" height="640" loading="lazy" className={item.imageClassName || 'sr-food-image'} />
               </div>
               <div className="sr-food-body">
                 <h3 className="sr-food-name">{item.name}</h3>
@@ -179,7 +181,7 @@ function OfficialMenuHome() {
         <div className="text-[var(--sr-white)]">
           <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Cardapio oficial</p>
           <h2 className="mt-2 text-3xl font-black leading-tight tracking-tight sm:text-4xl">Imagem oficial como consulta.</h2>
-          <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-80">
+          <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[var(--sr-white)]">
             Para pedir, use o cardapio digital.
           </p>
         </div>
@@ -199,12 +201,12 @@ function HowItWorksHome() {
         <h2 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">Pedido rapido, sem cara de sistema.</h2>
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
-            <article key={step.title} className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+            <article key={step.title} className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
               <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-red)]">
                 {index + 1}
               </span>
               <h3 className="mt-5 text-2xl font-black">{step.title}</h3>
-              <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-white)] opacity-75">{step.text}</p>
+              <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-white)]">{step.text}</p>
             </article>
           ))}
         </div>
@@ -217,16 +219,15 @@ function RefillBannerHome() {
   return (
     <section id="refil" className="scroll-mt-20 bg-[var(--sr-red)] py-12">
       <div className="mx-auto max-w-7xl px-4 sm:px-6">
-        <div className="grid gap-5 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-6 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] sm:p-8 lg:grid-cols-[1fr_260px] lg:items-center">
+        <div className="grid gap-5 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-6 text-[var(--sr-white)] sm:p-8 lg:grid-cols-[1fr_260px] lg:items-center">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Refil de sucos naturais</p>
             <h2 className="mt-2 text-4xl font-black tracking-tight text-[var(--sr-white)]">A partir de R$ 4,00</h2>
-            <p className="mt-2 max-w-2xl text-lg font-black leading-7 text-[var(--sr-white)] opacity-85">Goiaba e maracujá geladinhos.</p>
+            <p className="mt-2 max-w-2xl text-lg font-black leading-7 text-[var(--sr-white)]">Goiaba e maracujá geladinhos.</p>
           </div>
-          <div className="sr-refill-visual" aria-hidden="true">
-            <span>Refil</span>
-            <strong>R$ 4,00</strong>
-          </div>
+          <figure className="sr-refill-art" aria-label="Arte oficial do refil de sucos naturais">
+            <img src={realAssets.refil} alt="Refil de sucos naturais da Salgados R" loading="lazy" />
+          </figure>
         </div>
       </div>
     </section>

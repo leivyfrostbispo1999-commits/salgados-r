@@ -1,4 +1,4 @@
-const CACHE_NAME = 'salgados-r-v20260706-paleta-oficial-unificada'
+const CACHE_NAME = 'salgados-r-v20260706-direcao-arte-final'
 const CORE_ASSETS = ['/', '/manifest.webmanifest', '/icon.svg']
 
 self.addEventListener('install', (event) => {

@@ -29,37 +29,37 @@ const cartKey = 'salgados-r-cart'
 
 const productVisuals: Record<string, { imageUrl: string; imageAlt: string; badge: string }> = {
   'pastel-carne': {
-    imageUrl: '/assets-reais/pastel.png',
+    imageUrl: '/assets-reais/cutouts/pastel.png',
     imageAlt: 'Pastel crocante recheado com carne',
     badge: 'Delivery e presencial',
   },
   'pastel-frango': {
-    imageUrl: '/assets-reais/pastel.png',
+    imageUrl: '/assets-reais/cutouts/pastel.png',
     imageAlt: 'Pastel crocante recheado com frango',
     badge: 'Delivery e presencial',
   },
   'pastel-misto': {
-    imageUrl: '/assets-reais/pastel.png',
+    imageUrl: '/assets-reais/cutouts/pastel.png',
     imageAlt: 'Pastel misto com queijo e presunto',
     badge: 'Delivery e presencial',
   },
   'pastel-calabresa-queijo': {
-    imageUrl: '/assets-reais/pastel.png',
+    imageUrl: '/assets-reais/cutouts/pastel.png',
     imageAlt: 'Pastel de calabresa com queijo derretido',
     badge: 'Delivery e presencial',
   },
   'pastel-frango-queijo': {
-    imageUrl: '/assets-reais/pastel.png',
+    imageUrl: '/assets-reais/cutouts/pastel.png',
     imageAlt: 'Pastel de frango com queijo',
     badge: 'Delivery e presencial',
   },
   coxinha: {
-    imageUrl: '/assets-reais/coxinha.png',
+    imageUrl: '/assets-reais/cutouts/coxinha.png',
     imageAlt: 'Coxinha dourada e crocante',
     badge: 'Delivery e presencial',
   },
   enroladinho: {
-    imageUrl: '/assets-reais/enroladinho.png',
+    imageUrl: '/assets-reais/cutouts/enroladinho.png',
     imageAlt: 'Enroladinho dourado',
     badge: 'Delivery e presencial',
   },
@@ -84,12 +84,12 @@ const productVisuals: Record<string, { imageUrl: string; imageAlt: string; badge
     badge: 'Somente presencial',
   },
   'suco-natural-garrafinha-300ml': {
-    imageUrl: '/assets-reais/logo-salgados-r.png',
+    imageUrl: '/assets-reais/refil-sucos.png',
     imageAlt: 'Suco natural da Salgados R',
     badge: 'Unico suco para delivery',
   },
   'refil-suco-100ml': {
-    imageUrl: '/assets-reais/logo-salgados-r.png',
+    imageUrl: '/assets-reais/refil-sucos.png',
     imageAlt: 'Refil de sucos naturais',
     badge: 'Somente presencial',
   },
@@ -160,35 +160,35 @@ export function PublicOrderFlow() {
       <PublicHeader />
       <main className="bg-[var(--sr-red)] py-5 sm:py-7">
         <div className="mx-auto max-w-7xl px-4 sm:px-6">
-          <div className="mb-5 flex flex-col gap-4 rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
+          <div className="mb-5 flex flex-col gap-4 rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] sm:flex-row sm:items-center sm:justify-between sm:p-5">
             <div>
               <nav className="flex flex-wrap items-center gap-2 text-sm font-black" aria-label="Breadcrumb">
                 <a href="/" className="rounded-full bg-[var(--sr-red)] px-3 py-1.5 text-[var(--sr-yellow)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)]">
                   Inicio
                 </a>
-                <span className="text-[var(--sr-white)] opacity-45">/</span>
-                <span className="text-[var(--sr-white)] opacity-80">{pageTitle}</span>
+                <span className="text-[var(--sr-white)]">/</span>
+                <span className="text-[var(--sr-white)]">{pageTitle}</span>
               </nav>
               <a
                 href="/"
-                className="mt-3 inline-flex rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-4 py-2 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                className="mt-3 inline-flex rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-4 py-2 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
               >
                 ← Voltar para a loja
               </a>
               <h1 className="mt-2 text-3xl font-black leading-none tracking-tight text-[var(--sr-white)] sm:text-4xl">
                 {pageTitle}
               </h1>
-              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-80">
+              <p className="mt-2 max-w-xl text-sm font-bold leading-6 text-[var(--sr-white)]">
                 Cardapio visual, produtos destacados e pedido rapido.
               </p>
             </div>
-            <a href="/carrinho" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 text-center text-sm font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+            <a href="/carrinho" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 text-center text-sm font-black text-[var(--sr-red)] transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]">
               Carrinho: {cart.reduce((sum, item) => sum + item.quantity, 0)} item(ns)
             </a>
           </div>
 
           {message ? <p className="mb-5 rounded-2xl border border-[var(--sr-yellow)] bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-red)]">{message}</p> : null}
-          {loading ? <p className="rounded-2xl border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 font-black shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">Carregando cardapio...</p> : null}
+          {loading ? <p className="rounded-2xl border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 font-black">Carregando cardapio...</p> : null}
 
           {!loading && path.startsWith('/checkout') ? (
             <CheckoutView
@@ -260,16 +260,16 @@ function MenuView({
   return (
     <div className="grid min-w-0 gap-6 overflow-hidden lg:grid-cols-[minmax(0,1fr)_340px]">
       <div className="grid min-w-0 gap-8">
-        <section className="min-w-0 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] sm:p-5">
+        <section className="min-w-0 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] sm:p-5">
           <div className="mb-4 grid min-w-0 gap-3 overflow-hidden rounded-[1.25rem] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
             <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Escolha entre balcao e delivery</p>
               <h2 className="mt-2 max-w-full break-words text-2xl font-black leading-tight sm:text-4xl">Cardapio digital da Salgados R</h2>
-              <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-85">
+              <p className="mt-2 max-w-2xl text-sm font-bold leading-6 text-[var(--sr-white)]">
                 Sucos de copo sao presenciais. Para delivery, escolha Suco Natural.
               </p>
             </div>
-            <a href="/cardapio-oficial" className="w-full rounded-full border border-[var(--sr-white)]/35 px-5 py-3 text-center text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:w-auto">
+            <a href="/cardapio-oficial" className="w-full rounded-full border border-[var(--sr-white)]/35 px-5 py-3 text-center text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:w-auto">
               Ver tabela de precos
             </a>
           </div>
@@ -278,9 +278,9 @@ function MenuView({
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               placeholder="Buscar pastel, coxinha, suco..."
-              className="min-h-12 rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-white)] px-5 py-4 text-sm font-bold text-[var(--sr-red)] outline-none transition placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40"
+              className="min-h-12 rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-white)] px-5 py-4 text-sm font-bold text-[var(--sr-red)] outline-none transition placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]"
             />
-            <a href="/cardapio-oficial" className="w-full rounded-full bg-[var(--sr-yellow)] px-5 py-4 text-center text-sm font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 lg:w-auto">
+            <a href="/cardapio-oficial" className="w-full rounded-full bg-[var(--sr-yellow)] px-5 py-4 text-center text-sm font-black text-[var(--sr-red)] transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] lg:w-auto">
               Ver cardapio impresso
             </a>
           </div>
@@ -290,8 +290,8 @@ function MenuView({
                 key={item.id}
                 type="button"
                 onClick={() => setCategory(item.id)}
-                className={`whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 ${
-                  category === item.id ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)] shadow-sm' : 'bg-[var(--sr-red)] text-[var(--sr-white)] hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)]'
+                className={`whitespace-nowrap rounded-full px-4 py-2.5 text-sm font-black transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] ${
+                  category === item.id ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)]' : 'bg-[var(--sr-red)] text-[var(--sr-white)] hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)]'
                 }`}
               >
                 {item.label}
@@ -328,7 +328,7 @@ function MenuView({
                         width="900"
                         height="640"
                         loading="lazy"
-                        className="sr-food-image"
+                        className={product.category === 'sucos' || product.category === 'refil' ? 'sr-food-image sr-food-image-refil' : 'sr-food-image'}
                       />
                     </div>
                     <div className="sr-food-body">
@@ -342,7 +342,7 @@ function MenuView({
                         type="button"
                         disabled={!canCart}
                         onClick={() => add(product)}
-                        className="sr-food-action focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                        className="sr-food-action focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
                       >
                         + Adicionar
                       </button>
@@ -350,8 +350,8 @@ function MenuView({
                         href={canCart ? buildWhatsAppUrl({ name: displayNameFor(product), price: visualPriceFor(product), quantity: 1 }) : '#'}
                         target={canCart ? '_blank' : undefined}
                         rel="noreferrer"
-                        className={`min-h-12 rounded-2xl px-4 py-3 text-center text-sm font-black transition duration-[250ms] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 ${
-                          canCart ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)] hover:opacity-90' : 'bg-[var(--sr-red)] text-[var(--sr-white)] opacity-50'
+                        className={`min-h-12 rounded-2xl px-4 py-3 text-center text-sm font-black transition duration-[250ms] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] ${
+                          canCart ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)]' : 'bg-[var(--sr-red)] text-[var(--sr-white)]'
                         }`}
                       >
                         Pedir no WhatsApp
@@ -365,13 +365,13 @@ function MenuView({
           </section>
         ))}
       </div>
-      <aside className="hidden h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 shadow-[0_14px_32px_rgb(0_0_0_/_14%)] lg:sticky lg:top-24 lg:block">
+      <aside className="hidden h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 lg:sticky lg:top-24 lg:block">
         <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">Resumo</p>
         <p className="mt-2 text-4xl font-black text-[var(--sr-white)]">{formatCurrency(cartTotal)}</p>
-        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--sr-white)] opacity-75">
+        <p className="mt-2 text-sm font-semibold leading-6 text-[var(--sr-white)]">
           Sucos de copo e refil presencial nao entram no delivery.
         </p>
-        <a href="/carrinho" className="mt-5 block rounded-xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+        <a href="/carrinho" className="mt-5 block rounded-xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)] transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]">
           Ver carrinho
         </a>
       </aside>
@@ -393,18 +393,18 @@ function CartView({
 }) {
   return (
     <div className="grid gap-5 pb-24 lg:grid-cols-[1fr_320px] lg:pb-0">
-      <section className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)]">
+      <section className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
         <h2 className="text-3xl font-black text-[var(--sr-white)]">Carrinho</h2>
         <div className="mt-4 grid gap-4">
           {cart.length === 0 ? <p className="rounded-2xl bg-[var(--sr-yellow)] p-4 text-sm font-black text-[var(--sr-red)]">Seu carrinho esta vazio.</p> : null}
           {cart.map((item) => (
-            <article key={item.product.id} className="rounded-2xl border border-[var(--sr-white)]/15 bg-[var(--sr-red)] p-4 shadow-sm backdrop-blur">
+            <article key={item.product.id} className="rounded-2xl border border-[var(--sr-white)]/15 bg-[var(--sr-red)] p-4">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                   <h3 className="font-black text-[var(--sr-white)]">{displayNameFor(item.product)}</h3>
-                  <p className="text-sm font-semibold text-[var(--sr-white)] opacity-75">{visualPriceFor(item.product)} cada</p>
+                  <p className="text-sm font-semibold text-[var(--sr-white)]">{visualPriceFor(item.product)} cada</p>
                 </div>
-                <button type="button" onClick={() => remove(item.product.id)} className="text-sm font-black text-[var(--sr-yellow)] transition hover:text-[var(--sr-white)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+                <button type="button" onClick={() => remove(item.product.id)} className="text-sm font-black text-[var(--sr-yellow)] transition hover:text-[var(--sr-white)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]">
                   Remover
                 </button>
               </div>
@@ -413,7 +413,7 @@ function CartView({
                   <button
                     type="button"
                     onClick={() => update(item.product.id, { quantity: Math.max(1, item.quantity - 1) })}
-                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-white)] font-black shadow-sm transition hover:bg-[var(--sr-yellow)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-white)] font-black transition hover:bg-[var(--sr-yellow)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
                     aria-label={`Diminuir ${displayNameFor(item.product)}`}
                   >
                     -
@@ -422,7 +422,7 @@ function CartView({
                   <button
                     type="button"
                     onClick={() => update(item.product.id, { quantity: item.quantity + 1 })}
-                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-yellow)] font-black transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                    className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-yellow)] font-black transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
                     aria-label={`Aumentar ${displayNameFor(item.product)}`}
                   >
                     +
@@ -432,24 +432,24 @@ function CartView({
                   value={item.notes}
                   onChange={(event) => update(item.product.id, { notes: event.target.value })}
                   placeholder="Observacao do item, ex: sem cebola"
-                  className="rounded-xl border border-[var(--sr-white)] bg-[var(--sr-white)] px-3 py-3 font-semibold text-[var(--sr-red)] outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40"
+                  className="rounded-xl border border-[var(--sr-white)] bg-[var(--sr-white)] px-3 py-3 font-semibold text-[var(--sr-red)] outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]"
                 />
               </div>
             </article>
           ))}
         </div>
       </section>
-      <aside className="hidden h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] lg:block">
+      <aside className="hidden h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] lg:block">
         <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">Total</p>
         <p className="mt-2 text-4xl font-black text-[var(--sr-white)]">{formatCurrency(total)}</p>
         <a
           href={cart.length ? '/checkout' : '/cardapio'}
-          className="mt-5 block rounded-xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+          className="mt-5 block rounded-xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)] transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
         >
           {cart.length ? 'Ir para checkout' : 'Escolher produtos'}
         </a>
       </aside>
-      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--sr-white)]/15 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-2xl lg:hidden">
+      <div className="fixed bottom-0 left-0 right-0 z-30 border-t border-[var(--sr-white)]/15 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] lg:hidden">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-3">
           <div>
             <p className="text-xs font-black uppercase tracking-wide text-[var(--sr-yellow)]">Total</p>
@@ -457,7 +457,7 @@ function CartView({
           </div>
           <a
             href={cart.length ? '/checkout' : '/cardapio'}
-            className="rounded-xl bg-[var(--sr-yellow)] px-5 py-3 text-sm font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+            className="rounded-xl bg-[var(--sr-yellow)] px-5 py-3 text-sm font-black text-[var(--sr-red)] transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
           >
             {cart.length ? 'Finalizar' : 'Cardapio'}
           </a>
@@ -534,7 +534,7 @@ function CheckoutView({
 
   return (
     <div className="grid gap-5 lg:grid-cols-[1fr_360px]">
-      <section className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)]">
+      <section className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
         <div className="flex flex-wrap gap-2">
           {['Seus dados', 'Tipo de pedido', 'Pagamento', 'Revisao'].map((step, index) => (
             <span key={step} className="rounded-full bg-[var(--sr-yellow)] px-3 py-2 text-xs font-black text-[var(--sr-red)]">
@@ -546,20 +546,20 @@ function CheckoutView({
         <div className="mt-4 rounded-2xl bg-[var(--sr-white)] p-4 text-[var(--sr-red)]">
           <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red)]">1. Seus dados</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <input value={form.customerName} onChange={(event) => setField('customerName', event.target.value)} placeholder="Nome do cliente" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-          <input value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="WhatsApp do cliente" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+          <input value={form.customerName} onChange={(event) => setField('customerName', event.target.value)} placeholder="Nome do cliente" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
+          <input value={form.phone} onChange={(event) => setField('phone', event.target.value)} placeholder="WhatsApp do cliente" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
           </div>
         </div>
 
         <div className="mt-4 rounded-2xl bg-[var(--sr-white)] p-4 text-[var(--sr-red)]">
           <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red)]">2. Tipo e pagamento</p>
           <div className="mt-3 grid gap-3 sm:grid-cols-2">
-          <select value={form.channel} onChange={(event) => setField('channel', event.target.value as CheckoutForm['channel'])} className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40">
+          <select value={form.channel} onChange={(event) => setField('channel', event.target.value as CheckoutForm['channel'])} className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]">
             <option value="retirada">Retirada</option>
             <option value="local">Consumo no local</option>
             {settings.delivery_enabled ? <option value="delivery">Entrega</option> : null}
           </select>
-          <select value={form.paymentMethod} onChange={(event) => setField('paymentMethod', event.target.value as CheckoutForm['paymentMethod'])} className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40">
+          <select value={form.paymentMethod} onChange={(event) => setField('paymentMethod', event.target.value as CheckoutForm['paymentMethod'])} className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]">
             <option value="pix">PIX</option>
             <option value="dinheiro">Dinheiro</option>
             <option value="cartao">Cartao</option>
@@ -570,11 +570,11 @@ function CheckoutView({
         {form.channel === 'delivery' ? (
           <div className="mt-4 grid gap-3 rounded-2xl bg-[var(--sr-white)] p-4 text-[var(--sr-red)] sm:grid-cols-2">
             <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-red)] sm:col-span-2">Endereco da entrega</p>
-            <input value={form.neighborhood} onChange={(event) => setField('neighborhood', event.target.value)} placeholder="Bairro" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.address} onChange={(event) => setField('address', event.target.value)} placeholder="Endereco" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.number} onChange={(event) => setField('number', event.target.value)} placeholder="Numero" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.complement} onChange={(event) => setField('complement', event.target.value)} placeholder="Complemento" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
-            <input value={form.reference} onChange={(event) => setField('reference', event.target.value)} placeholder="Referencia" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40 sm:col-span-2" />
+            <input value={form.neighborhood} onChange={(event) => setField('neighborhood', event.target.value)} placeholder="Bairro" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
+            <input value={form.address} onChange={(event) => setField('address', event.target.value)} placeholder="Endereco" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
+            <input value={form.number} onChange={(event) => setField('number', event.target.value)} placeholder="Numero" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
+            <input value={form.complement} onChange={(event) => setField('complement', event.target.value)} placeholder="Complemento" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
+            <input value={form.reference} onChange={(event) => setField('reference', event.target.value)} placeholder="Referencia" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)] sm:col-span-2" />
           </div>
         ) : null}
 
@@ -584,14 +584,14 @@ function CheckoutView({
               <input type="checkbox" checked={form.needsChange} onChange={(event) => setField('needsChange', event.target.checked)} />
               Precisa de troco
             </label>
-            <input value={form.changeFor} onChange={(event) => setField('changeFor', event.target.value)} placeholder="Troco para quanto? Ex: 50,00" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+            <input value={form.changeFor} onChange={(event) => setField('changeFor', event.target.value)} placeholder="Troco para quanto? Ex: 50,00" className="rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
           </div>
         ) : null}
 
-        <textarea value={form.notes} onChange={(event) => setField('notes', event.target.value)} placeholder="Observacao geral do pedido" className="mt-4 min-h-28 w-full rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold text-[var(--sr-red)] outline-none placeholder:text-[var(--sr-red)]/60 focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]/40" />
+        <textarea value={form.notes} onChange={(event) => setField('notes', event.target.value)} placeholder="Observacao geral do pedido" className="mt-4 min-h-28 w-full rounded-xl border border-[var(--sr-red)] bg-[var(--sr-white)] px-3 py-3 font-semibold text-[var(--sr-red)] outline-none placeholder:text-[var(--sr-red)] focus:border-[var(--sr-yellow)] focus:ring-4 focus:ring-[var(--sr-yellow)]" />
       </section>
 
-      <aside className="h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] lg:sticky lg:top-20">
+      <aside className="h-fit rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] lg:sticky lg:top-20">
         <h3 className="text-xl font-black text-[var(--sr-white)]">Revisao</h3>
         <div className="mt-4 space-y-3">
           {cart.map((item) => (
@@ -601,12 +601,12 @@ function CheckoutView({
             </p>
           ))}
         </div>
-        <div className="mt-5 space-y-2 border-t border-white/15 pt-4 text-sm font-bold">
+        <div className="mt-5 space-y-2 border-t border-[var(--sr-white)]/15 pt-4 text-sm font-bold">
           <p className="flex justify-between"><span>Subtotal</span><span>{formatCurrency(total)}</span></p>
           <p className="flex justify-between"><span>Entrega</span><span>{formatCurrency(deliveryFee)}</span></p>
           <p className="flex justify-between text-xl text-[var(--sr-yellow)]"><span>Total</span><span>{formatCurrency(grandTotal)}</span></p>
         </div>
-        <button type="button" onClick={submit} className="mt-5 w-full rounded-xl bg-[var(--sr-yellow)] px-5 py-4 font-black text-[var(--sr-red)] transition hover:opacity-90 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50">
+        <button type="button" onClick={submit} className="mt-5 w-full rounded-xl bg-[var(--sr-yellow)] px-5 py-4 font-black text-[var(--sr-red)] transition focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]">
           Confirmar pedido
         </button>
       </aside>
@@ -617,19 +617,19 @@ function CheckoutView({
 function SuccessView({ order }: { order: ApiOrder | null }) {
   if (!order) {
     return (
-      <section className="rounded-lg border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+      <section className="rounded-lg border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
         <h2 className="text-2xl font-black">Pedido criado</h2>
-        <p className="mt-2 text-sm font-semibold text-[var(--sr-white)] opacity-75">Se voce acabou de criar um pedido, ele ja foi enviado para a loja.</p>
+        <p className="mt-2 text-sm font-semibold text-[var(--sr-white)]">Se voce acabou de criar um pedido, ele ja foi enviado para a loja.</p>
         <a href="/cardapio" className="mt-5 inline-flex rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-red)]">Voltar ao cardapio</a>
       </section>
     )
   }
 
   return (
-    <section className="mx-auto max-w-2xl rounded-lg border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-6 text-center text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+    <section className="mx-auto max-w-2xl rounded-lg border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-6 text-center text-[var(--sr-white)]">
       <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">Pedido recebido</p>
       <h2 className="mt-2 text-4xl font-black">Pedido #{order.orderNumber || order.id.slice(0, 8)}</h2>
-      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--sr-white)] opacity-75">
+      <p className="mt-3 text-sm font-semibold leading-6 text-[var(--sr-white)]">
         Seu pedido foi gravado no sistema da Salgados R. Voce tambem pode enviar a confirmacao pelo WhatsApp.
       </p>
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -656,7 +656,7 @@ function FloatingCart({ count, total }: { count: number; total: number }) {
   return (
     <a
       href="/carrinho"
-      className="fixed bottom-4 left-4 right-4 z-30 flex items-center justify-between rounded-full bg-[var(--sr-red)] px-5 py-4 font-black text-[var(--sr-white)] shadow-[0_18px_38px_rgb(0_0_0_/_16%)] lg:hidden"
+      className="fixed bottom-4 left-4 right-4 z-30 flex items-center justify-between rounded-full bg-[var(--sr-red)] px-5 py-4 font-black text-[var(--sr-white)] lg:hidden"
     >
       <span>{count} item(ns)</span>
       <span>{formatCurrency(total)}</span>
@@ -709,17 +709,17 @@ function visualPriceFor(product: ApiProduct) {
 function JuiceRules() {
   return (
     <div className="mb-4 grid gap-3 md:grid-cols-2">
-      <div className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+      <div className="rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4 text-[var(--sr-white)]">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">No balcao</p>
         <h3 className="mt-2 text-xl font-black">Sucos de copo</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-white)] opacity-80">
+        <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-white)]">
           Goiaba e maracujá geladinhos para tomar no estabelecimento.
         </p>
       </div>
-      <div className="rounded-[22px] bg-[var(--sr-yellow)] p-4 text-[var(--sr-red)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+      <div className="rounded-[22px] bg-[var(--sr-yellow)] p-4 text-[var(--sr-red)]">
         <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-red)]">Delivery</p>
         <h3 className="mt-2 text-xl font-black">Suco Natural</h3>
-        <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-red)] opacity-75">
+        <p className="mt-2 text-sm font-bold leading-6 text-[var(--sr-red)]">
           Goiaba ou maracujá geladinho.
         </p>
       </div>
@@ -729,18 +729,21 @@ function JuiceRules() {
 
 function RefillRules() {
   return (
-    <div className="mb-4 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-[0_14px_32px_rgb(0_0_0_/_14%)]">
+    <div className="mb-4 overflow-hidden rounded-[22px] border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
       <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Sucos naturais</p>
-      <div className="mt-2 grid gap-4 md:grid-cols-[1fr_auto] md:items-center">
+      <div className="mt-2 grid gap-4 md:grid-cols-[1fr_220px] md:items-center">
         <div>
           <h3 className="text-3xl font-black leading-none">Refil de sucos naturais</h3>
-          <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-[var(--sr-white)] opacity-85">
+          <p className="mt-3 max-w-2xl text-sm font-bold leading-6 text-[var(--sr-white)]">
             A partir de R$ 4,00. Goiaba e maracujá geladinhos.
           </p>
+          <a href="/cardapio?categoria=sucos" className="mt-4 inline-flex rounded-2xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)]">
+            Ver opcoes
+          </a>
         </div>
-        <a href="/cardapio?categoria=sucos" className="rounded-2xl bg-[var(--sr-yellow)] px-5 py-4 text-center font-black text-[var(--sr-red)]">
-          Ver opcoes
-        </a>
+        <figure className="sr-refill-art sr-refill-art-compact" aria-label="Arte oficial do refil de sucos naturais">
+          <img src="/assets-reais/refil-sucos.png" alt="Refil de sucos naturais da Salgados R" loading="lazy" />
+        </figure>
       </div>
     </div>
   )

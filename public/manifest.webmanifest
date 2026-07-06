@@ -4,8 +4,8 @@
   "description": "Cardapio, pedidos e gestao operacional da SALGADOS R.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#fafafa",
-  "theme_color": "#dc0000",
+  "background_color": "#dc0008",
+  "theme_color": "#dc0008",
   "icons": [
     {
       "src": "/icon.svg",

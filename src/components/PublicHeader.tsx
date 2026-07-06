@@ -39,13 +39,13 @@ export function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--sr-white)]/10 bg-[var(--sr-red)]/95 shadow-[0_10px_28px_rgb(0_0_0_/_14%)] backdrop-blur">
+      <header className="sticky top-0 z-40 border-b border-[var(--sr-white)]/10 bg-[var(--sr-red)]">
         <div className="mx-auto flex h-[60px] max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] text-[var(--sr-white)] shadow-sm transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 lg:hidden"
+              className="grid h-10 w-10 place-items-center rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] lg:hidden"
               aria-label="Abrir menu"
             >
               <span className="space-y-1.5">
@@ -56,9 +56,9 @@ export function PublicHeader() {
             </button>
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Salgados R - inicio">
               <img
-                src="/assets-reais/logo-salgados-r.png"
+                src="/assets-reais/cutouts/logo-salgados-r.png"
                 alt="SALGADOS R"
-                className="h-10 w-[132px] rounded-xl object-cover object-center shadow-[0_8px_18px_rgba(0,0,0,0.22)] sm:w-[160px]"
+                className="sr-logo-mark h-11 w-[150px] object-contain object-left sm:w-[176px]"
               />
             </a>
           </div>
@@ -73,7 +73,7 @@ export function PublicHeader() {
           <div className="flex items-center gap-2">
             <a
               href="/carrinho"
-              className="relative grid h-10 min-w-10 place-items-center rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:block sm:h-auto sm:px-4 sm:py-2.5"
+              className="relative grid h-10 min-w-10 place-items-center rounded-full border border-[var(--sr-white)]/20 bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-4 sm:py-2.5"
               aria-label={`Carrinho com ${cartCount} itens`}
             >
               <span className="sm:hidden">{cartCount}</span>
@@ -86,7 +86,7 @@ export function PublicHeader() {
             </a>
             <a
               href="/cardapio"
-              className="hidden rounded-full bg-[var(--sr-yellow)] px-5 py-2.5 text-sm font-black text-[var(--sr-red)] shadow-[0_12px_22px_rgb(0_0_0_/_16%)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50 sm:inline-flex"
+              className="hidden rounded-full bg-[var(--sr-yellow)] px-5 py-2.5 text-sm font-black text-[var(--sr-red)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:inline-flex"
             >
               Pedir agora
             </a>
@@ -98,13 +98,13 @@ export function PublicHeader() {
         <div className="fixed inset-0 z-50">
           <button
             type="button"
-            className="absolute inset-0 bg-[var(--sr-red)]/80 backdrop-blur-sm"
+            className="absolute inset-0 bg-[var(--sr-red)]"
             onClick={close}
             aria-label="Fechar menu"
           />
-          <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)] shadow-2xl">
+          <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/logo-salgados-r.png" alt="SALGADOS R" className="h-12 w-40 rounded-xl object-cover shadow-xl" />
+              <img src="/assets-reais/cutouts/logo-salgados-r.png" alt="SALGADOS R" className="sr-logo-mark h-12 w-44 object-contain object-left" />
               <button
                 type="button"
                 onClick={close}
@@ -123,7 +123,7 @@ export function PublicHeader() {
                   onClick={close}
                   target={item.label === 'WhatsApp' ? '_blank' : undefined}
                   rel={item.label === 'WhatsApp' ? 'noreferrer' : undefined}
-                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-base font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]/50"
+                  className="flex items-center gap-3 rounded-xl px-3 py-3 text-base font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
                 >
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--sr-yellow)] text-sm text-[var(--sr-red)]">
                     {item.icon}
@@ -134,7 +134,7 @@ export function PublicHeader() {
             </nav>
 
             <div className="mt-auto rounded-2xl border border-[var(--sr-white)]/20 bg-[var(--sr-red)] p-4">
-              <p className="text-sm font-bold leading-6 text-white/85">
+              <p className="text-sm font-bold leading-6 text-[var(--sr-white)]">
                 Monte seu pedido no site ou chame no WhatsApp: +55 71 99702-1801.
               </p>
             </div>
