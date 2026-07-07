@@ -1,10 +1,11 @@
-const CACHE_NAME = 'salgados-r-v20260707-hero-integrado-final'
+const CACHE_NAME = 'salgados-r-v20260706-refino-visual-10'
 const CORE_ASSETS = [
   '/',
   '/manifest.webmanifest',
   '/icon.png',
   '/og-image.png',
   '/assets-reais/logomarca-oficial-clean.png',
+  '/assets-reais/logomarca-oficial-header.png',
   '/assets-reais/produto-pastel-clean.png',
   '/assets-reais/produto-coxinha-clean.png',
   '/assets-reais/produto-enroladinho-clean.png',

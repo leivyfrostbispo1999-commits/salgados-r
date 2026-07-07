@@ -1,10 +1,10 @@
 export function Footer() {
   return (
-    <footer id="atendimento" className="bg-[var(--sr-red)] py-10 text-[var(--sr-white)]">
-      <div className="mx-auto grid max-w-7xl gap-6 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+    <footer id="atendimento" className="bg-[var(--sr-red)] py-12 text-[var(--sr-white)]">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:grid-cols-2 sm:px-6 lg:grid-cols-[1.25fr_0.85fr_1fr_1fr] lg:items-start">
         <div>
-          <img src="/assets-reais/logomarca-oficial-clean.png" alt="SALGADOS R" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
-          <p className="mt-2 text-sm font-semibold leading-6 text-[var(--sr-white)]">Salgados, pasteis e sucos naturais.</p>
+          <img src="/assets-reais/logomarca-oficial-header.png" alt="SALGADOS R" className="sr-logo-mark h-24 w-[310px] object-contain object-left" />
+          <p className="mt-3 text-sm font-semibold leading-6 text-[var(--sr-white)]">Salgados, pasteis e sucos naturais.</p>
         </div>
         <div>
           <p className="font-black">Cardapio</p>
@@ -27,7 +27,7 @@ export function Footer() {
           </p>
         </div>
       </div>
-      <div className="mx-auto mt-6 max-w-7xl border-t-2 border-[var(--sr-yellow)] px-4 pt-5 text-sm font-semibold text-[var(--sr-white)] sm:px-6">
+      <div className="mx-auto mt-8 max-w-7xl border-t border-[var(--sr-yellow)] px-4 pt-5 text-sm font-semibold text-[var(--sr-white)] sm:px-6">
         © 2026 Salgados R. Todos os direitos reservados.
       </div>
     </footer>

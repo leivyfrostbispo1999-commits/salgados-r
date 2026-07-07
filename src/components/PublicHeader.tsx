@@ -39,8 +39,8 @@ export function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b-2 border-[var(--sr-yellow)] bg-[var(--sr-red)]">
-        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 py-2 sm:px-6">
+      <header className="sticky top-0 z-40 border-b border-[var(--sr-yellow)] bg-[var(--sr-red)]">
+        <div className="mx-auto flex h-[86px] max-w-7xl items-center justify-between px-4 py-2 sm:h-24 sm:px-6">
           <div className="flex items-center gap-4">
             <button
               type="button"
@@ -56,9 +56,9 @@ export function PublicHeader() {
             </button>
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Salgados R - inicio">
               <img
-                src="/assets-reais/logomarca-oficial-clean.png"
+                src="/assets-reais/logomarca-oficial-header.png"
                 alt="SALGADOS R"
-                className="sr-logo-mark h-16 w-[212px] object-contain object-left sm:h-[64px] sm:w-[236px]"
+                className="sr-logo-mark h-[72px] w-[230px] object-contain object-left sm:h-[82px] sm:w-[292px]"
               />
             </a>
           </div>
@@ -73,7 +73,7 @@ export function PublicHeader() {
           <div className="flex items-center gap-2">
             <a
               href="/carrinho"
-              className="relative grid h-10 min-w-10 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-4 sm:py-2.5"
+              className="relative grid h-11 min-w-11 place-items-center rounded-full border border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-5 sm:py-3"
               aria-label={`Carrinho com ${cartCount} itens`}
             >
               <span className="sm:hidden">{cartCount}</span>
@@ -86,7 +86,7 @@ export function PublicHeader() {
             </a>
             <a
               href="/cardapio"
-              className="hidden rounded-full bg-[var(--sr-yellow)] px-5 py-2.5 text-sm font-black text-[var(--sr-red)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:inline-flex"
+              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-red)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:inline-flex"
             >
               Pedir agora
             </a>
@@ -104,7 +104,7 @@ export function PublicHeader() {
           />
           <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/logomarca-oficial-clean.png" alt="SALGADOS R" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
+              <img src="/assets-reais/logomarca-oficial-header.png" alt="SALGADOS R" className="sr-logo-mark h-24 w-[310px] object-contain object-left" />
               <button
                 type="button"
                 onClick={close}
