@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260706-refino-visual-10'
-const HERO_REVISION = 'prato-unico-publicitario'
+const CACHE_NAME = 'salgados-r-v20260707-coxinha-nova'
+const HERO_REVISION = 'coxinha-nova-prato-unico'
 self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',
