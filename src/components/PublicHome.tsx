@@ -2,10 +2,10 @@ import { Footer } from './Footer'
 import { PublicHeader } from './PublicHeader'
 
 const realAssets = {
-  logo: '/assets-reais/logomarca-oficial-v2.png',
-  pastel: '/assets-reais/produto-pastel-v2.png',
-  coxinha: '/assets-reais/produto-coxinha-v2.png',
-  enroladinho: '/assets-reais/produto-enroladinho-v2.png',
+  logo: '/assets-reais/logomarca-oficial-clean.png',
+  pastel: '/assets-reais/produto-pastel-clean.png',
+  coxinha: '/assets-reais/produto-coxinha-clean.png',
+  enroladinho: '/assets-reais/produto-enroladinho-clean.png',
   cardapio: '/assets-reais/cardapio-oficial.png',
   refil: '/assets-reais/refil-sucos-v2.png',
 }

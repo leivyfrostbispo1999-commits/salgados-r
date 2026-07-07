@@ -29,37 +29,37 @@ const cartKey = 'salgados-r-cart'
 
 const productVisuals: Record<string, { imageUrl: string; imageAlt: string; badge: string }> = {
   'pastel-carne': {
-    imageUrl: '/assets-reais/produto-pastel-v2.png',
+    imageUrl: '/assets-reais/produto-pastel-clean.png',
     imageAlt: 'Pastel crocante recheado com carne',
     badge: 'Delivery e presencial',
   },
   'pastel-frango': {
-    imageUrl: '/assets-reais/produto-pastel-v2.png',
+    imageUrl: '/assets-reais/produto-pastel-clean.png',
     imageAlt: 'Pastel crocante recheado com frango',
     badge: 'Delivery e presencial',
   },
   'pastel-misto': {
-    imageUrl: '/assets-reais/produto-pastel-v2.png',
+    imageUrl: '/assets-reais/produto-pastel-clean.png',
     imageAlt: 'Pastel misto com queijo e presunto',
     badge: 'Delivery e presencial',
   },
   'pastel-calabresa-queijo': {
-    imageUrl: '/assets-reais/produto-pastel-v2.png',
+    imageUrl: '/assets-reais/produto-pastel-clean.png',
     imageAlt: 'Pastel de calabresa com queijo derretido',
     badge: 'Delivery e presencial',
   },
   'pastel-frango-queijo': {
-    imageUrl: '/assets-reais/produto-pastel-v2.png',
+    imageUrl: '/assets-reais/produto-pastel-clean.png',
     imageAlt: 'Pastel de frango com queijo',
     badge: 'Delivery e presencial',
   },
   coxinha: {
-    imageUrl: '/assets-reais/produto-coxinha-v2.png',
+    imageUrl: '/assets-reais/produto-coxinha-clean.png',
     imageAlt: 'Coxinha dourada e crocante',
     badge: 'Delivery e presencial',
   },
   enroladinho: {
-    imageUrl: '/assets-reais/produto-enroladinho-v2.png',
+    imageUrl: '/assets-reais/produto-enroladinho-clean.png',
     imageAlt: 'Enroladinho dourado',
     badge: 'Delivery e presencial',
   },

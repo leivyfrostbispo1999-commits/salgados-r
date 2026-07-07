@@ -56,7 +56,7 @@ export function PublicHeader() {
             </button>
             <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Salgados R - inicio">
               <img
-                src="/assets-reais/logomarca-oficial-v2.png"
+                src="/assets-reais/logomarca-oficial-clean.png"
                 alt="SALGADOS R"
                 className="sr-logo-mark h-16 w-[212px] object-contain object-left sm:h-[64px] sm:w-[236px]"
               />
@@ -104,7 +104,7 @@ export function PublicHeader() {
           />
           <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/logomarca-oficial-v2.png" alt="SALGADOS R" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
+              <img src="/assets-reais/logomarca-oficial-clean.png" alt="SALGADOS R" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
               <button
                 type="button"
                 onClick={close}

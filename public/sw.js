@@ -1,13 +1,13 @@
-const CACHE_NAME = 'salgados-r-v20260706-assets-novos-direcao-final'
+const CACHE_NAME = 'salgados-r-v20260706-png-alpha-clean-final'
 const CORE_ASSETS = [
   '/',
   '/manifest.webmanifest',
   '/icon.png',
   '/og-image.png',
-  '/assets-reais/logomarca-oficial-v2.png',
-  '/assets-reais/produto-pastel-v2.png',
-  '/assets-reais/produto-coxinha-v2.png',
-  '/assets-reais/produto-enroladinho-v2.png',
+  '/assets-reais/logomarca-oficial-clean.png',
+  '/assets-reais/produto-pastel-clean.png',
+  '/assets-reais/produto-coxinha-clean.png',
+  '/assets-reais/produto-enroladinho-clean.png',
   '/assets-reais/refil-sucos-v2.png',
 ]
 
