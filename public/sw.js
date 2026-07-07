@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260707-coxinha-nova'
-const HERO_REVISION = 'coxinha-nova-prato-unico'
+const CACHE_NAME = 'salgados-r-v20260707-hero-triangulo'
+const HERO_REVISION = 'hero-triangulo-produtos-integros'
 self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',
@@ -11,7 +11,6 @@ const CORE_ASSETS = [
   '/assets-reais/produto-pastel-clean.png',
   '/assets-reais/produto-coxinha-clean.png',
   '/assets-reais/produto-enroladinho-clean.png',
-  '/assets-reais/hero-produtos-integrados.png',
   '/assets-reais/refil-sucos-v2.png',
 ]
 
