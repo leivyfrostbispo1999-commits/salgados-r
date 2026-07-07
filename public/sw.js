@@ -1,4 +1,6 @@
 const CACHE_NAME = 'salgados-r-v20260706-refino-visual-10'
+const HERO_REVISION = 'prato-unico-publicitario'
+self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',
   '/manifest.webmanifest',
