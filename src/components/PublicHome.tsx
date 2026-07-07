@@ -6,6 +6,7 @@ const realAssets = {
   pastel: '/assets-reais/produto-pastel-clean.png',
   coxinha: '/assets-reais/produto-coxinha-clean.png',
   enroladinho: '/assets-reais/produto-enroladinho-clean.png',
+  hero: '/assets-reais/hero-produtos-integrados.png',
   cardapio: '/assets-reais/cardapio-oficial.png',
   refil: '/assets-reais/refil-sucos-v2.png',
 }
@@ -104,12 +105,8 @@ function Hero() {
           </div>
         </div>
 
-        <div className="relative min-h-[330px] lg:min-h-[430px]">
-          <div className="sr-hero-plate">
-            <img src={realAssets.enroladinho} alt="Enroladinho dourado da Salgados R" className="sr-hero-product sr-hero-product-enroladinho" />
-            <img src={realAssets.pastel} alt="Pastel crocante da Salgados R" className="sr-hero-product sr-hero-product-pastel" />
-            <img src={realAssets.coxinha} alt="Coxinha dourada da Salgados R" className="sr-hero-product sr-hero-product-coxinha" />
-          </div>
+        <div className="sr-hero-visual" aria-label="Pastel, coxinha e enroladinho da Salgados R">
+          <img src={realAssets.hero} alt="Pastel, coxinha e enroladinho integrados em uma composição da Salgados R" className="sr-hero-composition" />
         </div>
       </div>
     </section>

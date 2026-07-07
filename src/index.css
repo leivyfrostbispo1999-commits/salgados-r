@@ -47,44 +47,17 @@ body {
   content: "";
 }
 
-.sr-hero-plate {
-  position: absolute;
-  inset: 0;
-  min-height: 340px;
-  overflow: visible;
-  background: var(--sr-red);
+.sr-hero-visual {
+  display: grid;
+  min-height: 380px;
+  align-items: center;
 }
 
-.sr-hero-plate::before {
-  content: none;
-}
-
-.sr-hero-plate::after {
-  content: none;
-}
-
-.sr-hero-product {
-  position: absolute;
-  z-index: 1;
+.sr-hero-composition {
+  width: min(108%, 880px);
+  height: auto;
+  justify-self: center;
   object-fit: contain;
-}
-
-.sr-hero-product-pastel {
-  right: 17%;
-  bottom: 4%;
-  width: min(52vw, 470px);
-}
-
-.sr-hero-product-coxinha {
-  right: -1%;
-  bottom: 11%;
-  width: min(34vw, 280px);
-}
-
-.sr-hero-product-enroladinho {
-  left: 0;
-  bottom: 12%;
-  width: min(36vw, 310px);
 }
 
 .sr-logo-mark {
@@ -352,27 +325,13 @@ body {
     text-align: left;
   }
 
-  .sr-hero-plate {
-    position: relative;
-    min-height: 315px;
+  .sr-hero-visual {
+    min-height: 270px;
   }
 
-  .sr-hero-product-pastel {
-    right: 14%;
-    bottom: 16%;
-    width: 62vw;
-  }
-
-  .sr-hero-product-coxinha {
-    right: -4%;
-    bottom: 22%;
-    width: 38vw;
-  }
-
-  .sr-hero-product-enroladinho {
-    left: -3%;
-    bottom: 22%;
-    width: 40vw;
+  .sr-hero-composition {
+    width: min(116vw, 660px);
+    margin-left: -6vw;
   }
 
   .sr-food-card {
