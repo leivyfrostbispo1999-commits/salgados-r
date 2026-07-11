@@ -15,6 +15,7 @@ import { ProductionCalculator } from './ProductionCalculator'
 
 const tabs = [
   { id: 'dashboard', label: 'Dashboard' },
+  { id: 'maturidade', label: 'Maturidade' },
   { id: 'pedidos', label: 'Pedidos' },
   { id: 'cozinha', label: 'Cozinha' },
   { id: 'produtos', label: 'Produtos' },
@@ -29,6 +30,82 @@ const tabs = [
 type TabId = (typeof tabs)[number]['id']
 
 const statusFlow: ApiOrder['status'][] = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA', 'FINALIZADO']
+
+const maturityModules = [
+  {
+    area: 'Site publico',
+    status: 'Pronto',
+    detail: 'Home, cardapio digital, carrinho, checkout, WhatsApp e PWA publicados.',
+    next: 'Adicionar dominio .com.br e acompanhar indexacao no Google.',
+  },
+  {
+    area: 'Pedidos pelo site',
+    status: 'Pronto',
+    detail: 'Pedido grava no PostgreSQL, gera numero, itens, cliente, entrega, pagamento e notificacao.',
+    next: 'Criar alerta sonoro persistente para pedidos novos no painel da loja.',
+  },
+  {
+    area: 'Painel da cozinha',
+    status: 'Pronto',
+    detail: 'Fluxo RECEBIDO, ACEITO, PREPARANDO, PRONTO, SAIU PARA ENTREGA e FINALIZADO.',
+    next: 'Adicionar modo TV/cozinha com cards maiores e timer por pedido.',
+  },
+  {
+    area: 'Usuarios e permissoes',
+    status: 'Pronto',
+    detail: 'SUPER_US, ADMIN, GERENTE e ATENDENTE com JWT, bcrypt e rate limit de login.',
+    next: 'Criar tela completa de gestao de usuarios e troca de senha.',
+  },
+  {
+    area: 'Produtos e cardapio',
+    status: 'Pronto',
+    detail: 'Cadastro por API, categorias, disponibilidade, destaque, preco e regra presencial/delivery.',
+    next: 'Adicionar upload de imagem pelo painel.',
+  },
+  {
+    area: 'Clientes e fidelidade',
+    status: 'Base pronta',
+    detail: 'Clientes sao consolidados por telefone, com historico, gasto total e pontos.',
+    next: 'Criar tela visual de fidelidade, cupons e campanhas.',
+  },
+  {
+    area: 'Estoque',
+    status: 'Base pronta',
+    detail: 'Itens, quantidade, minimo, alerta de baixo estoque e movimentacao de entrada/saida.',
+    next: 'Ligar baixa automatica ao pedido por ficha tecnica.',
+  },
+  {
+    area: 'Financeiro',
+    status: 'Base pronta',
+    detail: 'Caixa, entradas, saidas, despesas e resumo por forma de pagamento.',
+    next: 'Fechamento de caixa com conferencia e relatorio imprimivel.',
+  },
+  {
+    area: 'Impressao automatica',
+    status: 'Pendente externo',
+    detail: 'API tem fila de impressao e teste; falta agente local Windows conectado a impressora termica.',
+    next: 'Instalar agente na maquina da loja e configurar impressora real.',
+  },
+  {
+    area: 'Backup',
+    status: 'Base pronta',
+    detail: 'Script PostgreSQL e endpoint de status preparados.',
+    next: 'Ativar cron na VM e opcionalmente enviar para Oracle Object Storage ou Google Drive.',
+  },
+  {
+    area: 'Entrega',
+    status: 'Base pronta',
+    detail: 'Checkout possui retirada, consumo local e delivery com taxa configuravel.',
+    next: 'Cadastrar bairros, taxas por zona e painel do entregador.',
+  },
+  {
+    area: 'Inteligencia',
+    status: 'Planejado',
+    detail: 'Dados de pedidos, clientes, produtos e vendas ja ficam estruturados para automacoes futuras.',
+    next: 'Criar recomendacoes, combos, reativacao de clientes e dashboard preditivo.',
+  },
+] as const
+
 export function OperationsSuite() {
   const [activeTab, setActiveTab] = useState<TabId>(() => pathToTab(window.location.pathname))
   const [authChecked, setAuthChecked] = useState(false)
@@ -167,6 +244,9 @@ export function OperationsSuite() {
           ) : null}
           {!loading && authChecked && !user && hasUsers ? <LoginForm onReady={afterAuth} setMessage={setMessage} /> : null}
           {!loading && user && activeTab === 'dashboard' ? <ReportsPanel summary={summary} orders={orders} /> : null}
+          {!loading && user && activeTab === 'maturidade' ? (
+            <MaturityPanel products={products} orders={orders} stock={stock} summary={summary} finance={finance} />
+          ) : null}
           {!loading && user && activeTab === 'pedidos' ? (
             <OrdersPanel orders={orders} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
@@ -193,6 +273,7 @@ export function OperationsSuite() {
 }
 
 function pathToTab(path: string): TabId {
+  if (path.includes('/maturidade') || path.includes('/roadmap')) return 'maturidade'
   if (path.includes('/cozinha')) return 'cozinha'
   if (path.includes('/pedidos')) return 'pedidos'
   if (path.includes('/produtos')) return 'produtos'
@@ -203,6 +284,96 @@ function pathToTab(path: string): TabId {
   if (path.includes('/relatorios')) return 'relatorios'
   if (path.includes('/auditoria')) return 'auditoria'
   return 'dashboard'
+}
+
+function MaturityPanel({
+  products,
+  orders,
+  stock,
+  summary,
+  finance,
+}: {
+  products: ApiProduct[]
+  orders: ApiOrder[]
+  stock: StockItem[]
+  summary: ReportSummary | null
+  finance: FinanceSummary | null
+}) {
+  const ready = maturityModules.filter((item) => item.status === 'Pronto').length
+  const base = maturityModules.filter((item) => item.status === 'Base pronta').length
+  const score = Math.round(((ready + base * 0.65) / maturityModules.length) * 100)
+  const pending = maturityModules.length - ready - base
+
+  return (
+    <div className="grid gap-5">
+      <div className="rounded-lg bg-[#1D1D1D] p-5 text-white">
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-[#FFC72C]">Inspirado no padrao Acai Olimpo</p>
+        <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_260px] lg:items-end">
+          <div>
+            <h2 className="text-3xl font-black">Mapa de maturidade operacional da Salgados R</h2>
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-zinc-200">
+              O objetivo e evoluir de catalogo online para sistema operacional completo, mantendo a identidade vermelha,
+              amarela e a tipografia atual da marca. O PDF foi usado apenas como referencia de arquitetura e modulos.
+            </p>
+          </div>
+          <div className="rounded-lg bg-[#FFC72C] p-4 text-[#1D1D1D]">
+            <p className="text-sm font-black">Maturidade estimada</p>
+            <p className="mt-1 text-5xl font-black">{score}%</p>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Metric label="Modulos prontos" value={String(ready)} />
+        <Metric label="Bases prontas" value={String(base)} />
+        <Metric label="Pendencias" value={String(pending)} />
+        <Metric label="Produtos ativos" value={String(products.filter((product) => product.active).length)} />
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <p className="text-sm font-black text-[#DA291C]">Pedidos no banco</p>
+          <p className="mt-1 text-3xl font-black">{orders.length}</p>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <p className="text-sm font-black text-[#DA291C]">Estoque baixo</p>
+          <p className="mt-1 text-3xl font-black">{stock.filter((item) => item.low).length}</p>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <p className="text-sm font-black text-[#DA291C]">Clientes fidelidade</p>
+          <p className="mt-1 text-3xl font-black">{summary?.loyaltyCustomers ?? 0}</p>
+        </div>
+        <div className="rounded-lg border border-zinc-200 bg-white p-4">
+          <p className="text-sm font-black text-[#DA291C]">Caixa</p>
+          <p className="mt-1 text-3xl font-black">{finance?.openSession ? 'Aberto' : 'Fechado'}</p>
+        </div>
+      </div>
+
+      <div className="grid gap-4 lg:grid-cols-2">
+        {maturityModules.map((item) => (
+          <article key={item.area} className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <h3 className="text-xl font-black text-[#1D1D1D]">{item.area}</h3>
+              <span className={`rounded-full px-3 py-1 text-xs font-black ${maturityStatusClass(item.status)}`}>
+                {item.status}
+              </span>
+            </div>
+            <p className="mt-3 text-sm font-semibold leading-6 text-zinc-700">{item.detail}</p>
+            <p className="mt-3 rounded-lg bg-zinc-50 p-3 text-sm font-bold text-zinc-800">
+              Proximo passo: {item.next}
+            </p>
+          </article>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function maturityStatusClass(status: string) {
+  if (status === 'Pronto') return 'bg-green-100 text-green-900'
+  if (status === 'Base pronta') return 'bg-yellow-100 text-yellow-900'
+  if (status === 'Pendente externo') return 'bg-red-100 text-red-900'
+  return 'bg-zinc-200 text-zinc-800'
 }
 
 function BootstrapForm({

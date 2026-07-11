@@ -7,6 +7,7 @@ Agora o projeto tambem inclui uma primeira versao full-stack:
 - Backend Node/Express com banco PostgreSQL.
 - Login com perfis `SUPER_US`, `ADMIN`, `GERENTE` e `ATENDENTE`.
 - API de produtos, pedidos, cozinha, estoque, relatorios, financeiro, impressao mock, auditoria, seguranca e fidelidade.
+- Aba de maturidade operacional inspirada no projeto Acai Olimpo, com status real dos modulos e proximos passos.
 - Home publica separada do painel administrativo.
 - PWA com manifest e service worker.
 - Docker Compose com servicos separados para `web` e `api`.
@@ -143,6 +144,38 @@ GOOGLE_DRIVE_FOLDER_ID=
 - PIX automatico: base manual criada; Mercado Pago, Asaas, PagSeguro ou Efi dependem de credenciais reais.
 - Google Maps/entrega: modulo preparado, mas depende do endereco real da loja e bairros atendidos.
 - Dominio `.com.br`: depende de compra/apontamento DNS externo.
+
+## Comparativo com o padrao Acai Olimpo
+
+O PDF do Acai Olimpo foi usado como referencia de maturidade, nao como guia visual. As cores, a marca e a tipografia da SALGADOS R permanecem as atuais.
+
+Ja esta implementado:
+
+- Site publico com cardapio, carrinho, checkout, WhatsApp e PWA.
+- Backend Node/Express com PostgreSQL.
+- Login com perfis `SUPER_US`, `ADMIN`, `GERENTE` e `ATENDENTE`.
+- Pedidos gravados no banco, numero de pedido, cliente, itens, pagamento e status.
+- Painel de pedidos e cozinha.
+- Produtos, categorias, disponibilidade, destaque e regra presencial/delivery.
+- Clientes por telefone, historico, gasto total e pontos.
+- Estoque com minimo, alerta e movimentacao.
+- Financeiro com caixa, entradas, saidas, despesas e resumo por forma de pagamento.
+- Auditoria, rate limit de login, headers de seguranca e status de seguranca.
+- Fila de impressao em modo mock.
+- Script de backup PostgreSQL.
+
+Ainda falta para chegar ao mesmo nivel operacional completo:
+
+- Agente local de impressao instalado na maquina da loja e conectado a impressora termica.
+- Backup agendado via cron na VM e opcionalmente copia externa.
+- Tela completa de usuarios, troca de senha e administracao de permissoes.
+- Upload de imagens pelo painel.
+- Ficha tecnica para baixa automatica de estoque por produto vendido.
+- Painel de entregador, zonas de entrega e taxas por bairro.
+- PIX automatico com provedor real.
+- Notificacoes push reais no PWA.
+- Testes automatizados de API, painel e fluxo de pedido.
+- Dominio proprio `.com.br` quando for comprado.
 
 ## Deploy atual
 
