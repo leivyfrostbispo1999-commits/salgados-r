@@ -63,7 +63,7 @@ export function PublicHeader() {
             </a>
           </div>
 
-          <nav className="hidden items-center gap-6 text-sm font-black text-[var(--sr-white)] lg:flex">
+          <nav className="hidden items-center gap-6 text-base font-black text-[var(--sr-white)] lg:flex">
             <a href="/" className="transition hover:text-[var(--sr-yellow)]">Inicio</a>
             <a href="/cardapio" className="transition hover:text-[var(--sr-yellow)]">Cardapio</a>
             <a href="/#como-pedir" className="transition hover:text-[var(--sr-yellow)]">Como pedir</a>
@@ -86,7 +86,7 @@ export function PublicHeader() {
             </a>
             <a
               href="/cardapio"
-              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-red)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:inline-flex"
+              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-white)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:inline-flex"
             >
               Pedir agora
             </a>

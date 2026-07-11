@@ -75,40 +75,28 @@ export function PublicHome() {
 
 function Hero() {
   return (
-    <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
-      <div className="mx-auto grid min-h-[520px] max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:py-10">
-        <div className="relative z-10 max-w-2xl">
-          <span className="inline-flex rounded-full bg-[var(--sr-yellow)] px-5 py-2 text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-red)]">
+    <section className="sr-hero-stage sr-hero-poster overflow-hidden text-[var(--sr-white)]">
+      <div className="mx-auto flex min-h-[calc(100vh-112px)] max-w-[92rem] flex-col justify-center px-5 py-12 sm:px-8 lg:min-h-[calc(100vh-96px)] lg:py-16">
+        <div className="relative z-10">
+          <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] px-7 py-4 text-2xl font-black uppercase text-[var(--sr-white)] sm:px-11 sm:text-4xl">
             Loja popular, quente e saborosa
           </span>
-          <h1 className="mt-5 max-w-2xl text-5xl font-black leading-[0.9] tracking-tight sm:text-6xl lg:text-7xl">
-            Pastel crocante, coxinha dourada e suco geladinho.
+          <h1 className="sr-hero-title mt-12 font-black uppercase">
+            <span>Pastel caprichado,</span>
+            <span>Coxinha crocante</span>
+            <span>E enroladinho</span>
+            <span>Douradinho.</span>
           </h1>
-          <p className="mt-4 max-w-xl text-base font-black leading-7 text-[var(--sr-white)] sm:text-lg">
+          <p className="sr-hero-subtitle mt-8 font-black uppercase text-[var(--sr-white)]">
             Cardapio forte, pedido rapido e aquele visual de fome na hora.
           </p>
-          <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+          <div className="sr-hero-actions mt-11 flex flex-col gap-5 sm:flex-row">
             <a href="/cardapio" className="sr-primary-cta">
               Pedir agora
             </a>
             <a href="/cardapio" className="sr-secondary-cta">
               Ver cardápio
             </a>
-          </div>
-          <div className="mt-6 grid max-w-xl grid-cols-3 gap-3">
-            {['Pasteis R$ 5', 'Coxinha R$ 4', 'Suco R$ 4'].map((item) => (
-              <span key={item} className="rounded-2xl border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 py-3 text-center text-sm font-black text-[var(--sr-white)]">
-                {item}
-              </span>
-            ))}
-          </div>
-        </div>
-
-        <div className="sr-hero-visual" aria-label="Pastel, coxinha e enroladinho da Salgados R">
-          <div className="sr-hero-triangle">
-            <img src={realAssets.pastel} alt="Pastel da Salgados R" className="sr-hero-product sr-hero-product-pastel" />
-            <img src={realAssets.coxinha} alt="Coxinha da Salgados R" className="sr-hero-product sr-hero-product-coxinha" />
-            <img src={realAssets.enroladinho} alt="Enroladinho da Salgados R" className="sr-hero-product sr-hero-product-enroladinho" />
           </div>
         </div>
       </div>
@@ -147,7 +135,7 @@ function FeaturedHome() {
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Mais pedidos</p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-[var(--sr-white)] sm:text-4xl">Fome bateu, pediu.</h2>
           </div>
-          <a href="/cardapio" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-red)] transition">
+          <a href="/cardapio" className="rounded-full bg-[var(--sr-yellow)] px-5 py-3 font-black text-[var(--sr-white)] transition">
             Ver todos
           </a>
         </div>
@@ -202,7 +190,7 @@ function HowItWorksHome() {
         <div className="mt-8 grid gap-4 md:grid-cols-3">
           {steps.map((step, index) => (
             <article key={step.title} className="rounded-[22px] border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
-              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-red)]">
+              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-white)]">
                 {index + 1}
               </span>
               <h3 className="mt-5 text-2xl font-black">{step.title}</h3>

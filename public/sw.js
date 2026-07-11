@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260707-hero-triangulo'
-const HERO_REVISION = 'hero-triangulo-produtos-integros'
+const CACHE_NAME = 'salgados-r-v20260711-hero-poster-tipografico'
+const HERO_REVISION = 'hero-poster-tipografico'
 self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',
