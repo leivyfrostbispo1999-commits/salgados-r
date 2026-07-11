@@ -75,9 +75,9 @@ export function PublicHome() {
 
 function Hero() {
   return (
-    <section className="sr-hero-stage sr-hero-poster overflow-hidden text-[var(--sr-white)]">
-      <div className="mx-auto flex min-h-[calc(100vh-112px)] max-w-[92rem] flex-col justify-center px-5 py-12 sm:px-8 lg:min-h-[calc(100vh-96px)] lg:py-16">
-        <div className="relative z-10">
+    <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
+      <div className="mx-auto grid min-h-[560px] max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:py-10">
+        <div className="relative z-10 max-w-2xl">
           <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] px-7 py-4 text-2xl font-black uppercase text-[var(--sr-white)] sm:px-11 sm:text-4xl">
             Loja popular, quente e saborosa
           </span>
@@ -97,6 +97,14 @@ function Hero() {
             <a href="/cardapio" className="sr-secondary-cta">
               Ver cardápio
             </a>
+          </div>
+        </div>
+
+        <div className="sr-hero-visual" aria-label="Pastel, coxinha e enroladinho da Salgados R">
+          <div className="sr-hero-triangle">
+            <img src={realAssets.pastel} alt="Pastel da Salgados R" className="sr-hero-product sr-hero-product-pastel" />
+            <img src={realAssets.coxinha} alt="Coxinha da Salgados R" className="sr-hero-product sr-hero-product-coxinha" />
+            <img src={realAssets.enroladinho} alt="Enroladinho da Salgados R" className="sr-hero-product sr-hero-product-enroladinho" />
           </div>
         </div>
       </div>
