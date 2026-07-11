@@ -39,7 +39,7 @@ export function PublicHeader() {
 
   return (
     <>
-      <header className="sticky top-0 z-40 border-b border-[var(--sr-yellow)] bg-[var(--sr-red)]">
+      <header className="relative z-40 border-b border-[var(--sr-yellow)] bg-[var(--sr-red)]">
         <div className="mx-auto flex h-[86px] max-w-7xl items-center justify-between px-4 py-2 sm:h-24 sm:px-6">
           <div className="flex items-center gap-4">
             <button

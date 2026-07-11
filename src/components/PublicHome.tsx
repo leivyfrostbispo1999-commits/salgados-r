@@ -100,7 +100,7 @@ export function PublicHome() {
 function Hero() {
   return (
     <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
-      <div className="mx-auto grid min-h-[640px] max-w-[96rem] items-center gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:py-12">
+      <div className="mx-auto grid min-h-[600px] max-w-[96rem] items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:py-10">
         <div className="relative z-10 max-w-2xl">
           <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] px-7 py-4 text-2xl font-black uppercase text-[var(--sr-white)] sm:px-11 sm:text-4xl">
             Loja popular, quente e saborosa
