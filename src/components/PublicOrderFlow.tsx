@@ -305,7 +305,7 @@ function MenuView({
             <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
               <div>
                 <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">{eyebrowCategory(group.category)}</p>
-                <h2 className="text-3xl font-black capitalize leading-tight text-[var(--sr-white)]">{labelCategory(group.category)}</h2>
+                <h2 className="text-3xl font-black leading-tight text-[var(--sr-white)]">{labelCategory(group.category)}</h2>
               </div>
               {group.category === 'sucos' ? (
                 <span className="rounded-full bg-[var(--sr-yellow)] px-4 py-2 text-xs font-black text-[var(--sr-red)]">

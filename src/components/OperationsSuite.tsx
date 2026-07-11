@@ -229,7 +229,7 @@ function BootstrapForm({
   return (
     <AuthBox title="Criar primeiro SUPER_US" subtitle="Esse passo aparece apenas enquanto nao existe usuario no banco.">
       <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-      <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+      <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
       <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha inicial" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
       <button type="button" onClick={submit} className="rounded bg-black px-4 py-3 font-black text-yellow-300">
         Criar SUPER_US
@@ -260,7 +260,7 @@ function LoginForm({
 
   return (
     <AuthBox title="Entrar no painel" subtitle="Acesso restrito a SUPER_US, ADMIN, GERENTE e ATENDENTE.">
-      <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+      <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
       <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
       <button type="button" onClick={submit} className="rounded bg-black px-4 py-3 font-black text-yellow-300">
         Entrar

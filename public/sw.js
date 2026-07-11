@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260711-hero-poster-tipografico'
-const HERO_REVISION = 'hero-poster-tipografico'
+const CACHE_NAME = 'salgados-r-v20260711-textos-maiusculos'
+const HERO_REVISION = 'textos-maiusculos-globais'
 self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',

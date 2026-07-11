@@ -79,10 +79,31 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
+  text-transform: uppercase;
 }
 
 * {
   box-sizing: border-box;
+}
+
+input,
+textarea,
+select,
+button {
+  text-transform: inherit;
+}
+
+input::placeholder,
+textarea::placeholder {
+  text-transform: uppercase;
+}
+
+input[type="email"],
+input[type="password"],
+input[type="url"],
+input[data-preserve-case],
+textarea[data-preserve-case] {
+  text-transform: none;
 }
 
 .sr-hot-bg,
