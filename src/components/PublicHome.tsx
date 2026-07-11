@@ -55,6 +55,30 @@ const steps = [
   { title: 'Confirme', text: 'Finalize pelo site ou WhatsApp.' },
 ]
 
+const heroProducts = [
+  {
+    title: 'Pastel',
+    description: 'Massa sequinha e recheio caprichado.',
+    price: 'R$ 5,00',
+    image: realAssets.pastel,
+    alt: 'Pastel da Salgados R',
+  },
+  {
+    title: 'Coxinha',
+    description: 'Crocante por fora, cremosa por dentro.',
+    price: 'R$ 4,00',
+    image: realAssets.coxinha,
+    alt: 'Coxinha da Salgados R',
+  },
+  {
+    title: 'Enroladinho',
+    description: 'Douradinho e pronto para pedir.',
+    price: 'R$ 4,00',
+    image: realAssets.enroladinho,
+    alt: 'Enroladinho da Salgados R',
+  },
+]
+
 export function PublicHome() {
   return (
     <div className="min-h-screen bg-[var(--sr-red)] text-[var(--sr-white)]">
@@ -76,7 +100,7 @@ export function PublicHome() {
 function Hero() {
   return (
     <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
-      <div className="mx-auto grid min-h-[560px] max-w-7xl items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:py-10">
+      <div className="mx-auto grid min-h-[640px] max-w-[96rem] items-center gap-8 px-4 py-10 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:py-12">
         <div className="relative z-10 max-w-2xl">
           <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] px-7 py-4 text-2xl font-black uppercase text-[var(--sr-white)] sm:px-11 sm:text-4xl">
             Loja popular, quente e saborosa
@@ -100,12 +124,17 @@ function Hero() {
           </div>
         </div>
 
-        <div className="sr-hero-visual" aria-label="Pastel, coxinha e enroladinho da Salgados R">
-          <div className="sr-hero-triangle">
-            <img src={realAssets.pastel} alt="Pastel da Salgados R" className="sr-hero-product sr-hero-product-pastel" />
-            <img src={realAssets.coxinha} alt="Coxinha da Salgados R" className="sr-hero-product sr-hero-product-coxinha" />
-            <img src={realAssets.enroladinho} alt="Enroladinho da Salgados R" className="sr-hero-product sr-hero-product-enroladinho" />
-          </div>
+        <div className="sr-hero-product-grid" aria-label="Pastel, coxinha e enroladinho da Salgados R">
+          {heroProducts.map((product) => (
+            <article key={product.title} className="sr-hero-product-card">
+              <div className="sr-hero-product-media">
+                <img src={product.image} alt={product.alt} />
+              </div>
+              <h2>{product.title}</h2>
+              <p>{product.description}</p>
+              <span>{product.price}</span>
+            </article>
+          ))}
         </div>
       </div>
     </section>
