@@ -79,7 +79,11 @@ export type AuthUser = {
   id: string
   name: string
   email: string
-  role: 'SUPER_US' | 'ADMIN' | 'GERENTE' | 'ATENDENTE'
+  role: 'SUPER_US' | 'ADMIN' | 'GERENTE' | 'ATENDENTE' | 'FUNCIONARIO'
+  displayRole?: string
+  permissions?: string[]
+  active?: boolean
+  createdAt?: string
 }
 
 export type FinanceSummary = {
@@ -245,6 +249,9 @@ export const api = {
     return result
   },
   me: () => request<AuthUser>('/auth/me'),
+  users: () => request<AuthUser[]>('/users'),
+  createUser: (payload: { name: string; email: string; password: string; role: AuthUser['role'] }) =>
+    request<AuthUser>('/users', { method: 'POST', body: JSON.stringify(payload) }),
   products: () => request<ApiProduct[]>('/products'),
   publicProducts: () => request<ApiProduct[]>('/products/public'),
   createProduct: (payload: {

@@ -3,6 +3,7 @@ import express from 'express'
 import jwt from 'jsonwebtoken'
 import pg from 'pg'
 import { randomUUID } from 'node:crypto'
+import { allowedRoles, displayRole, hasPermission, normalizeRole, permissionsFor } from './access-control.js'
 
 const { Pool } = pg
 const port = Number(process.env.PORT || 3001)
@@ -83,13 +84,6 @@ const stockSeed = [
   ['Polpa de goiaba', 'litro', 8, 3],
   ['Polpa de maracuja', 'litro', 8, 3],
 ]
-
-const permissions = {
-  SUPER_US: ['*'],
-  ADMIN: ['products', 'orders', 'stock', 'reports', 'users', 'finance', 'audit', 'printing', 'settings', 'security', 'production'],
-  GERENTE: ['products', 'orders', 'stock', 'reports', 'finance', 'printing', 'settings', 'production'],
-  ATENDENTE: ['orders'],
-}
 
 const orderStatuses = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA', 'FINALIZADO', 'CANCELADO']
 
@@ -289,11 +283,14 @@ async function productionForecastDto(row, includeItems = false) {
 }
 
 function userDto(row) {
+  const role = normalizeRole(row.role) || row.role
   return {
     id: row.id,
     name: row.name,
     email: row.email,
-    role: row.role,
+    role,
+    displayRole: displayRole(role),
+    permissions: permissionsFor(role),
     active: row.active,
     createdAt: row.created_at,
   }
@@ -350,12 +347,6 @@ async function orderDto(row) {
       notes: item.notes || '',
     })),
   }
-}
-
-function hasPermission(user, permission) {
-  if (!user) return false
-  const userPermissions = permissions[user.role] || []
-  return userPermissions.includes('*') || userPermissions.includes(permission)
 }
 
 function auth(permission) {
@@ -812,7 +803,7 @@ app.get('/api/health', async (_req, res) => {
 
 app.get('/api/auth/status', async (_req, res) => {
   const count = await query('SELECT COUNT(*)::int AS total FROM users')
-  res.json({ hasUsers: count.rows[0].total > 0, roles: Object.keys(permissions) })
+  res.json({ hasUsers: count.rows[0].total > 0, roles: ['SUPER_US', 'GERENTE', 'FUNCIONARIO'] })
 })
 
 app.get('/api/auth/me', auth('orders'), async (req, res) => {
@@ -864,9 +855,10 @@ app.get('/api/users', auth('users'), async (_req, res) => {
   res.json(result.rows.map(userDto))
 })
 
-app.post('/api/users', auth('users'), async (req, res) => {
-  const { name, email, password, role } = req.body
-  if (!name || !email || !password || !permissions[role]) return res.status(400).json({ error: 'Usuario invalido.' })
+app.post('/api/users', auth('users.create'), async (req, res) => {
+  const { name, email, password } = req.body
+  const role = normalizeRole(req.body.role)
+  if (!name || !email || !password || !allowedRoles.includes(role)) return res.status(400).json({ error: 'Usuario invalido.' })
 
   const passwordHash = await bcrypt.hash(password, 12)
   const created = await query(
@@ -884,12 +876,12 @@ app.get('/api/products/public', async (_req, res) => {
   res.json(result.rows.map(productDto))
 })
 
-app.get('/api/products', async (_req, res) => {
+app.get('/api/products', auth('products.view'), async (_req, res) => {
   const result = await query('SELECT * FROM products ORDER BY category, sort_order, price_cents, name')
   res.json(result.rows.map(productDto))
 })
 
-app.post('/api/products', auth('products'), async (req, res) => {
+app.post('/api/products', auth('products.create'), async (req, res) => {
   const {
     name,
     description = '',
@@ -938,7 +930,7 @@ app.post('/api/products', auth('products'), async (req, res) => {
   res.status(201).json(productDto(created.rows[0]))
 })
 
-app.patch('/api/products/:id', auth('products'), async (req, res) => {
+app.patch('/api/products/:id', auth('products.update'), async (req, res) => {
   const current = await query('SELECT * FROM products WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Produto nao encontrado.' })
 
@@ -970,7 +962,7 @@ app.patch('/api/products/:id', auth('products'), async (req, res) => {
   res.json(productDto(updated.rows[0]))
 })
 
-app.patch('/api/products/:id/availability', auth('products'), async (req, res) => {
+app.patch('/api/products/:id/availability', auth('products.update'), async (req, res) => {
   req.body.active = typeof req.body.active === 'boolean' ? req.body.active : undefined
   req.body.deliveryEnabled = typeof req.body.deliveryEnabled === 'boolean' ? req.body.deliveryEnabled : undefined
   req.body.pickupEnabled = typeof req.body.pickupEnabled === 'boolean' ? req.body.pickupEnabled : undefined
@@ -1056,7 +1048,7 @@ app.get('/api/admin/production-forecasts/weekday/:weekday', auth('production'), 
   res.json(forecasts)
 })
 
-app.post('/api/admin/production-forecasts', auth('production'), async (req, res) => {
+app.post('/api/admin/production-forecasts', auth('production.manage'), async (req, res) => {
   const name = String(req.body.name || '').trim()
   const weekday = String(req.body.weekday || '').trim()
   if (!name || !weekday) return res.status(400).json({ error: 'Informe nome e dia da semana.' })
@@ -1094,7 +1086,7 @@ app.get('/api/admin/production-forecasts/:id', auth('production'), async (req, r
   res.json(await productionForecastDto(result.rows[0], true))
 })
 
-app.patch('/api/admin/production-forecasts/:id', auth('production'), async (req, res) => {
+app.patch('/api/admin/production-forecasts/:id', auth('production.manage'), async (req, res) => {
   const current = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
   try {
@@ -1127,7 +1119,7 @@ app.patch('/api/admin/production-forecasts/:id', auth('production'), async (req,
   res.json(dto)
 })
 
-app.delete('/api/admin/production-forecasts/:id', auth('production'), async (req, res) => {
+app.delete('/api/admin/production-forecasts/:id', auth('production.manage'), async (req, res) => {
   const current = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
   await query('DELETE FROM production_forecasts WHERE id = $1', [req.params.id])
@@ -1135,7 +1127,7 @@ app.delete('/api/admin/production-forecasts/:id', auth('production'), async (req
   res.json({ ok: true })
 })
 
-app.post('/api/admin/production-forecasts/:id/duplicate', auth('production'), async (req, res) => {
+app.post('/api/admin/production-forecasts/:id/duplicate', auth('production.manage'), async (req, res) => {
   const current = await query('SELECT * FROM production_forecasts WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Previsao nao encontrada.' })
   const source = await productionForecastDto(current.rows[0], true)
@@ -1187,7 +1179,7 @@ app.get('/api/admin/production-item-templates', auth('production'), async (_req,
   )
 })
 
-app.post('/api/admin/production-item-templates', auth('production'), async (req, res) => {
+app.post('/api/admin/production-item-templates', auth('production.manage'), async (req, res) => {
   const name = String(req.body.name || '').trim()
   if (!name) return res.status(400).json({ error: 'Informe o nome do template.' })
   const created = await query(
@@ -1211,7 +1203,7 @@ app.post('/api/admin/production-item-templates', auth('production'), async (req,
   res.status(201).json(created.rows[0])
 })
 
-app.patch('/api/admin/production-item-templates/:id', auth('production'), async (req, res) => {
+app.patch('/api/admin/production-item-templates/:id', auth('production.manage'), async (req, res) => {
   const current = await query('SELECT * FROM production_item_templates WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Template nao encontrado.' })
   const row = current.rows[0]
@@ -1236,7 +1228,7 @@ app.patch('/api/admin/production-item-templates/:id', auth('production'), async 
   res.json(updated.rows[0])
 })
 
-app.delete('/api/admin/production-item-templates/:id', auth('production'), async (req, res) => {
+app.delete('/api/admin/production-item-templates/:id', auth('production.manage'), async (req, res) => {
   const current = await query('SELECT * FROM production_item_templates WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Template nao encontrado.' })
   await query('UPDATE production_item_templates SET active = FALSE, updated_at = NOW() WHERE id = $1', [req.params.id])
@@ -1249,7 +1241,7 @@ app.get('/api/categories', async (_req, res) => {
   res.json(result.rows)
 })
 
-app.post('/api/categories', auth('products'), async (req, res) => {
+app.post('/api/categories', auth('products.create'), async (req, res) => {
   const { name, slug, sortOrder = 0 } = req.body
   if (!name || !slug) return res.status(400).json({ error: 'Categoria invalida.' })
   const created = await query(
@@ -1262,7 +1254,7 @@ app.post('/api/categories', auth('products'), async (req, res) => {
   res.status(201).json(created.rows[0])
 })
 
-app.patch('/api/categories/:id', auth('products'), async (req, res) => {
+app.patch('/api/categories/:id', auth('products.update'), async (req, res) => {
   const current = await query('SELECT * FROM categories WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Categoria nao encontrada.' })
   const row = current.rows[0]
@@ -1466,7 +1458,7 @@ app.get('/api/orders/:id', auth('orders'), async (req, res) => {
   res.json(await orderDto(result.rows[0]))
 })
 
-app.patch('/api/orders/:id/status', auth('orders'), async (req, res) => {
+app.patch('/api/orders/:id/status', auth('orders.update_status'), async (req, res) => {
   const legacyMap = {
     novo: 'RECEBIDO',
     preparando: 'PREPARANDO',
@@ -1476,6 +1468,10 @@ app.patch('/api/orders/:id/status', auth('orders'), async (req, res) => {
   }
   const nextStatus = legacyMap[req.body.status] || req.body.status
   if (!orderStatuses.includes(nextStatus)) return res.status(400).json({ error: 'Status invalido.' })
+  if (nextStatus === 'CANCELADO' && !hasPermission(req.user, 'orders.cancel')) {
+    await audit(req, 'denied_cancel', 'orders', req.params.id, null, { status: nextStatus })
+    return res.status(403).json({ error: 'Permissao insuficiente para cancelar pedido.' })
+  }
 
   const current = await query('SELECT * FROM orders WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Pedido nao encontrado.' })
@@ -1530,7 +1526,7 @@ app.patch('/api/orders/:id/status', auth('orders'), async (req, res) => {
   res.json(await orderDto(updated.rows[0]))
 })
 
-app.patch('/api/orders/:id/cancel', auth('orders'), async (req, res) => {
+app.patch('/api/orders/:id/cancel', auth('orders.cancel'), async (req, res) => {
   const current = await query('SELECT * FROM orders WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Pedido nao encontrado.' })
 
@@ -1573,7 +1569,7 @@ app.get('/api/inventory', auth('stock'), async (_req, res) => {
   )
 })
 
-app.post('/api/inventory', auth('stock'), async (req, res) => {
+app.post('/api/inventory', auth('inventory.adjust'), async (req, res) => {
   const { name, unit = 'unidade', quantity = 0, minQuantity = 0 } = req.body
   if (!name) return res.status(400).json({ error: 'Informe o nome do item de estoque.' })
   const created = await query(
@@ -1586,7 +1582,7 @@ app.post('/api/inventory', auth('stock'), async (req, res) => {
   res.status(201).json(created.rows[0])
 })
 
-app.patch('/api/inventory/:id', auth('stock'), async (req, res) => {
+app.patch('/api/inventory/:id', auth('inventory.update'), async (req, res) => {
   const current = await query('SELECT * FROM stock_items WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Item de estoque nao encontrado.' })
   const row = current.rows[0]
@@ -1608,7 +1604,7 @@ app.patch('/api/inventory/:id', auth('stock'), async (req, res) => {
   res.json(updated.rows[0])
 })
 
-app.post('/api/inventory/:id/movement', auth('stock'), async (req, res) => {
+app.post('/api/inventory/:id/movement', auth('inventory.adjust'), async (req, res) => {
   const current = await query('SELECT * FROM stock_items WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Item de estoque nao encontrado.' })
   const quantity = Number(req.body.quantity || 0)
@@ -1631,7 +1627,7 @@ app.post('/api/inventory/:id/movement', auth('stock'), async (req, res) => {
   res.json(updated.rows[0])
 })
 
-app.patch('/api/stock/:id', auth('stock'), async (req, res) => {
+app.patch('/api/stock/:id', auth('inventory.update'), async (req, res) => {
   const current = await query('SELECT * FROM stock_items WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Item de estoque nao encontrado.' })
 
@@ -1773,12 +1769,12 @@ app.get('/api/reports/inventory-low', auth('reports'), async (_req, res) => {
   res.json(result.rows)
 })
 
-app.get('/api/customers', auth('reports'), async (_req, res) => {
+app.get('/api/customers', auth('customers.view'), async (_req, res) => {
   const result = await query('SELECT * FROM customers ORDER BY points DESC, name LIMIT 100')
   res.json(result.rows)
 })
 
-app.get('/api/audit', auth('users'), async (_req, res) => {
+app.get('/api/audit', auth('audit.view'), async (_req, res) => {
   const result = await query('SELECT * FROM audit_logs ORDER BY created_at DESC LIMIT 100')
   res.json(result.rows)
 })
@@ -1831,7 +1827,7 @@ app.get('/api/cash/current', auth('finance'), async (_req, res) => {
   res.json({ openSession: openSession.rows[0] || null, movements: movements.rows })
 })
 
-app.post(['/api/finance/cash/open', '/api/cash/open'], auth('finance'), async (req, res) => {
+app.post(['/api/finance/cash/open', '/api/cash/open'], auth('cash.open'), async (req, res) => {
   const open = await query("SELECT id FROM cash_sessions WHERE status = 'OPEN' LIMIT 1")
   if (open.rows[0]) return res.status(409).json({ error: 'Ja existe um caixa aberto.' })
   const created = await query(
@@ -1844,7 +1840,7 @@ app.post(['/api/finance/cash/open', '/api/cash/open'], auth('finance'), async (r
   res.status(201).json(created.rows[0])
 })
 
-app.post(['/api/finance/cash/close', '/api/cash/close'], auth('finance'), async (req, res) => {
+app.post(['/api/finance/cash/close', '/api/cash/close'], auth('cash.close'), async (req, res) => {
   const open = await query("SELECT * FROM cash_sessions WHERE status = 'OPEN' ORDER BY opened_at DESC LIMIT 1")
   if (!open.rows[0]) return res.status(404).json({ error: 'Nao ha caixa aberto.' })
   const updated = await query(
@@ -1861,7 +1857,7 @@ app.get('/api/cash/movements', auth('finance'), async (_req, res) => {
   res.json(result.rows)
 })
 
-app.post('/api/cash/movements', auth('finance'), async (req, res) => {
+app.post('/api/cash/movements', auth('cash.adjust'), async (req, res) => {
   const { type = 'entrada', amountCents, paymentMethod = 'dinheiro', description = 'Movimento manual' } = req.body
   if (!Number.isInteger(amountCents) || amountCents <= 0) return res.status(400).json({ error: 'Valor invalido.' })
   const openSession = await query("SELECT id FROM cash_sessions WHERE status = 'OPEN' ORDER BY opened_at DESC LIMIT 1")
@@ -1875,7 +1871,7 @@ app.post('/api/cash/movements', auth('finance'), async (req, res) => {
   res.status(201).json(created.rows[0])
 })
 
-app.post('/api/cash/expenses', auth('finance'), async (req, res) => {
+app.post('/api/cash/expenses', auth('cash.adjust'), async (req, res) => {
   const { description, amountCents } = req.body
   if (!description || !Number.isInteger(amountCents) || amountCents <= 0) {
     return res.status(400).json({ error: 'Informe descricao e valor da despesa.' })
@@ -1901,14 +1897,14 @@ app.get('/api/printing/jobs', auth('printing'), async (_req, res) => {
   res.json(result.rows)
 })
 
-app.post('/api/printing/jobs/:id/printed', auth('printing'), async (req, res) => {
+app.post('/api/printing/jobs/:id/printed', auth('printing.retry'), async (req, res) => {
   const updated = await query("UPDATE print_jobs SET status = 'PRINTED', updated_at = NOW() WHERE id = $1 RETURNING *", [req.params.id])
   if (!updated.rows[0]) return res.status(404).json({ error: 'Impressao nao encontrada.' })
   await audit(req, 'printed', 'print_jobs', req.params.id, null, updated.rows[0])
   res.json(updated.rows[0])
 })
 
-app.post('/api/printing/jobs/:id/failed', auth('printing'), async (req, res) => {
+app.post('/api/printing/jobs/:id/failed', auth('printing.retry'), async (req, res) => {
   const updated = await query(
     "UPDATE print_jobs SET status = 'FAILED', error_message = $1, updated_at = NOW() WHERE id = $2 RETURNING *",
     [req.body.error || 'Falha informada pelo agente de impressao.', req.params.id],
@@ -1956,7 +1952,7 @@ app.get('/api/settings', async (_req, res) => {
   res.json(Object.fromEntries(result.rows.map((row) => [row.key, { ...row.value, updatedAt: row.updated_at }])))
 })
 
-app.patch('/api/settings', auth('settings'), async (req, res) => {
+app.patch('/api/settings', auth('settings.update'), async (req, res) => {
   const delivery = req.body.delivery
   if (delivery) {
     await query(
@@ -1977,7 +1973,7 @@ app.patch('/api/settings', auth('settings'), async (req, res) => {
   res.json(Object.fromEntries(result.rows.map((row) => [row.key, { ...row.value, updatedAt: row.updated_at }])))
 })
 
-app.get('/api/backups/status', auth('security'), async (_req, res) => {
+app.get('/api/backups/status', auth('backups.view'), async (_req, res) => {
   const last = await query('SELECT * FROM backups_log ORDER BY created_at DESC LIMIT 1')
   res.json({
     provider: process.env.BACKUP_PROVIDER || 'local',

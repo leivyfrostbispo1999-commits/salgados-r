@@ -5,9 +5,10 @@ Site de vendas para a SALGADOS R, criado com React, TypeScript, Vite, Tailwind C
 Agora o projeto tambem inclui uma primeira versao full-stack:
 
 - Backend Node/Express com banco PostgreSQL.
-- Login com perfis `SUPER_US`, `ADMIN`, `GERENTE` e `ATENDENTE`.
+- Login com experiencia por perfis `SUPER_US`, `GERENTE` e `FUNCIONARIO`, mantendo compatibilidade tecnica com `ADMIN` e `ATENDENTE`.
 - API de produtos, pedidos, cozinha, estoque, relatorios, financeiro, impressao mock, auditoria, seguranca e fidelidade.
 - Aba de maturidade operacional inspirada no projeto Acai Olimpo, com status real dos modulos e proximos passos.
+- Matriz RBAC centralizada no frontend e no backend: esconder menu nao e a unica barreira de seguranca.
 - Home publica separada do painel administrativo.
 - PWA com manifest e service worker.
 - Docker Compose com servicos separados para `web` e `api`.
@@ -83,7 +84,7 @@ Publico:
 /checkout
 ```
 
-Administrativo:
+Central interna unica da equipe:
 
 ```text
 /admin
@@ -98,6 +99,8 @@ Administrativo:
 /admin/auditoria
 /admin/seguranca
 ```
+
+O sistema nao possui uma pagina separada para cada perfil. `SUPER_US`, `GERENTE` e `FUNCIONARIO` entram pela mesma central interna, e os modulos aparecem conforme permissao.
 
 API:
 
@@ -153,7 +156,7 @@ Ja esta implementado:
 
 - Site publico com cardapio, carrinho, checkout, WhatsApp e PWA.
 - Backend Node/Express com PostgreSQL.
-- Login com perfis `SUPER_US`, `ADMIN`, `GERENTE` e `ATENDENTE`.
+- Login com perfis publicos `SUPER_US`, `GERENTE` e `FUNCIONARIO`, com `ADMIN` e `ATENDENTE` preservados como compatibilidade interna.
 - Pedidos gravados no banco, numero de pedido, cliente, itens, pagamento e status.
 - Painel de pedidos e cozinha.
 - Produtos, categorias, disponibilidade, destaque e regra presencial/delivery.
@@ -161,6 +164,7 @@ Ja esta implementado:
 - Estoque com minimo, alerta e movimentacao.
 - Financeiro com caixa, entradas, saidas, despesas e resumo por forma de pagamento.
 - Auditoria, rate limit de login, headers de seguranca e status de seguranca.
+- Seguranca exclusiva para `SUPER_US` no menu e nos endpoints.
 - Fila de impressao em modo mock.
 - Script de backup PostgreSQL.
 

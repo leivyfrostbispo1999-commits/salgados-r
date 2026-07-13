@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260711-maturidade-operacional'
-const HERO_REVISION = 'maturidade-operacional-acai-olimpo'
+const CACHE_NAME = 'salgados-r-v20260713-rbac-central-interna'
+const HERO_REVISION = 'rbac-central-interna-dois-fluxos'
 self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',

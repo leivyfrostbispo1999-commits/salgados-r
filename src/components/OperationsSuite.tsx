@@ -6,10 +6,13 @@ import {
   type ApiProduct,
   type AuthUser,
   type FinanceSummary,
+  type PrintStatus,
   type ReportSummary,
+  type SecurityStatus,
   type StockItem,
   formatCurrency,
 } from '../utils/api'
+import { allowedTabs, displayRole, hasPermission } from '../utils/accessControl'
 import { buildOrderWhatsAppUrl } from '../utils/whatsapp'
 import { ProductionCalculator } from './ProductionCalculator'
 
@@ -20,11 +23,14 @@ const tabs = [
   { id: 'cozinha', label: 'Cozinha' },
   { id: 'produtos', label: 'Produtos' },
   { id: 'estoque', label: 'Estoque' },
-  { id: 'calculos', label: 'Calculadora', roles: ['SUPER_US', 'ADMIN', 'GERENTE'] },
+  { id: 'calculos', label: 'Calculadora' },
   { id: 'clientes', label: 'Clientes' },
   { id: 'caixa', label: 'Caixa' },
   { id: 'relatorios', label: 'Relatorios' },
+  { id: 'usuarios', label: 'Usuarios' },
+  { id: 'impressao', label: 'Impressao' },
   { id: 'auditoria', label: 'Auditoria' },
+  { id: 'seguranca', label: 'Seguranca' },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
@@ -53,7 +59,7 @@ const maturityModules = [
   {
     area: 'Usuarios e permissoes',
     status: 'Pronto',
-    detail: 'SUPER_US, ADMIN, GERENTE e ATENDENTE com JWT, bcrypt e rate limit de login.',
+    detail: 'SUPER_US, GERENTE e FUNCIONARIO na experiencia interna, mantendo compatibilidade tecnica com ADMIN e ATENDENTE.',
     next: 'Criar tela completa de gestao de usuarios e troca de senha.',
   },
   {
@@ -116,28 +122,38 @@ export function OperationsSuite() {
   const [stock, setStock] = useState<StockItem[]>([])
   const [summary, setSummary] = useState<ReportSummary | null>(null)
   const [customers, setCustomers] = useState<unknown[]>([])
+  const [users, setUsers] = useState<AuthUser[]>([])
   const [auditLogs, setAuditLogs] = useState<unknown[]>([])
   const [finance, setFinance] = useState<FinanceSummary | null>(null)
+  const [security, setSecurity] = useState<SecurityStatus | null>(null)
+  const [printing, setPrinting] = useState<PrintStatus | null>(null)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
 
-  async function refresh() {
-    const [nextProducts, nextOrders, nextStock, nextSummary, nextCustomers, nextAuditLogs, nextFinance] = await Promise.all([
-      api.products(),
-      api.orders(),
-      api.stock(),
-      api.summary(),
-      api.customers().catch(() => []),
-      api.auditLogs().catch(() => []),
-      api.financeSummary().catch(() => null),
+  async function refresh(actor = user) {
+    const can = (permission: Parameters<typeof hasPermission>[1]) => hasPermission(actor, permission)
+    const [nextProducts, nextOrders, nextStock, nextSummary, nextCustomers, nextUsers, nextAuditLogs, nextFinance, nextSecurity, nextPrinting] = await Promise.all([
+      can('products.view') ? api.products() : Promise.resolve([]),
+      can('orders.view') ? api.orders() : Promise.resolve([]),
+      can('inventory.view') ? api.stock() : Promise.resolve([]),
+      can('reports.view_basic') ? api.summary() : Promise.resolve(null),
+      can('customers.view') ? api.customers().catch(() => []) : Promise.resolve([]),
+      can('users.view') ? api.users().catch(() => []) : Promise.resolve([]),
+      can('audit.view') ? api.auditLogs().catch(() => []) : Promise.resolve([]),
+      can('cash.view') ? api.financeSummary().catch(() => null) : Promise.resolve(null),
+      can('security.view') ? api.securityStatus().catch(() => null) : Promise.resolve(null),
+      can('printing.view') ? api.printStatus().catch(() => null) : Promise.resolve(null),
     ])
     setProducts(nextProducts)
     setOrders(nextOrders)
     setStock(nextStock)
     setSummary(nextSummary)
     setCustomers(nextCustomers)
+    setUsers(nextUsers)
     setAuditLogs(nextAuditLogs)
     setFinance(nextFinance)
+    setSecurity(nextSecurity)
+    setPrinting(nextPrinting)
   }
 
   useEffect(() => {
@@ -150,10 +166,10 @@ export function OperationsSuite() {
           setLoading(false)
           return
         }
-        return refresh()
-          .then(async () => {
-            const sessionUser = await api.me()
+        return api.me()
+          .then(async (sessionUser) => {
             setUser(sessionUser)
+            await refresh(sessionUser)
           })
           .catch((error: Error) => {
             api.token.clear()
@@ -171,7 +187,7 @@ export function OperationsSuite() {
   async function afterAuth(nextUser: AuthUser) {
     setUser(nextUser)
     setLoading(true)
-    await refresh()
+    await refresh(nextUser)
     setLoading(false)
   }
 
@@ -186,10 +202,18 @@ export function OperationsSuite() {
   useEffect(() => {
     if (!user) return
     const timer = window.setInterval(() => {
-      refresh().catch(() => undefined)
+      refresh(user).catch(() => undefined)
     }, 15000)
     return () => window.clearInterval(timer)
   }, [user])
+
+  const tabAccess = allowedTabs(user)
+  const visibleTabs = tabs.filter((tab) => tabAccess[tab.id])
+
+  useEffect(() => {
+    if (!user || visibleTabs.some((tab) => tab.id === activeTab)) return
+    setActiveTab(visibleTabs[0]?.id || 'dashboard')
+  }, [activeTab, user, visibleTabs])
 
   return (
     <section id="sistema" className="min-h-screen bg-[#F5F5F5] py-6">
@@ -210,7 +234,7 @@ export function OperationsSuite() {
         {user ? (
           <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-zinc-950 p-4 text-white">
             <p className="text-sm font-bold">
-              Logado como <span className="text-yellow-300">{user.name}</span> {user.role ? `(${user.role})` : null}
+              Logado como <span className="text-yellow-300">{user.name}</span> {user.role ? `(${displayRole(user.role)})` : null}
             </p>
             <button type="button" onClick={logout} className="rounded bg-yellow-300 px-3 py-2 text-sm font-black text-black">
               Sair
@@ -220,7 +244,7 @@ export function OperationsSuite() {
 
         {user ? (
           <div className="mt-6 flex gap-2 overflow-x-auto pb-2">
-            {tabs.filter((tab) => !('roles' in tab) || (tab.roles as readonly string[]).includes(user.role)).map((tab) => (
+            {visibleTabs.map((tab) => (
               <button
                 key={tab.id}
                 type="button"
@@ -248,24 +272,27 @@ export function OperationsSuite() {
             <MaturityPanel products={products} orders={orders} stock={stock} summary={summary} finance={finance} />
           ) : null}
           {!loading && user && activeTab === 'pedidos' ? (
-            <OrdersPanel orders={orders} onUpdated={refresh} setMessage={setMessage} />
+            <OrdersPanel orders={orders} user={user} onUpdated={() => refresh(user)} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'cozinha' ? (
             <KitchenPanel orders={orders} onUpdated={refresh} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'produtos' ? (
-            <AdminPanel products={products} onCreated={refresh} setMessage={setMessage} />
+            <AdminPanel products={products} user={user} onCreated={() => refresh(user)} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'estoque' ? (
-            <StockPanel stock={stock} onUpdated={refresh} setMessage={setMessage} />
+            <StockPanel stock={stock} user={user} onUpdated={() => refresh(user)} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'calculos' ? (
             <ProductionCalculator products={products} user={user} setMessage={setMessage} />
           ) : null}
           {!loading && user && activeTab === 'clientes' ? <SimpleListPanel title="Clientes" items={customers} empty="Ainda nao ha clientes cadastrados." /> : null}
-          {!loading && user && activeTab === 'caixa' ? <FinancePanel finance={finance} onUpdated={refresh} setMessage={setMessage} /> : null}
+          {!loading && user && activeTab === 'caixa' ? <FinancePanel finance={finance} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
           {!loading && user && activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
+          {!loading && user && activeTab === 'usuarios' ? <UsersPanel users={users} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
+          {!loading && user && activeTab === 'impressao' ? <PrintingPanel printing={printing} setMessage={setMessage} /> : null}
           {!loading && user && activeTab === 'auditoria' ? <SimpleListPanel title="Auditoria" items={auditLogs} empty="Ainda nao ha eventos de auditoria." /> : null}
+          {!loading && user && activeTab === 'seguranca' ? <SecurityPanel security={security} /> : null}
         </div>
       </div>
     </section>
@@ -430,7 +457,7 @@ function LoginForm({
   }
 
   return (
-    <AuthBox title="Entrar no painel" subtitle="Acesso restrito a SUPER_US, ADMIN, GERENTE e ATENDENTE.">
+    <AuthBox title="Entrar no painel" subtitle="Acesso restrito a SUPER_US, GERENTE e FUNCIONARIO.">
       <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
       <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
       <button type="button" onClick={submit} className="rounded bg-black px-4 py-3 font-black text-yellow-300">
@@ -452,10 +479,12 @@ function AuthBox({ title, subtitle, children }: { title: string; subtitle: strin
 
 function OrdersPanel({
   orders,
+  user,
   onUpdated,
   setMessage,
 }: {
   orders: ApiOrder[]
+  user: AuthUser
   onUpdated: () => Promise<void>
   setMessage: (message: string) => void
 }) {
@@ -549,7 +578,7 @@ function OrdersPanel({
                     {action.label}
                   </button>
                 ))}
-                {order.status !== 'CANCELADO' && order.status !== 'FINALIZADO' ? (
+                {hasPermission(user, 'orders.cancel') && order.status !== 'CANCELADO' && order.status !== 'FINALIZADO' ? (
                   <button type="button" onClick={() => setStatus(order, 'CANCELADO')} className="rounded bg-[#DA291C] px-3 py-3 text-xs font-black text-white">
                     Cancelar
                   </button>
@@ -621,10 +650,12 @@ function KitchenPanel({
 
 function AdminPanel({
   products,
+  user,
   onCreated,
   setMessage,
 }: {
   products: ApiProduct[]
+  user: AuthUser
   onCreated: () => Promise<void>
   setMessage: (message: string) => void
 }) {
@@ -654,7 +685,7 @@ function AdminPanel({
 
   return (
     <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
-      <div className="rounded-lg border border-zinc-200 p-5">
+      {hasPermission(user, 'products.create') ? <div className="rounded-lg border border-zinc-200 p-5">
         <h3 className="text-xl font-black">Novo produto</h3>
         <div className="mt-4 grid gap-3">
           <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
@@ -676,16 +707,16 @@ function AdminPanel({
             Salvar produto
           </button>
         </div>
-      </div>
+      </div> : <EmptyState text="Seu perfil pode consultar produtos, mas nao cadastrar novos itens." />}
       <div className="overflow-hidden rounded-lg border border-zinc-200">
         {products.map((product) => (
           <div key={product.id} className="grid gap-2 border-b border-zinc-100 p-4 text-sm font-semibold sm:grid-cols-[1fr_auto_auto_auto]">
             <span>{product.name}</span>
             <span>{product.active ? 'ativo' : 'inativo'}</span>
             <span className="font-black">{formatCurrency(product.price)}</span>
-            <button type="button" onClick={() => toggleProduct(product)} className="rounded bg-zinc-100 px-3 py-2 text-xs font-black">
+            {hasPermission(user, 'products.update') ? <button type="button" onClick={() => toggleProduct(product)} className="rounded bg-zinc-100 px-3 py-2 text-xs font-black">
               {product.active ? 'Desativar' : 'Ativar'}
-            </button>
+            </button> : <span className="text-xs font-black text-zinc-500">Consulta</span>}
           </div>
         ))}
       </div>
@@ -695,10 +726,12 @@ function AdminPanel({
 
 function StockPanel({
   stock,
+  user,
   onUpdated,
   setMessage,
 }: {
   stock: StockItem[]
+  user: AuthUser
   onUpdated: () => Promise<void>
   setMessage: (message: string) => void
 }) {
@@ -737,7 +770,7 @@ function StockPanel({
 
   return (
     <div className="grid gap-5">
-      <div className="rounded-lg bg-white p-5 shadow-sm">
+      {hasPermission(user, 'inventory.adjust') ? <div className="rounded-lg bg-white p-5 shadow-sm">
         <h3 className="text-xl font-black">Novo item de estoque</h3>
         <div className="mt-4 grid gap-3 sm:grid-cols-5">
           <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold sm:col-span-2" />
@@ -755,7 +788,7 @@ function StockPanel({
         <button type="button" onClick={createItem} className="mt-3 rounded bg-[#1D1D1D] px-4 py-3 text-sm font-black text-white">
           Cadastrar item
         </button>
-      </div>
+      </div> : <EmptyState text="Seu perfil pode acompanhar o estoque, mas nao ajustar livremente." />}
 
       <div className="grid gap-4 md:grid-cols-2">
         {stock.map((item) => (
@@ -769,7 +802,7 @@ function StockPanel({
               </div>
               {item.low ? <span className="rounded bg-red-700 px-2 py-1 text-xs font-black text-white">Baixo</span> : null}
             </div>
-            <div className="mt-4 flex gap-3">
+            {hasPermission(user, 'inventory.update') ? <div className="mt-4 flex gap-3">
               <input
                 type="number"
                 defaultValue={item.quantity}
@@ -777,12 +810,12 @@ function StockPanel({
                 className="w-full rounded border border-zinc-300 px-3 py-3 font-semibold"
               />
               <span className="grid place-items-center rounded bg-zinc-100 px-3 text-sm font-black">{item.unit}</span>
-            </div>
-            <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
+            </div> : <p className="mt-4 text-2xl font-black">{item.quantity} {item.unit}</p>}
+            {hasPermission(user, 'inventory.adjust') ? <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
               <input value={movementQuantity} onChange={(event) => setMovementQuantity(event.target.value)} placeholder="Qtd movimento" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
               <button type="button" onClick={() => move(item, 'entrada')} className="rounded bg-green-100 px-3 py-3 text-xs font-black text-green-900">Entrada</button>
               <button type="button" onClick={() => move(item, 'saida')} className="rounded bg-red-100 px-3 py-3 text-xs font-black text-red-900">Saida</button>
-            </div>
+            </div> : null}
           </article>
         ))}
       </div>
@@ -791,7 +824,19 @@ function StockPanel({
 }
 
 function ReportsPanel({ summary, orders }: { summary: ReportSummary | null; orders: ApiOrder[] }) {
-  if (!summary) return null
+  if (!summary) {
+    const activeOrders = orders.filter((order) => order.status !== 'FINALIZADO' && order.status !== 'CANCELADO')
+    return (
+      <div className="grid gap-5">
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Metric label="Pedidos ativos" value={String(activeOrders.length)} />
+          <Metric label="Novos" value={String(orders.filter((order) => order.status === 'RECEBIDO').length)} />
+          <Metric label="Prontos" value={String(orders.filter((order) => order.status === 'PRONTO').length)} />
+        </div>
+        <EmptyState text="Indicadores financeiros e relatorios completos nao estao disponiveis para este perfil." />
+      </div>
+    )
+  }
 
   return (
     <div className="grid gap-5">
@@ -849,6 +894,101 @@ function ReportsPanel({ summary, orders }: { summary: ReportSummary | null; orde
           cupons, recomendacoes e campanhas automaticas.
         </p>
       </div>
+    </div>
+  )
+}
+
+function UsersPanel({
+  users,
+  onUpdated,
+  setMessage,
+}: {
+  users: AuthUser[]
+  onUpdated: () => Promise<void>
+  setMessage: (message: string) => void
+}) {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [role, setRole] = useState<AuthUser['role']>('FUNCIONARIO')
+
+  async function createUser() {
+    await api.createUser({ name, email, password, role })
+    setMessage('Usuario criado com permissao controlada.')
+    setName('')
+    setEmail('')
+    setPassword('')
+    await onUpdated()
+  }
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-[0.75fr_1.25fr]">
+      <div className="rounded-lg bg-white p-5 shadow-sm">
+        <h3 className="text-xl font-black">Novo usuario da equipe</h3>
+        <div className="mt-4 grid gap-3">
+          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" type="email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha inicial" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <select value={role} onChange={(event) => setRole(event.target.value as AuthUser['role'])} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+            <option value="FUNCIONARIO">Funcionario</option>
+            <option value="GERENTE">Gerente</option>
+          </select>
+          <button type="button" onClick={createUser} className="rounded bg-[#1D1D1D] px-4 py-3 font-black text-[#FFC72C]">
+            Criar usuario
+          </button>
+        </div>
+      </div>
+      <div className="overflow-hidden rounded-lg border border-zinc-200 bg-white">
+        {users.length === 0 ? <EmptyState text="Ainda nao ha usuarios para listar." /> : null}
+        {users.map((item) => (
+          <div key={item.id} className="grid gap-2 border-b border-zinc-100 p-4 text-sm font-semibold sm:grid-cols-[1fr_1fr_auto_auto]">
+            <span>{item.name}</span>
+            <span>{item.email}</span>
+            <span className="rounded bg-yellow-100 px-2 py-1 text-xs font-black text-yellow-900">{item.displayRole || displayRole(item.role)}</span>
+            <span className={item.active === false ? 'text-red-700' : 'text-green-700'}>{item.active === false ? 'Inativo' : 'Ativo'}</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PrintingPanel({ printing, setMessage }: { printing: PrintStatus | null; setMessage: (message: string) => void }) {
+  async function testPrint() {
+    await api.testPrint()
+    setMessage('Teste de impressao enviado para a fila.')
+  }
+
+  return (
+    <div className="grid gap-5 lg:grid-cols-3">
+      <Metric label="Fila pendente" value={String(printing?.pending ?? 0)} />
+      <Metric label="Falhas" value={String(printing?.failed ?? 0)} />
+      <Metric label="Modo" value={printing?.mode || 'Indisponivel'} />
+      <div className="rounded-lg bg-white p-5 shadow-sm lg:col-span-3">
+        <h3 className="text-xl font-black">Impressao termica</h3>
+        <p className="mt-2 text-sm font-semibold text-zinc-600">
+          {printing?.message || 'Status de impressao ainda nao disponivel para este perfil.'}
+        </p>
+        <button type="button" onClick={testPrint} className="mt-4 rounded bg-[#1D1D1D] px-4 py-3 text-sm font-black text-white">
+          Testar impressao
+        </button>
+      </div>
+    </div>
+  )
+}
+
+function SecurityPanel({ security }: { security: SecurityStatus | null }) {
+  if (!security) return <EmptyState text="Dados de seguranca ainda nao disponiveis." />
+
+  return (
+    <div className="grid gap-5">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <Metric label="API" value={security.api} />
+        <Metric label="Banco" value={security.database} />
+        <Metric label="Autenticacao" value={security.auth} />
+        <Metric label="Rate limit" value={security.loginRateLimit} />
+      </div>
+      <SimpleListPanel title="Falhas recentes de login" items={security.recentLoginFailures} empty="Sem falhas recentes de login." />
     </div>
   )
 }
