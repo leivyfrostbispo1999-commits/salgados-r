@@ -107,3 +107,8 @@ export function hasPermission(userOrRole, permission) {
   const required = permissionAliases[permission] || permission
   return permissions.includes(required)
 }
+
+export function authorizationStatus(userOrRole, permission) {
+  if (!userOrRole) return 401
+  return hasPermission(userOrRole, permission) ? 200 : 403
+}

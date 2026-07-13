@@ -360,7 +360,10 @@ function auth(permission) {
       return res.status(401).json({ error: 'Sessao invalida.' })
     }
 
-    if (!hasPermission(req.user, permission)) return res.status(403).json({ error: 'Permissao insuficiente.' })
+    if (!hasPermission(req.user, permission)) {
+      audit(req, 'denied', 'permission', permission, null, { path: req.path, method: req.method }).catch(() => undefined)
+      return res.status(403).json({ error: 'Permissao insuficiente.' })
+    }
     next()
   }
 }
