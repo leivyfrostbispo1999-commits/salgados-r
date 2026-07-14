@@ -47,6 +47,7 @@ export type ApiOrder = {
   subtotal: number
   deliveryFee: number
   createdAt: string
+  updatedAt: string
   items: ApiOrderItem[]
 }
 
@@ -285,8 +286,8 @@ export const api = {
     notes: string
     items: Array<{ productId: string; quantity: number; notes?: string }>
   }) => request<ApiOrder>('/orders', { method: 'POST', body: JSON.stringify(payload) }),
-  updateOrderStatus: (id: string, status: ApiOrder['status']) =>
-    request<ApiOrder>(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }) }),
+  updateOrderStatus: (id: string, status: ApiOrder['status'], expectedUpdatedAt?: string) =>
+    request<ApiOrder>(`/orders/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status, expectedUpdatedAt }) }),
   stock: () => request<StockItem[]>('/stock'),
   createStockItem: (payload: { name: string; unit: string; quantity: number; minQuantity: number }) =>
     request<StockItem>('/inventory', { method: 'POST', body: JSON.stringify(payload) }),

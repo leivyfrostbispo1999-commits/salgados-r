@@ -5,6 +5,7 @@
   --sr-red: #dc0008;
   --sr-yellow: #ffbd0d;
   --sr-white: #ffffff;
+  --sr-black: #111111;
   color: var(--sr-white);
   background: var(--sr-red);
   font-family:

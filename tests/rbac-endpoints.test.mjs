@@ -35,6 +35,13 @@ describe('RBAC endpoint declarations', () => {
     expectRouteAuth('/api/orders/:id/cancel', 'orders.cancel')
   })
 
+  it('keeps order status transitions centralized and conflict-aware', () => {
+    assert.match(source, /function canTransitionOrderStatus/)
+    assert.match(source, /orderStatusTransitions/)
+    assert.match(source, /expectedUpdatedAt/)
+    assert.match(source, /res\.status\(409\)\.json\(\{ error: 'O pedido foi atualizado por outro operador/)
+  })
+
   it('protects cash, stock and production mutations', () => {
     expectRouteAuth('/api/inventory', 'inventory.adjust')
     expectRouteAuth('/api/inventory/:id', 'inventory.update')

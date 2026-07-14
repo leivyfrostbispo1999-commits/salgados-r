@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260713-rbac-central-interna'
-const HERO_REVISION = 'rbac-central-interna-dois-fluxos'
+const CACHE_NAME = 'salgados-r-v20260713-admin-cozinha-operacional'
+const HERO_REVISION = 'admin-cozinha-operacional-cores-originais'
 self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',

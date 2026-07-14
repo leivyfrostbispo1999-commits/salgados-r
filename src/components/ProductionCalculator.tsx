@@ -203,8 +203,8 @@ export function ProductionCalculator({
       <section className="rounded-lg bg-white p-5 shadow-sm">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.18em] text-[#DA291C]">Gestao administrativa</p>
-            <h2 className="mt-2 text-3xl font-black text-[#1D1D1D]">Calculadora de Producao</h2>
+            <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-red)]">Gestao administrativa</p>
+            <h2 className="mt-2 text-3xl font-black text-[var(--sr-black)]">Calculadora de Producao</h2>
             <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-zinc-600">
               Monte uma previsao de producao e veja faturamento, custo e lucro esperado antes de comprar ou produzir.
             </p>
@@ -213,10 +213,10 @@ export function ProductionCalculator({
             <button type="button" onClick={() => setDraft(emptyForecast())} className="rounded bg-zinc-100 px-4 py-3 text-sm font-black">
               Nova previsao
             </button>
-            <button type="button" onClick={save} className="rounded bg-[#1D1D1D] px-4 py-3 text-sm font-black text-white">
+            <button type="button" onClick={save} className="rounded bg-[var(--sr-black)] px-4 py-3 text-sm font-black text-white">
               Salvar
             </button>
-            <button type="button" onClick={duplicateForecast} className="rounded bg-[#FFC72C] px-4 py-3 text-sm font-black text-[#1D1D1D]">
+            <button type="button" onClick={duplicateForecast} className="rounded bg-[var(--sr-yellow)] px-4 py-3 text-sm font-black text-[var(--sr-black)]">
               Duplicar
             </button>
             <button type="button" onClick={() => window.print()} className="rounded bg-zinc-100 px-4 py-3 text-sm font-black">
@@ -247,7 +247,7 @@ export function ProductionCalculator({
                 type="button"
                 onClick={() => setDraft(fromForecast(forecast))}
                 className={`rounded border p-3 text-left text-sm font-bold ${
-                  draft.id === forecast.id ? 'border-[#1D1D1D] bg-[#FFC72C]' : 'border-zinc-200 bg-white'
+                  draft.id === forecast.id ? 'border-[var(--sr-black)] bg-[var(--sr-yellow)]' : 'border-zinc-200 bg-white'
                 }`}
               >
                 <span className="block font-black">{forecast.name}</span>
@@ -315,7 +315,7 @@ export function ProductionCalculator({
                   {templates.filter((template) => template.active).map((template) => <option key={template.id} value={template.id}>{template.name}</option>)}
                 </select>
               </label>
-              <button type="button" onClick={addManualItem} className="rounded bg-[#1D1D1D] px-4 py-3 text-sm font-black text-white">
+              <button type="button" onClick={addManualItem} className="rounded bg-[var(--sr-black)] px-4 py-3 text-sm font-black text-white">
                 Adicionar item manual
               </button>
             </div>
@@ -360,7 +360,7 @@ export function ProductionCalculator({
             <button type="button" onClick={deleteForecast} className="rounded bg-red-100 px-4 py-3 text-sm font-black text-red-900">
               Excluir previsao
             </button>
-            <button type="button" onClick={save} className="rounded bg-[#1D1D1D] px-6 py-3 text-sm font-black text-white">
+            <button type="button" onClick={save} className="rounded bg-[var(--sr-black)] px-6 py-3 text-sm font-black text-white">
               Salvar previsao
             </button>
           </div>
@@ -430,8 +430,8 @@ function MoneyInput({
 
 function AdminMetric({ label, value, muted = false, positive = false }: { label: string; value: string; muted?: boolean; positive?: boolean }) {
   return (
-    <div className={`rounded-lg p-4 ${positive ? 'bg-green-900 text-white' : muted ? 'bg-zinc-200 text-zinc-900' : 'bg-[#1D1D1D] text-white'}`}>
-      <p className="text-xs font-black uppercase tracking-wide text-[#FFC72C]">{label}</p>
+    <div className={`rounded-lg p-4 ${positive ? 'bg-[var(--sr-yellow)] text-zinc-950' : muted ? 'bg-zinc-200 text-zinc-900' : 'bg-[var(--sr-black)] text-white'}`}>
+      <p className="text-xs font-black uppercase tracking-wide text-[var(--sr-yellow)]">{label}</p>
       <p className="mt-2 text-2xl font-black">{value}</p>
     </div>
   )
@@ -439,7 +439,7 @@ function AdminMetric({ label, value, muted = false, positive = false }: { label:
 
 function MiniMetric({ label, value, muted = false, positive = false }: { label: string; value: string; muted?: boolean; positive?: boolean }) {
   return (
-    <div className={`rounded p-3 ${positive ? 'bg-green-50 text-green-900' : muted ? 'bg-zinc-100 text-zinc-500' : 'bg-zinc-50 text-zinc-900'}`}>
+    <div className={`rounded p-3 ${positive ? 'bg-[var(--sr-yellow)] text-zinc-950' : muted ? 'bg-zinc-100 text-zinc-500' : 'bg-zinc-50 text-zinc-900'}`}>
       <span className="block text-xs uppercase tracking-wide">{label}</span>
       <strong>{value}</strong>
     </div>

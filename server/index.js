@@ -86,6 +86,32 @@ const stockSeed = [
 ]
 
 const orderStatuses = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA', 'FINALIZADO', 'CANCELADO']
+const terminalOrderStatuses = ['FINALIZADO', 'CANCELADO']
+const orderStatusTransitions = {
+  RECEBIDO: ['ACEITO', 'PREPARANDO', 'CANCELADO'],
+  ACEITO: ['PREPARANDO', 'CANCELADO'],
+  PREPARANDO: ['PRONTO', 'CANCELADO'],
+  PRONTO: ['SAIU_PARA_ENTREGA', 'FINALIZADO', 'CANCELADO'],
+  SAIU_PARA_ENTREGA: ['FINALIZADO', 'CANCELADO'],
+  FINALIZADO: [],
+  CANCELADO: [],
+}
+
+function canTransitionOrderStatus({ currentStatus, nextStatus, user }) {
+  if (!orderStatuses.includes(nextStatus)) {
+    return { allowed: false, status: 400, error: 'Status invalido.' }
+  }
+  if (terminalOrderStatuses.includes(currentStatus)) {
+    return { allowed: false, status: 409, error: 'Pedido encerrado nao pode voltar para a fila operacional.' }
+  }
+  if (nextStatus === 'CANCELADO' && !hasPermission(user, 'orders.cancel')) {
+    return { allowed: false, status: 403, error: 'Permissao insuficiente para cancelar pedido.' }
+  }
+  if (!orderStatusTransitions[currentStatus]?.includes(nextStatus)) {
+    return { allowed: false, status: 409, error: `Transicao nao permitida: ${currentStatus} para ${nextStatus}.` }
+  }
+  return { allowed: true }
+}
 
 function money(cents) {
   return Number(cents || 0) / 100
@@ -1470,14 +1496,25 @@ app.patch('/api/orders/:id/status', auth('orders.update_status'), async (req, re
     cancelado: 'CANCELADO',
   }
   const nextStatus = legacyMap[req.body.status] || req.body.status
-  if (!orderStatuses.includes(nextStatus)) return res.status(400).json({ error: 'Status invalido.' })
-  if (nextStatus === 'CANCELADO' && !hasPermission(req.user, 'orders.cancel')) {
-    await audit(req, 'denied_cancel', 'orders', req.params.id, null, { status: nextStatus })
-    return res.status(403).json({ error: 'Permissao insuficiente para cancelar pedido.' })
-  }
 
   const current = await query('SELECT * FROM orders WHERE id = $1', [req.params.id])
   if (!current.rows[0]) return res.status(404).json({ error: 'Pedido nao encontrado.' })
+
+  const expectedUpdatedAt = req.body.expectedUpdatedAt
+  if (expectedUpdatedAt && new Date(current.rows[0].updated_at).getTime() !== new Date(expectedUpdatedAt).getTime()) {
+    await audit(req, 'conflict', 'orders', req.params.id, current.rows[0], { expectedUpdatedAt, status: nextStatus })
+    return res.status(409).json({ error: 'O pedido foi atualizado por outro operador. Recarregue os dados.' })
+  }
+
+  const transition = canTransitionOrderStatus({
+    currentStatus: current.rows[0].status,
+    nextStatus,
+    user: req.user,
+  })
+  if (!transition.allowed) {
+    await audit(req, 'denied_status', 'orders', req.params.id, current.rows[0], { status: nextStatus, error: transition.error })
+    return res.status(transition.status).json({ error: transition.error })
+  }
 
   const updated = await query(
     `UPDATE orders
