@@ -51,6 +51,19 @@ describe('RBAC endpoint declarations', () => {
     expectRouteAuth('/api/admin/production-forecasts', 'production.manage')
   })
 
+  it('protects management financial endpoints', () => {
+    expectRouteAuth('/api/management/production', 'production')
+    expectRouteAuth('/api/management/production', 'production.manage')
+    expectRouteAuth('/api/management/production/:id/cancel', 'production.manage')
+    expectRouteAuth('/api/management/sales', 'cash.view')
+    expectRouteAuth('/api/management/sales', 'cash.adjust')
+    expectRouteAuth('/api/management/sales/:id/cancel', 'cash.adjust')
+    expectRouteAuth('/api/management/sales/:id/refund', 'cash.adjust')
+    expectRouteAuth('/api/management/receivables', 'cash.view')
+    expectRouteAuth('/api/management/receivables/:id/payments', 'cash.adjust')
+    expectRouteAuth('/api/management/reports/pdf', 'reports')
+  })
+
   it('audits denied permission attempts in the auth middleware', () => {
     assert.match(source, /audit\(req, 'denied', 'permission', permission/)
   })

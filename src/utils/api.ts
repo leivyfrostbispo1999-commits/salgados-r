@@ -205,6 +205,61 @@ export type ProductionItemTemplate = {
   active: boolean
 }
 
+export type ManagementSummary = {
+  filters: { startDate: string; endDate: string; category?: string; productId?: string; paymentMethod?: string }
+  producedQuantity: number
+  lostQuantity: number
+  internalUseQuantity: number
+  producedVolumeMl: number
+  soldQuantity: number
+  expectedRevenueCents: number
+  expectedRevenue: number
+  receivedCents: number
+  received: number
+  pix: number
+  card: number
+  cash: number
+  pending: number
+  refunds: number
+  cost: number
+  expenses: number
+  missingCostCount: number
+  grossProfit: number | null
+  estimatedResult: number | null
+  costCoveragePercent: number
+  profitStatus: 'CALCULAVEL' | 'LUCRO_INDISPONIVEL'
+}
+
+export type ManagementSale = {
+  id: string
+  saleCode: string
+  saleDate: string
+  customerName: string
+  total: number
+  paid: number
+  debt: number
+  financialStatus: string
+  status: string
+}
+
+export type ManagementReceivable = {
+  id: string
+  customer_name: string
+  originalAmount: number
+  paidAmount: number
+  outstandingAmount: number
+  due_date: string | null
+  status: string
+}
+
+export type ManagementCostProduct = ApiProduct & {
+  unit: string
+  currentCostCents: number | null
+  currentCost: number | null
+  grossMarginPercent: number | null
+  profitStatus: 'CALCULAVEL' | 'LUCRO_INDISPONIVEL'
+}
+
 const tokenStore = {
   get: () => localStorage.getItem('salgados-r-token') || '',
   set: (token: string) => localStorage.setItem('salgados-r-token', token),
@@ -325,6 +380,28 @@ export const api = {
   duplicateProductionForecast: (id: string, payload: { name?: string; weekday?: string; dateReference?: string | null }) =>
     request<ProductionForecast>(`/admin/production-forecasts/${id}/duplicate`, { method: 'POST', body: JSON.stringify(payload) }),
   productionTemplates: () => request<ProductionItemTemplate[]>('/admin/production-item-templates'),
+  managementSummary: (params: URLSearchParams) => request<ManagementSummary>(`/management/reports/summary?${params.toString()}`),
+  managementProductsReport: (params: URLSearchParams) => request<unknown[]>(`/management/reports/products?${params.toString()}`),
+  managementProduction: (params: URLSearchParams) => request<unknown[]>(`/management/production?${params.toString()}`),
+  createManagementProduction: (payload: unknown) =>
+    request<unknown>('/management/production', { method: 'POST', body: JSON.stringify(payload) }),
+  managementSales: (params: URLSearchParams) => request<ManagementSale[]>(`/management/sales?${params.toString()}`),
+  createManagementSale: (payload: unknown) =>
+    request<ManagementSale>('/management/sales', { method: 'POST', body: JSON.stringify(payload) }),
+  cancelManagementSale: (id: string, payload: { reason: string }) =>
+    request<ManagementSale>(`/management/sales/${id}/cancel`, { method: 'POST', body: JSON.stringify(payload) }),
+  refundManagementSale: (id: string, payload: { reason: string; method: string }) =>
+    request<ManagementSale>(`/management/sales/${id}/refund`, { method: 'POST', body: JSON.stringify(payload) }),
+  cancelManagementProduction: (id: string, payload: { reason: string }) =>
+    request<unknown>(`/management/production/${id}/cancel`, { method: 'POST', body: JSON.stringify(payload) }),
+  managementReceivables: () => request<ManagementReceivable[]>('/management/receivables'),
+  payManagementReceivable: (id: string, payload: { amountCents: number; paymentMethod: string; notes?: string }) =>
+    request<unknown>(`/management/receivables/${id}/payments`, { method: 'POST', body: JSON.stringify(payload) }),
+  managementCostProducts: () => request<ManagementCostProduct[]>('/management/costs-prices/products'),
+  updateManagementCostProduct: (id: string, payload: { priceCents?: number; costCents?: number | null; unit?: string; notes?: string }) =>
+    request<ApiProduct>(`/management/costs-prices/products/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  managementPdfUrl: '/api/management/reports/pdf',
+  managementCsvUrl: (params: URLSearchParams) => `/api/management/reports.csv?${params.toString()}`,
   settings: () => request<{ delivery?: DeliverySettings }>('/settings'),
   updateSettings: (payload: { delivery: DeliverySettings }) =>
     request<{ delivery?: DeliverySettings }>('/settings', { method: 'PATCH', body: JSON.stringify(payload) }),

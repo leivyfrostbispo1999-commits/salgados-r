@@ -14,6 +14,7 @@ import {
 } from '../utils/api'
 import { allowedTabs, displayRole, hasPermission } from '../utils/accessControl'
 import { buildOrderWhatsAppUrl } from '../utils/whatsapp'
+import { ManagementModule } from './ManagementModule'
 import { ProductionCalculator } from './ProductionCalculator'
 
 const tabs = [
@@ -24,9 +25,13 @@ const tabs = [
   { id: 'produtos', label: 'Produtos', path: '/admin/produtos' },
   { id: 'estoque', label: 'Estoque', path: '/admin/estoque' },
   { id: 'calculos', label: 'Produção', path: '/admin/producao' },
+  { id: 'producaoDiaria', label: 'Produção diária', path: '/admin/producao-diaria' },
+  { id: 'vendas', label: 'Vendas', path: '/admin/vendas' },
   { id: 'clientes', label: 'Clientes', path: '/admin/clientes' },
   { id: 'caixa', label: 'Caixa', path: '/admin/caixa' },
+  { id: 'contasReceber', label: 'Contas a receber', path: '/admin/contas-receber' },
   { id: 'relatorios', label: 'Relatórios', path: '/admin/relatorios' },
+  { id: 'custosPrecos', label: 'Custos e preços', path: '/admin/custos-precos' },
   { id: 'usuarios', label: 'Equipe', path: '/admin/equipe' },
   { id: 'impressao', label: 'Impressão', path: '/admin/impressao' },
   { id: 'auditoria', label: 'Auditoria', path: '/admin/auditoria' },
@@ -39,7 +44,7 @@ type Tab = (typeof tabs)[number]
 const adminNavGroups: Array<{ title: string; items: TabId[] }> = [
   { title: 'Visão geral', items: ['dashboard', 'maturidade'] },
   { title: 'Operação', items: ['pedidos', 'cozinha', 'produtos', 'estoque', 'calculos'] },
-  { title: 'Gestão', items: ['clientes', 'caixa', 'relatorios'] },
+  { title: 'Gestão', items: ['producaoDiaria', 'vendas', 'caixa', 'contasReceber', 'relatorios', 'custosPrecos', 'clientes'] },
   { title: 'Administração', items: ['usuarios', 'impressao', 'auditoria', 'seguranca'] },
 ]
 
@@ -366,9 +371,13 @@ export function OperationsSuite() {
           {activeTab === 'calculos' ? (
             <ProductionCalculator products={products} user={user} setMessage={setMessage} />
           ) : null}
+          {activeTab === 'producaoDiaria' ? <ManagementModule mode="producao" products={products} setMessage={setMessage} /> : null}
+          {activeTab === 'vendas' ? <ManagementModule mode="vendas" products={products} setMessage={setMessage} /> : null}
           {activeTab === 'clientes' ? <SimpleListPanel title="Clientes" items={customers} empty="Ainda nao ha clientes cadastrados." /> : null}
           {activeTab === 'caixa' ? <FinancePanel finance={finance} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
-          {activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
+          {activeTab === 'contasReceber' ? <ManagementModule mode="contas" products={products} setMessage={setMessage} /> : null}
+          {activeTab === 'relatorios' ? <ManagementModule mode="relatorios" products={products} setMessage={setMessage} /> : null}
+          {activeTab === 'custosPrecos' ? <ManagementModule mode="custos" products={products} setMessage={setMessage} /> : null}
           {activeTab === 'usuarios' ? <UsersPanel users={users} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
           {activeTab === 'impressao' ? <PrintingPanel printing={printing} setMessage={setMessage} /> : null}
           {activeTab === 'auditoria' ? <SimpleListPanel title="Auditoria" items={auditLogs} empty="Ainda nao ha eventos de auditoria." /> : null}
@@ -632,6 +641,10 @@ function pathToTab(path: string): TabId {
   if (path.includes('/pedidos')) return 'pedidos'
   if (path.includes('/produtos')) return 'produtos'
   if (path.includes('/estoque')) return 'estoque'
+  if (path.includes('/producao-diaria')) return 'producaoDiaria'
+  if (path.includes('/vendas')) return 'vendas'
+  if (path.includes('/contas-receber')) return 'contasReceber'
+  if (path.includes('/custos-precos')) return 'custosPrecos'
   if (path.includes('/calculos') || path.includes('/producao')) return 'calculos'
   if (path.includes('/clientes')) return 'clientes'
   if (path.includes('/financeiro') || path.includes('/caixa')) return 'caixa'
@@ -1281,81 +1294,6 @@ function StockPanel({
             </div> : null}
           </article>
         ))}
-      </div>
-    </div>
-  )
-}
-
-function ReportsPanel({ summary, orders }: { summary: ReportSummary | null; orders: ApiOrder[] }) {
-  if (!summary) {
-    const activeOrders = orders.filter((order) => order.status !== 'FINALIZADO' && order.status !== 'CANCELADO')
-    return (
-      <div className="grid gap-5">
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Metric label="Pedidos ativos" value={String(activeOrders.length)} />
-          <Metric label="Novos" value={String(orders.filter((order) => order.status === 'RECEBIDO').length)} />
-          <Metric label="Prontos" value={String(orders.filter((order) => order.status === 'PRONTO').length)} />
-        </div>
-        <EmptyState text="Indicadores financeiros e relatorios completos nao estao disponiveis para este perfil." />
-      </div>
-    )
-  }
-
-  return (
-    <div className="grid gap-5">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Metric label="Vendas hoje" value={formatCurrency(summary.revenue)} />
-        <Metric label="Vendas no mes" value={formatCurrency(summary.monthRevenue)} />
-        <Metric label="Pedidos hoje" value={String(summary.orders)} />
-        <Metric label="Ticket medio" value={formatCurrency(summary.averageTicket)} />
-        <Metric label="Pendentes" value={String(summary.pendingOrders)} />
-        <Metric label="Finalizados" value={String(summary.deliveredOrders)} />
-        <Metric label="Cancelados" value={String(summary.canceledOrders)} />
-        <Metric label="Estoque baixo" value={String(summary.lowStockItems)} />
-      </div>
-      <div className="grid gap-5 lg:grid-cols-2">
-        <div className="rounded-lg border border-zinc-200 p-5">
-          <h3 className="text-xl font-black">Produtos mais vendidos</h3>
-          <div className="mt-4 space-y-3">
-            {summary.topProducts.map((product) => (
-              <p key={product.productName} className="flex justify-between text-sm font-semibold">
-                <span>{product.productName}</span>
-                <span>{product.quantity} un</span>
-              </p>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-lg border border-zinc-200 p-5">
-          <h3 className="text-xl font-black">Formas de pagamento</h3>
-          <div className="mt-4 space-y-3">
-            {summary.paymentMethods.length === 0 ? <p className="text-sm font-semibold text-zinc-600">Ainda nao ha vendas registradas.</p> : null}
-            {summary.paymentMethods.map((payment) => (
-              <p key={payment.method} className="flex justify-between text-sm font-semibold">
-                <span>{payment.method}</span>
-                <span>{formatCurrency(payment.total)}</span>
-              </p>
-            ))}
-          </div>
-        </div>
-        <div className="rounded-lg border border-zinc-200 p-5">
-          <h3 className="text-xl font-black">Ultimos pedidos</h3>
-          <div className="mt-4 space-y-3">
-            {orders.length === 0 ? <p className="text-sm font-semibold text-zinc-600">Ainda nao ha pedidos.</p> : null}
-            {orders.slice(0, 6).map((order) => (
-              <p key={order.id} className="flex justify-between text-sm font-semibold">
-                <span>{order.customerName}</span>
-                <span>{formatCurrency(order.total)}</span>
-              </p>
-            ))}
-          </div>
-        </div>
-      </div>
-      <div className="rounded-lg bg-black p-5 text-white">
-        <h3 className="text-xl font-black text-[var(--sr-yellow)]">Fidelidade e recursos inteligentes</h3>
-        <p className="mt-2 text-sm font-semibold leading-6 text-zinc-200">
-          A API ja pontua clientes por telefone a cada pedido. A proxima evolucao e usar esses dados para
-          cupons, recomendacoes e campanhas automaticas.
-        </p>
       </div>
     </div>
   )

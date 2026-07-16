@@ -4,6 +4,20 @@ import jwt from 'jsonwebtoken'
 import pg from 'pg'
 import { randomUUID } from 'node:crypto'
 import { allowedRoles, displayRole, hasPermission, normalizeRole, permissionsFor } from './access-control.js'
+import {
+  calculatePaymentTotals,
+  calculateRefillCents,
+  calculateCostCoverage,
+  csvSafe,
+  deriveReceivableStatus,
+  financialStatusFor,
+  grossProfitStatus,
+  receivablePaymentMethods,
+  saleStatuses,
+  toCents,
+  toQuantity,
+  volumeRoundingModes,
+} from './management-domain.js'
 
 const { Pool } = pg
 const port = Number(process.env.PORT || 3001)
@@ -415,6 +429,23 @@ async function audit(req, action, entity, entityId, beforeData = null, afterData
   )
 }
 
+async function auditWithClient(client, req, action, entity, entityId, beforeData = null, afterData = null) {
+  await client.query(
+    `INSERT INTO audit_logs (id, user_id, ip_address, action, entity, entity_id, before_data, after_data, created_at)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())`,
+    [
+      randomUUID(),
+      req.user?.id || null,
+      req.ip || req.socket.remoteAddress || null,
+      action,
+      entity,
+      entityId,
+      beforeData ? JSON.stringify(beforeData) : null,
+      afterData ? JSON.stringify(afterData) : null,
+    ],
+  )
+}
+
 async function initDb() {
   await query(`
     CREATE TABLE IF NOT EXISTS products (
@@ -647,6 +678,160 @@ async function initDb() {
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
+
+    CREATE TABLE IF NOT EXISTS product_price_history (
+      id TEXT PRIMARY KEY,
+      product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      price_cents INTEGER NOT NULL,
+      valid_from DATE NOT NULL DEFAULT CURRENT_DATE,
+      valid_until DATE,
+      notes TEXT NOT NULL DEFAULT '',
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS product_cost_history (
+      id TEXT PRIMARY KEY,
+      product_id TEXT NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+      cost_cents INTEGER NOT NULL,
+      unit TEXT NOT NULL DEFAULT 'unidade',
+      source TEXT NOT NULL DEFAULT 'manual',
+      valid_from DATE NOT NULL DEFAULT CURRENT_DATE,
+      valid_until DATE,
+      notes TEXT NOT NULL DEFAULT '',
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS commercial_settings (
+      key TEXT PRIMARY KEY,
+      value JSONB NOT NULL,
+      updated_by TEXT,
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS production_entries (
+      id TEXT PRIMARY KEY,
+      production_date DATE NOT NULL,
+      period TEXT NOT NULL DEFAULT '',
+      responsible TEXT NOT NULL DEFAULT '',
+      status TEXT NOT NULL DEFAULT 'RASCUNHO',
+      notes TEXT NOT NULL DEFAULT '',
+      cancel_reason TEXT,
+      created_by TEXT,
+      updated_by TEXT,
+      cancelled_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      cancelled_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS production_entry_items (
+      id TEXT PRIMARY KEY,
+      production_entry_id TEXT NOT NULL REFERENCES production_entries(id) ON DELETE CASCADE,
+      product_id TEXT REFERENCES products(id) ON DELETE SET NULL,
+      product_name_snapshot TEXT NOT NULL,
+      category TEXT NOT NULL,
+      unit TEXT NOT NULL DEFAULT 'unidade',
+      quantity_produced NUMERIC NOT NULL DEFAULT 0,
+      quantity_lost NUMERIC NOT NULL DEFAULT 0,
+      quantity_internal_use NUMERIC NOT NULL DEFAULT 0,
+      volume_ml INTEGER,
+      notes TEXT NOT NULL DEFAULT '',
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS management_sales (
+      id TEXT PRIMARY KEY,
+      sale_code TEXT UNIQUE NOT NULL,
+      sale_date TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      customer_id TEXT REFERENCES customers(id) ON DELETE SET NULL,
+      customer_name TEXT NOT NULL DEFAULT '',
+      subtotal_cents INTEGER NOT NULL DEFAULT 0,
+      discount_cents INTEGER NOT NULL DEFAULT 0,
+      surcharge_cents INTEGER NOT NULL DEFAULT 0,
+      total_cents INTEGER NOT NULL DEFAULT 0,
+      paid_cents INTEGER NOT NULL DEFAULT 0,
+      debt_cents INTEGER NOT NULL DEFAULT 0,
+      financial_status TEXT NOT NULL DEFAULT 'PAGO',
+      status TEXT NOT NULL DEFAULT 'CONFIRMADO',
+      notes TEXT NOT NULL DEFAULT '',
+      cancel_reason TEXT,
+      created_by TEXT,
+      cancelled_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      cancelled_at TIMESTAMPTZ
+    );
+
+    CREATE TABLE IF NOT EXISTS management_sale_items (
+      id TEXT PRIMARY KEY,
+      sale_id TEXT NOT NULL REFERENCES management_sales(id) ON DELETE CASCADE,
+      product_id TEXT REFERENCES products(id) ON DELETE SET NULL,
+      product_name_snapshot TEXT NOT NULL,
+      category TEXT NOT NULL,
+      quantity NUMERIC NOT NULL DEFAULT 0,
+      unit TEXT NOT NULL DEFAULT 'unidade',
+      volume_ml INTEGER,
+      unit_price_cents INTEGER NOT NULL DEFAULT 0,
+      unit_cost_cents INTEGER,
+      subtotal_cents INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS payment_entries (
+      id TEXT PRIMARY KEY,
+      sale_id TEXT REFERENCES management_sales(id) ON DELETE CASCADE,
+      receivable_id TEXT,
+      method TEXT NOT NULL,
+      amount_cents INTEGER NOT NULL,
+      paid_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      notes TEXT NOT NULL DEFAULT '',
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS receivables (
+      id TEXT PRIMARY KEY,
+      sale_id TEXT REFERENCES management_sales(id) ON DELETE SET NULL,
+      customer_id TEXT REFERENCES customers(id) ON DELETE SET NULL,
+      customer_name TEXT NOT NULL DEFAULT '',
+      original_amount_cents INTEGER NOT NULL,
+      paid_amount_cents INTEGER NOT NULL DEFAULT 0,
+      outstanding_amount_cents INTEGER NOT NULL,
+      due_date DATE,
+      status TEXT NOT NULL DEFAULT 'ABERTA',
+      notes TEXT NOT NULL DEFAULT '',
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS receivable_payments (
+      id TEXT PRIMARY KEY,
+      receivable_id TEXT NOT NULL REFERENCES receivables(id) ON DELETE CASCADE,
+      amount_cents INTEGER NOT NULL,
+      payment_method TEXT NOT NULL,
+      paid_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      notes TEXT NOT NULL DEFAULT '',
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS expense_categories (
+      id TEXT PRIMARY KEY,
+      name TEXT UNIQUE NOT NULL,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS report_exports (
+      id TEXT PRIMARY KEY,
+      type TEXT NOT NULL,
+      filters JSONB NOT NULL,
+      generated_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
   `)
 
   await query('ALTER TABLE audit_logs ADD COLUMN IF NOT EXISTS ip_address TEXT')
@@ -682,7 +867,91 @@ async function initDb() {
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS last_order_at TIMESTAMPTZ;
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS total_orders INTEGER NOT NULL DEFAULT 0;
     ALTER TABLE customers ADD COLUMN IF NOT EXISTS total_spent_cents INTEGER NOT NULL DEFAULT 0;
+
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS unit TEXT NOT NULL DEFAULT 'unidade';
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_cents INTEGER;
+    ALTER TABLE expenses ADD COLUMN IF NOT EXISTS expense_date DATE NOT NULL DEFAULT CURRENT_DATE;
+    ALTER TABLE expenses ADD COLUMN IF NOT EXISTS category TEXT NOT NULL DEFAULT 'Outros';
+    ALTER TABLE expenses ADD COLUMN IF NOT EXISTS payment_method TEXT NOT NULL DEFAULT 'dinheiro';
+    ALTER TABLE expenses ADD COLUMN IF NOT EXISTS supplier TEXT;
+    ALTER TABLE expenses ADD COLUMN IF NOT EXISTS notes TEXT NOT NULL DEFAULT '';
+    ALTER TABLE expenses ADD COLUMN IF NOT EXISTS created_by TEXT;
+
+    CREATE INDEX IF NOT EXISTS idx_production_entries_date ON production_entries (production_date);
+    CREATE INDEX IF NOT EXISTS idx_production_items_product ON production_entry_items (product_id);
+    CREATE INDEX IF NOT EXISTS idx_management_sales_date ON management_sales (sale_date);
+    CREATE INDEX IF NOT EXISTS idx_management_sale_items_product ON management_sale_items (product_id);
+    CREATE INDEX IF NOT EXISTS idx_payment_entries_sale ON payment_entries (sale_id);
+    CREATE INDEX IF NOT EXISTS idx_receivables_status ON receivables (status);
+    CREATE INDEX IF NOT EXISTS idx_receivables_due_date ON receivables (due_date);
+    CREATE INDEX IF NOT EXISTS idx_product_price_history_validity ON product_price_history (product_id, valid_from, valid_until);
+    CREATE INDEX IF NOT EXISTS idx_product_cost_history_validity ON product_cost_history (product_id, valid_from, valid_until);
+    CREATE INDEX IF NOT EXISTS idx_payment_entries_receivable ON payment_entries (receivable_id);
   `)
+
+  await query('ALTER TABLE management_sales ADD COLUMN IF NOT EXISTS idempotency_key TEXT')
+  await query('CREATE UNIQUE INDEX IF NOT EXISTS idx_management_sales_idempotency_key ON management_sales (idempotency_key) WHERE idempotency_key IS NOT NULL')
+  await query(`
+    DO $$
+    BEGIN
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_product_price_history_price_non_negative') THEN
+        ALTER TABLE product_price_history ADD CONSTRAINT chk_product_price_history_price_non_negative CHECK (price_cents >= 0);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_product_cost_history_cost_non_negative') THEN
+        ALTER TABLE product_cost_history ADD CONSTRAINT chk_product_cost_history_cost_non_negative CHECK (cost_cents >= 0);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_production_entries_status') THEN
+        ALTER TABLE production_entries ADD CONSTRAINT chk_production_entries_status CHECK (status IN ('RASCUNHO', 'CONFIRMADO', 'CANCELADO'));
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_production_entry_items_non_negative') THEN
+        ALTER TABLE production_entry_items ADD CONSTRAINT chk_production_entry_items_non_negative CHECK (quantity_produced >= 0 AND quantity_lost >= 0 AND quantity_internal_use >= 0 AND (volume_ml IS NULL OR volume_ml >= 0));
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_management_sales_money_non_negative') THEN
+        ALTER TABLE management_sales ADD CONSTRAINT chk_management_sales_money_non_negative CHECK (subtotal_cents >= 0 AND discount_cents >= 0 AND surcharge_cents >= 0 AND total_cents >= 0 AND paid_cents >= 0 AND debt_cents >= 0);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_management_sales_status') THEN
+        ALTER TABLE management_sales ADD CONSTRAINT chk_management_sales_status CHECK (status IN ('CONFIRMADO', 'CANCELADO', 'ESTORNADO'));
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_management_sales_financial_status') THEN
+        ALTER TABLE management_sales ADD CONSTRAINT chk_management_sales_financial_status CHECK (financial_status IN ('PAGO', 'PARCIAL', 'EM_DIVIDA', 'CANCELADO', 'ESTORNADO'));
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_management_sale_items_non_negative') THEN
+        ALTER TABLE management_sale_items ADD CONSTRAINT chk_management_sale_items_non_negative CHECK (quantity >= 0 AND (volume_ml IS NULL OR volume_ml >= 0) AND unit_price_cents >= 0 AND (unit_cost_cents IS NULL OR unit_cost_cents >= 0) AND subtotal_cents >= 0);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_payment_entries_amount_positive') THEN
+        ALTER TABLE payment_entries ADD CONSTRAINT chk_payment_entries_amount_positive CHECK (amount_cents > 0);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_payment_entries_method') THEN
+        ALTER TABLE payment_entries ADD CONSTRAINT chk_payment_entries_method CHECK (method IN ('pix', 'cartao', 'dinheiro', 'divida', 'estorno'));
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_receivables_money_non_negative') THEN
+        ALTER TABLE receivables ADD CONSTRAINT chk_receivables_money_non_negative CHECK (original_amount_cents >= 0 AND paid_amount_cents >= 0 AND outstanding_amount_cents >= 0);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_receivables_status') THEN
+        ALTER TABLE receivables ADD CONSTRAINT chk_receivables_status CHECK (status IN ('ABERTA', 'PARCIALMENTE_PAGA', 'PAGA', 'CANCELADA', 'VENCIDA'));
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_receivable_payments_amount_positive') THEN
+        ALTER TABLE receivable_payments ADD CONSTRAINT chk_receivable_payments_amount_positive CHECK (amount_cents > 0);
+      END IF;
+      IF NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'chk_receivable_payments_method') THEN
+        ALTER TABLE receivable_payments ADD CONSTRAINT chk_receivable_payments_method CHECK (payment_method IN ('pix', 'cartao', 'dinheiro'));
+      END IF;
+    END $$;
+  `)
+
+  await query(
+    `INSERT INTO commercial_settings (key, value)
+     VALUES ('refill_rule', $1::jsonb)
+     ON CONFLICT (key) DO NOTHING`,
+    [JSON.stringify({ blockMl: 100, blockPriceCents: 100, roundingMode: 'somente_multiplos' })],
+  )
+
+  for (const category of ['Ingredientes', 'Embalagens', 'Gas', 'Energia', 'Transporte', 'Manutencao', 'Taxas', 'Outros']) {
+    await query('INSERT INTO expense_categories (id, name) VALUES ($1, $2) ON CONFLICT (name) DO NOTHING', [
+      category.toLowerCase().replace(/\s+/g, '-'),
+      category,
+    ])
+  }
 
   for (const [index, category] of ['pasteis', 'salgados', 'sucos', 'refil'].entries()) {
     await query(
@@ -1683,6 +1952,723 @@ app.patch('/api/stock/:id', auth('inventory.update'), async (req, res) => {
   )
   await audit(req, 'update', 'stock_items', req.params.id, current.rows[0], updated.rows[0])
   res.json(updated.rows[0])
+})
+
+function periodFilter(queryParams) {
+  const today = new Date().toISOString().slice(0, 10)
+  const startDate = String(queryParams.startDate || queryParams.start || today).slice(0, 10)
+  const endDate = String(queryParams.endDate || queryParams.end || startDate).slice(0, 10)
+  if (startDate > endDate) return { error: 'Data inicial nao pode ser posterior a data final.' }
+  return { startDate, endDate }
+}
+
+async function currentCostCents(productId) {
+  const result = await query(
+    `SELECT cost_cents FROM product_cost_history
+     WHERE product_id = $1 AND valid_from <= CURRENT_DATE AND (valid_until IS NULL OR valid_until >= CURRENT_DATE)
+     ORDER BY valid_from DESC, created_at DESC LIMIT 1`,
+    [productId],
+  )
+  return result.rows[0]?.cost_cents ?? null
+}
+
+function managementSaleDto(row) {
+  return {
+    id: row.id,
+    saleCode: row.sale_code,
+    saleDate: row.sale_date,
+    customerName: row.customer_name,
+    subtotalCents: row.subtotal_cents,
+    subtotal: money(row.subtotal_cents),
+    discountCents: row.discount_cents,
+    surchargeCents: row.surcharge_cents,
+    totalCents: row.total_cents,
+    total: money(row.total_cents),
+    paidCents: row.paid_cents,
+    paid: money(row.paid_cents),
+    debtCents: row.debt_cents,
+    debt: money(row.debt_cents),
+    financialStatus: row.financial_status,
+    status: row.status,
+    notes: row.notes || '',
+    createdAt: row.created_at,
+  }
+}
+
+async function managementSummary({ startDate, endDate, category = '', productId = '', paymentMethod = '' }) {
+  const saleFilters = [startDate, endDate]
+  const saleWhere = ["ms.status = 'CONFIRMADO'", 'ms.sale_date::date BETWEEN $1 AND $2']
+  if (category) {
+    saleFilters.push(category)
+    saleWhere.push(`msi.category = $${saleFilters.length}`)
+  }
+  if (productId) {
+    saleFilters.push(productId)
+    saleWhere.push(`msi.product_id = $${saleFilters.length}`)
+  }
+  const productionFilters = [startDate, endDate]
+  const productionWhere = ["pe.status <> 'CANCELADO'", 'pe.production_date BETWEEN $1 AND $2']
+  if (category) {
+    productionFilters.push(category)
+    productionWhere.push(`pei.category = $${productionFilters.length}`)
+  }
+  if (productId) {
+    productionFilters.push(productId)
+    productionWhere.push(`pei.product_id = $${productionFilters.length}`)
+  }
+  const production = await query(
+    `SELECT COALESCE(SUM(pei.quantity_produced), 0)::numeric AS produced,
+            COALESCE(SUM(pei.quantity_lost), 0)::numeric AS lost,
+            COALESCE(SUM(pei.quantity_internal_use), 0)::numeric AS internal_use,
+            COALESCE(SUM(pei.volume_ml), 0)::int AS volume_ml
+     FROM production_entry_items pei
+     JOIN production_entries pe ON pe.id = pei.production_entry_id
+     WHERE ${productionWhere.join(' AND ')}`,
+    productionFilters,
+  )
+  const sales = await query(
+    `SELECT COALESCE(SUM(msi.quantity), 0)::numeric AS sold,
+            COALESCE(SUM(msi.subtotal_cents), 0)::int AS expected_cents,
+            COALESCE(SUM(CASE WHEN msi.unit_cost_cents IS NULL THEN 0 ELSE ROUND(msi.quantity * msi.unit_cost_cents)::int END), 0)::int AS cost_cents,
+            COALESCE(SUM(CASE WHEN msi.unit_cost_cents IS NULL THEN 0 ELSE msi.subtotal_cents END), 0)::int AS covered_revenue_cents,
+            COUNT(*) FILTER (WHERE msi.unit_cost_cents IS NULL)::int AS missing_cost_count
+     FROM management_sale_items msi
+     JOIN management_sales ms ON ms.id = msi.sale_id
+     WHERE ${saleWhere.join(' AND ')}`,
+    saleFilters,
+  )
+  const paymentFilters = [startDate, endDate]
+  const paymentWhere = ["ms.status = 'CONFIRMADO'", 'ms.sale_date::date BETWEEN $1 AND $2']
+  if (paymentMethod) {
+    paymentFilters.push(paymentMethod)
+    paymentWhere.push(`pe.method = $${paymentFilters.length}`)
+  }
+  const payments = await query(
+    `SELECT pe.method, COALESCE(SUM(pe.amount_cents), 0)::int AS total_cents
+     FROM payment_entries pe
+     JOIN management_sales ms ON ms.id = pe.sale_id
+     WHERE ${paymentWhere.join(' AND ')}
+     GROUP BY pe.method`,
+    paymentFilters,
+  )
+  const receivables = await query(
+    "SELECT COALESCE(SUM(outstanding_amount_cents), 0)::int AS open_cents FROM receivables WHERE created_at::date BETWEEN $1 AND $2 AND status <> 'CANCELADA'",
+    [startDate, endDate],
+  )
+  const expenses = await query('SELECT COALESCE(SUM(amount_cents), 0)::int AS total_cents FROM expenses WHERE expense_date BETWEEN $1 AND $2', [
+    startDate,
+    endDate,
+  ])
+  const refunds = await query(
+    `SELECT COALESCE(SUM(pe.amount_cents), 0)::int AS total_cents
+     FROM payment_entries pe
+     JOIN management_sales ms ON ms.id = pe.sale_id
+     WHERE pe.method = 'estorno' AND ms.cancelled_at::date BETWEEN $1 AND $2`,
+    [startDate, endDate],
+  )
+  const paymentMap = Object.fromEntries(payments.rows.map((item) => [item.method, Number(item.total_cents || 0)]))
+  const expectedCents = Number(sales.rows[0].expected_cents || 0)
+  const coveredRevenueCents = Number(sales.rows[0].covered_revenue_cents || 0)
+  const costCents = Number(sales.rows[0].cost_cents || 0)
+  const expenseCents = Number(expenses.rows[0].total_cents || 0)
+  const missingCostCount = Number(sales.rows[0].missing_cost_count || 0)
+  const receivedCents = (paymentMap.pix || 0) + (paymentMap.cartao || 0) + (paymentMap.dinheiro || 0)
+  const grossProfitCents = missingCostCount > 0 ? null : expectedCents - costCents
+  const estimatedResultCents = grossProfitCents === null ? null : grossProfitCents - expenseCents
+  return {
+    filters: { startDate, endDate, category, productId, paymentMethod },
+    producedQuantity: Number(production.rows[0].produced || 0),
+    lostQuantity: Number(production.rows[0].lost || 0),
+    internalUseQuantity: Number(production.rows[0].internal_use || 0),
+    producedVolumeMl: Number(production.rows[0].volume_ml || 0),
+    soldQuantity: Number(sales.rows[0].sold || 0),
+    expectedRevenueCents: expectedCents,
+    expectedRevenue: money(expectedCents),
+    receivedCents,
+    received: money(receivedCents),
+    pixCents: paymentMap.pix || 0,
+    pix: money(paymentMap.pix || 0),
+    cardCents: paymentMap.cartao || 0,
+    card: money(paymentMap.cartao || 0),
+    cashCents: paymentMap.dinheiro || 0,
+    cash: money(paymentMap.dinheiro || 0),
+    pendingCents: Number(receivables.rows[0].open_cents || 0),
+    pending: money(receivables.rows[0].open_cents || 0),
+    refundsCents: Number(refunds.rows[0].total_cents || 0),
+    refunds: money(refunds.rows[0].total_cents || 0),
+    costCents,
+    cost: money(costCents),
+    expensesCents: expenseCents,
+    expenses: money(expenseCents),
+    missingCostCount,
+    grossProfitCents,
+    grossProfit: grossProfitCents === null ? null : money(grossProfitCents),
+    estimatedResultCents,
+    estimatedResult: estimatedResultCents === null ? null : money(estimatedResultCents),
+    costCoveragePercent: calculateCostCoverage({ coveredRevenueCents, totalRevenueCents: expectedCents }),
+    profitStatus: missingCostCount > 0 ? 'LUCRO_INDISPONIVEL' : 'CALCULAVEL',
+  }
+}
+
+app.get('/api/management/refill-rule', auth('reports'), async (_req, res) => {
+  const result = await query("SELECT value FROM commercial_settings WHERE key = 'refill_rule'")
+  res.json(result.rows[0]?.value || { blockMl: 100, blockPriceCents: 100, roundingMode: 'somente_multiplos' })
+})
+
+app.patch('/api/management/refill-rule', auth('production.manage'), async (req, res) => {
+  const value = {
+    blockMl: Math.max(1, Number(req.body.blockMl || 100)),
+    blockPriceCents: toCents(req.body.blockPriceCents ?? 100, 100),
+    roundingMode: volumeRoundingModes.includes(req.body.roundingMode) ? req.body.roundingMode : 'somente_multiplos',
+  }
+  await query(
+    `INSERT INTO commercial_settings (key, value, updated_by, updated_at)
+     VALUES ('refill_rule', $1::jsonb, $2, NOW())
+     ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value, updated_by = EXCLUDED.updated_by, updated_at = NOW()`,
+    [JSON.stringify(value), req.user.id],
+  )
+  await audit(req, 'update', 'commercial_settings', 'refill_rule', null, value)
+  res.json(value)
+})
+
+app.get('/api/management/production', auth('production'), async (req, res) => {
+  const period = periodFilter(req.query)
+  if (period.error) return res.status(400).json({ error: period.error })
+  const result = await query(
+    `SELECT pe.*, COUNT(pei.id)::int AS items_count
+     FROM production_entries pe
+     LEFT JOIN production_entry_items pei ON pei.production_entry_id = pe.id
+     WHERE pe.production_date BETWEEN $1 AND $2
+     GROUP BY pe.id ORDER BY pe.production_date DESC, pe.created_at DESC LIMIT 100`,
+    [period.startDate, period.endDate],
+  )
+  res.json(result.rows)
+})
+
+app.post('/api/management/production', auth('production.manage'), async (req, res) => {
+  const items = Array.isArray(req.body.items) ? req.body.items : []
+  if (!req.body.productionDate) return res.status(400).json({ error: 'Informe a data da producao.' })
+  if (items.length === 0) return res.status(400).json({ error: 'Adicione pelo menos um produto.' })
+  const client = await pool.connect()
+  const entryId = randomUUID()
+  try {
+    await client.query('BEGIN')
+    const entry = await client.query(
+      `INSERT INTO production_entries (id, production_date, period, responsible, status, notes, created_by, updated_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$7) RETURNING *`,
+      [entryId, req.body.productionDate, req.body.period || '', req.body.responsible || req.user.name || '', req.body.status === 'CONFIRMADO' ? 'CONFIRMADO' : 'RASCUNHO', req.body.notes || '', req.user.id],
+    )
+    const seen = new Set()
+    for (const [index, rawItem] of items.entries()) {
+      const product = rawItem.productId ? await client.query('SELECT * FROM products WHERE id = $1', [rawItem.productId]) : { rows: [] }
+      const productRow = product.rows[0]
+      const name = productRow?.name || rawItem.productNameSnapshot || rawItem.name || 'Produto manual'
+      const unit = rawItem.unit || productRow?.unit || 'unidade'
+      const produced = toQuantity(rawItem.quantityProduced)
+      const lost = toQuantity(rawItem.quantityLost)
+      const internalUse = toQuantity(rawItem.quantityInternalUse)
+      if (produced <= 0) throw new Error(`Quantidade invalida em ${name}.`)
+      if (produced < lost + internalUse) throw new Error(`Perda/uso interno maior que produzido em ${name}.`)
+      const duplicateKey = `${rawItem.productId || name}-${unit}`
+      if (seen.has(duplicateKey)) throw new Error(`Linha duplicada: ${name}.`)
+      seen.add(duplicateKey)
+      const volumeMl = rawItem.volumeMl ? Math.round(toQuantity(rawItem.volumeMl)) : unit === 'litro' ? Math.round(produced * 1000) : unit === 'ml' ? Math.round(produced) : null
+      await client.query(
+        `INSERT INTO production_entry_items (id, production_entry_id, product_id, product_name_snapshot, category, unit, quantity_produced, quantity_lost, quantity_internal_use, volume_ml, notes, sort_order)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)`,
+        [randomUUID(), entryId, productRow?.id || null, name, productRow?.category || rawItem.category || 'outros', unit, produced, lost, internalUse, volumeMl, rawItem.notes || '', index],
+      )
+    }
+    await auditWithClient(client, req, 'create', 'production_entries', entryId, null, { items: items.length, status: entry.rows[0].status })
+    await client.query('COMMIT')
+    res.status(201).json(entry.rows[0])
+  } catch (error) {
+    await client.query('ROLLBACK')
+    res.status(400).json({ error: error.message || 'Nao foi possivel salvar producao.' })
+  } finally {
+    client.release()
+  }
+})
+
+app.post('/api/management/production/:id/cancel', auth('production.manage'), async (req, res) => {
+  const reason = String(req.body.reason || '').trim()
+  if (reason.length < 8) return res.status(400).json({ error: 'Informe uma justificativa de cancelamento com pelo menos 8 caracteres.' })
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const current = await client.query('SELECT * FROM production_entries WHERE id = $1 FOR UPDATE', [req.params.id])
+    const row = current.rows[0]
+    if (!row) {
+      await client.query('ROLLBACK')
+      return res.status(404).json({ error: 'Producao nao encontrada.' })
+    }
+    if (row.status === 'CANCELADO') {
+      await client.query('ROLLBACK')
+      return res.status(409).json({ error: 'Producao ja cancelada.' })
+    }
+    const updated = await client.query(
+      `UPDATE production_entries
+       SET status = 'CANCELADO', cancel_reason = $1, cancelled_by = $2, cancelled_at = NOW(), updated_by = $2, updated_at = NOW()
+       WHERE id = $3 RETURNING *`,
+      [reason, req.user.id, row.id],
+    )
+    await auditWithClient(client, req, 'cancel', 'production_entries', row.id, row, updated.rows[0])
+    await client.query('COMMIT')
+    res.json(updated.rows[0])
+  } catch {
+    await client.query('ROLLBACK')
+    res.status(400).json({ error: 'Nao foi possivel cancelar producao.' })
+  } finally {
+    client.release()
+  }
+})
+
+app.get('/api/management/sales', auth('cash.view'), async (req, res) => {
+  const period = periodFilter(req.query)
+  if (period.error) return res.status(400).json({ error: period.error })
+  const result = await query('SELECT * FROM management_sales WHERE sale_date::date BETWEEN $1 AND $2 ORDER BY sale_date DESC LIMIT 100', [
+    period.startDate,
+    period.endDate,
+  ])
+  res.json(result.rows.map(managementSaleDto))
+})
+
+app.post('/api/management/sales', auth('cash.adjust'), async (req, res) => {
+  const items = Array.isArray(req.body.items) ? req.body.items : []
+  if (items.length === 0) return res.status(400).json({ error: 'Adicione pelo menos um item a venda.' })
+  const idempotencyKey = String(req.get('Idempotency-Key') || req.body.idempotencyKey || '').trim().slice(0, 120)
+  if (idempotencyKey) {
+    const existing = await query('SELECT * FROM management_sales WHERE idempotency_key = $1', [idempotencyKey])
+    if (existing.rows[0]) return res.status(200).json(managementSaleDto(existing.rows[0]))
+  }
+  const client = await pool.connect()
+  const saleId = randomUUID()
+  try {
+    await client.query('BEGIN')
+    const refillRule = await client.query("SELECT value FROM commercial_settings WHERE key = 'refill_rule'")
+    const rule = refillRule.rows[0]?.value || { blockMl: 100, blockPriceCents: 100, roundingMode: 'somente_multiplos' }
+    let subtotalCents = 0
+    const preparedItems = []
+    for (const rawItem of items) {
+      const product = await client.query('SELECT * FROM products WHERE id = $1', [rawItem.productId])
+      const productRow = product.rows[0]
+      if (!productRow) throw new Error('Produto nao encontrado.')
+      const quantity = toQuantity(rawItem.quantity, 1)
+      const volumeMl = rawItem.volumeMl ? Math.round(toQuantity(rawItem.volumeMl)) : null
+      let unitPriceCents = toCents(rawItem.unitPriceCents ?? productRow.price_cents)
+      if (productRow.category === 'refil' && volumeMl) {
+        const refill = calculateRefillCents({ volumeMl, ...rule })
+        if (!refill.ok) throw new Error(refill.error)
+        unitPriceCents = refill.totalCents
+      }
+      const unitCostCents = rawItem.unitCostCents !== undefined && rawItem.unitCostCents !== null && rawItem.unitCostCents !== '' ? toCents(rawItem.unitCostCents) : await currentCostCents(productRow.id)
+      const subtotal = Math.round(quantity * unitPriceCents)
+      subtotalCents += subtotal
+      preparedItems.push({ productRow, quantity, volumeMl, unitPriceCents, unitCostCents, subtotal })
+    }
+    const discountCents = toCents(req.body.discountCents)
+    const surchargeCents = toCents(req.body.surchargeCents)
+    const totalCents = Math.max(0, subtotalCents - discountCents + surchargeCents)
+    const paymentTotals = calculatePaymentTotals(req.body.payments, totalCents)
+    if (paymentTotals.declaredCents > totalCents && !paymentTotals.payments.some((payment) => payment.method === 'dinheiro')) {
+      throw new Error('Pagamentos acima do total so sao aceitos com dinheiro para troco.')
+    }
+    if (paymentTotals.missingCents > 0) paymentTotals.payments.push({ method: 'divida', amountCents: paymentTotals.missingCents, notes: 'Diferenca classificada como divida.' })
+    const sale = await client.query(
+      `INSERT INTO management_sales (id, sale_code, sale_date, customer_name, subtotal_cents, discount_cents, surcharge_cents, total_cents, paid_cents, debt_cents, financial_status, notes, created_by, idempotency_key)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) RETURNING *`,
+      [saleId, `VR-${Date.now()}`, req.body.saleDate || new Date().toISOString(), req.body.customerName || '', subtotalCents, discountCents, surchargeCents, totalCents, paymentTotals.paidCents, paymentTotals.debtCents, financialStatusFor({ totalCents, paidCents: paymentTotals.paidCents, debtCents: paymentTotals.debtCents }), req.body.notes || '', req.user.id, idempotencyKey || null],
+    )
+    for (const item of preparedItems) {
+      await client.query(
+        `INSERT INTO management_sale_items (id, sale_id, product_id, product_name_snapshot, category, quantity, unit, volume_ml, unit_price_cents, unit_cost_cents, subtotal_cents)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)`,
+        [randomUUID(), saleId, item.productRow.id, item.productRow.name, item.productRow.category, item.quantity, item.productRow.unit || 'unidade', item.volumeMl, item.unitPriceCents, item.unitCostCents, item.subtotal],
+      )
+    }
+    for (const payment of paymentTotals.payments) {
+      await client.query('INSERT INTO payment_entries (id, sale_id, method, amount_cents, notes, created_by) VALUES ($1,$2,$3,$4,$5,$6)', [
+        randomUUID(),
+        saleId,
+        payment.method,
+        payment.amountCents,
+        payment.notes || '',
+        req.user.id,
+      ])
+    }
+    if (paymentTotals.debtCents > 0) {
+      await client.query(
+        `INSERT INTO receivables (id, sale_id, customer_name, original_amount_cents, outstanding_amount_cents, due_date, status, notes, created_by)
+         VALUES ($1,$2,$3,$4,$4,$5,'ABERTA',$6,$7)`,
+        [randomUUID(), saleId, req.body.customerName || 'Cliente nao identificado', paymentTotals.debtCents, req.body.dueDate || null, req.body.notes || '', req.user.id],
+      )
+    }
+    await auditWithClient(client, req, 'create', 'management_sales', saleId, null, { totalCents, payments: paymentTotals.payments.length, idempotencyKey: idempotencyKey || null })
+    await client.query('COMMIT')
+    res.status(201).json(managementSaleDto(sale.rows[0]))
+  } catch (error) {
+    await client.query('ROLLBACK')
+    res.status(400).json({ error: error.message || 'Nao foi possivel registrar venda.' })
+  } finally {
+    client.release()
+  }
+})
+
+app.post('/api/management/sales/:id/cancel', auth('cash.adjust'), async (req, res) => {
+  const reason = String(req.body.reason || '').trim()
+  if (reason.length < 8) return res.status(400).json({ error: 'Informe uma justificativa de cancelamento com pelo menos 8 caracteres.' })
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const current = await client.query('SELECT * FROM management_sales WHERE id = $1 FOR UPDATE', [req.params.id])
+    const sale = current.rows[0]
+    if (!sale) {
+      await client.query('ROLLBACK')
+      return res.status(404).json({ error: 'Venda nao encontrada.' })
+    }
+    if (!saleStatuses.includes(sale.status) || sale.status !== 'CONFIRMADO') {
+      await client.query('ROLLBACK')
+      return res.status(409).json({ error: 'Venda ja foi cancelada ou estornada.' })
+    }
+    if (sale.paid_cents > 0) {
+      await client.query('ROLLBACK')
+      return res.status(409).json({ error: 'Venda possui recebimento. Realize estorno auditado em vez de cancelamento simples.' })
+    }
+    const updated = await client.query(
+      `UPDATE management_sales
+       SET status = 'CANCELADO', financial_status = 'CANCELADO', cancel_reason = $1, cancelled_by = $2, cancelled_at = NOW()
+       WHERE id = $3 RETURNING *`,
+      [reason, req.user.id, sale.id],
+    )
+    await client.query(
+      `UPDATE receivables
+       SET status = 'CANCELADA', outstanding_amount_cents = 0, updated_at = NOW()
+       WHERE sale_id = $1 AND status <> 'PAGA'`,
+      [sale.id],
+    )
+    await auditWithClient(client, req, 'cancel', 'management_sales', sale.id, sale, updated.rows[0])
+    await client.query('COMMIT')
+    res.json(managementSaleDto(updated.rows[0]))
+  } catch {
+    await client.query('ROLLBACK')
+    res.status(400).json({ error: 'Nao foi possivel cancelar venda.' })
+  } finally {
+    client.release()
+  }
+})
+
+app.post('/api/management/sales/:id/refund', auth('cash.adjust'), async (req, res) => {
+  const reason = String(req.body.reason || '').trim()
+  const method = String(req.body.method || 'dinheiro').toLowerCase()
+  if (reason.length < 8) return res.status(400).json({ error: 'Informe uma justificativa de estorno com pelo menos 8 caracteres.' })
+  if (!receivablePaymentMethods.includes(method)) return res.status(400).json({ error: 'Forma de estorno invalida.' })
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const current = await client.query('SELECT * FROM management_sales WHERE id = $1 FOR UPDATE', [req.params.id])
+    const sale = current.rows[0]
+    if (!sale) {
+      await client.query('ROLLBACK')
+      return res.status(404).json({ error: 'Venda nao encontrada.' })
+    }
+    if (sale.status !== 'CONFIRMADO') {
+      await client.query('ROLLBACK')
+      return res.status(409).json({ error: 'Venda nao esta confirmada.' })
+    }
+    if (sale.paid_cents <= 0) {
+      await client.query('ROLLBACK')
+      return res.status(409).json({ error: 'Venda sem recebimento deve ser cancelada, nao estornada.' })
+    }
+    const updated = await client.query(
+      `UPDATE management_sales
+       SET status = 'ESTORNADO', financial_status = 'ESTORNADO', cancel_reason = $1, cancelled_by = $2, cancelled_at = NOW()
+       WHERE id = $3 RETURNING *`,
+      [reason, req.user.id, sale.id],
+    )
+    await client.query(
+      `INSERT INTO payment_entries (id, sale_id, method, amount_cents, notes, created_by)
+       VALUES ($1,$2,'estorno',$3,$4,$5)`,
+      [randomUUID(), sale.id, sale.paid_cents, `Estorno por ${method}: ${reason}`, req.user.id],
+    )
+    await client.query(
+      `UPDATE receivables
+       SET status = 'CANCELADA', outstanding_amount_cents = 0, updated_at = NOW()
+       WHERE sale_id = $1 AND status <> 'PAGA'`,
+      [sale.id],
+    )
+    await auditWithClient(client, req, 'refund', 'management_sales', sale.id, sale, updated.rows[0])
+    await client.query('COMMIT')
+    res.json(managementSaleDto(updated.rows[0]))
+  } catch {
+    await client.query('ROLLBACK')
+    res.status(400).json({ error: 'Nao foi possivel estornar venda.' })
+  } finally {
+    client.release()
+  }
+})
+
+app.get('/api/management/receivables', auth('cash.view'), async (req, res) => {
+  const status = String(req.query.status || '')
+  const result = status
+    ? await query('SELECT * FROM receivables WHERE status = $1 ORDER BY created_at DESC LIMIT 100', [status])
+    : await query('SELECT * FROM receivables ORDER BY created_at DESC LIMIT 100')
+  res.json(result.rows.map((row) => ({ ...row, originalAmount: money(row.original_amount_cents), paidAmount: money(row.paid_amount_cents), outstandingAmount: money(row.outstanding_amount_cents) })))
+})
+
+app.post('/api/management/receivables/:id/payments', auth('cash.adjust'), async (req, res) => {
+  const method = String(req.body.paymentMethod || '').toLowerCase()
+  const amountCents = toCents(req.body.amountCents)
+  if (!receivablePaymentMethods.includes(method)) return res.status(400).json({ error: 'Forma de pagamento invalida.' })
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const current = await client.query('SELECT * FROM receivables WHERE id = $1 FOR UPDATE', [req.params.id])
+    const row = current.rows[0]
+    if (!row) {
+      await client.query('ROLLBACK')
+      return res.status(404).json({ error: 'Conta a receber nao encontrada.' })
+    }
+    if (row.status === 'CANCELADA' || row.status === 'PAGA') {
+      await client.query('ROLLBACK')
+      return res.status(409).json({ error: 'Conta a receber nao aceita novo pagamento.' })
+    }
+    if (amountCents <= 0 || amountCents > row.outstanding_amount_cents) {
+      await client.query('ROLLBACK')
+      return res.status(400).json({ error: 'Valor invalido para o saldo.' })
+    }
+    const paid = row.paid_amount_cents + amountCents
+    const outstanding = row.outstanding_amount_cents - amountCents
+    const status = deriveReceivableStatus({
+      originalAmountCents: row.original_amount_cents,
+      paidAmountCents: paid,
+      outstandingAmountCents: outstanding,
+      dueDate: row.due_date,
+    })
+    await client.query('INSERT INTO receivable_payments (id, receivable_id, amount_cents, payment_method, notes, created_by) VALUES ($1,$2,$3,$4,$5,$6)', [
+      randomUUID(),
+      row.id,
+      amountCents,
+      method,
+      req.body.notes || '',
+      req.user.id,
+    ])
+    const updated = await client.query('UPDATE receivables SET paid_amount_cents = $1, outstanding_amount_cents = $2, status = $3, updated_at = NOW() WHERE id = $4 RETURNING *', [
+      paid,
+      outstanding,
+      status,
+      row.id,
+    ])
+    await client.query('INSERT INTO payment_entries (id, receivable_id, method, amount_cents, notes, created_by) VALUES ($1,$2,$3,$4,$5,$6)', [
+      randomUUID(),
+      row.id,
+      method,
+      amountCents,
+      'Recebimento posterior de divida.',
+      req.user.id,
+    ])
+    await auditWithClient(client, req, 'receivable_payment', 'receivables', row.id, row, updated.rows[0])
+    await client.query('COMMIT')
+    res.json(updated.rows[0])
+  } catch {
+    await client.query('ROLLBACK')
+    res.status(400).json({ error: 'Nao foi possivel registrar pagamento.' })
+  } finally {
+    client.release()
+  }
+})
+
+app.get('/api/management/costs-prices/products', auth('products.view'), async (_req, res) => {
+  const result = await query(
+    `SELECT p.*, pch.cost_cents AS current_cost_cents
+     FROM products p
+     LEFT JOIN LATERAL (
+       SELECT cost_cents FROM product_cost_history
+       WHERE product_id = p.id AND valid_from <= CURRENT_DATE AND (valid_until IS NULL OR valid_until >= CURRENT_DATE)
+       ORDER BY valid_from DESC, created_at DESC LIMIT 1
+     ) pch ON TRUE
+     ORDER BY p.category, p.name`,
+  )
+  res.json(result.rows.map((row) => ({ ...productDto(row), unit: row.unit || 'unidade', currentCostCents: row.current_cost_cents, currentCost: row.current_cost_cents == null ? null : money(row.current_cost_cents), grossMarginPercent: row.current_cost_cents ? ((row.price_cents - row.current_cost_cents) / row.price_cents) * 100 : null, profitStatus: grossProfitStatus(row.current_cost_cents) })))
+})
+
+app.patch('/api/management/costs-prices/products/:id', auth('products.update'), async (req, res) => {
+  const client = await pool.connect()
+  try {
+    await client.query('BEGIN')
+    const product = await client.query('SELECT * FROM products WHERE id = $1 FOR UPDATE', [req.params.id])
+    if (!product.rows[0]) {
+      await client.query('ROLLBACK')
+      return res.status(404).json({ error: 'Produto nao encontrado.' })
+    }
+    const validFrom = req.body.validFrom || new Date().toISOString().slice(0, 10)
+    const priceCents = req.body.priceCents === undefined ? product.rows[0].price_cents : toCents(req.body.priceCents)
+    const costCents = req.body.costCents === undefined || req.body.costCents === null || req.body.costCents === '' ? null : toCents(req.body.costCents)
+    const unit = req.body.unit || product.rows[0].unit || 'unidade'
+    const updated = await client.query('UPDATE products SET price_cents = $1, unit = $2, updated_at = NOW() WHERE id = $3 RETURNING *', [priceCents, unit, req.params.id])
+    await client.query(
+      `UPDATE product_price_history
+       SET valid_until = ($2::date - INTERVAL '1 day')::date
+       WHERE product_id = $1 AND valid_until IS NULL AND valid_from < $2::date`,
+      [req.params.id, validFrom],
+    )
+    await client.query('INSERT INTO product_price_history (id, product_id, price_cents, valid_from, notes, created_by) VALUES ($1,$2,$3,$4,$5,$6)', [
+      randomUUID(),
+      req.params.id,
+      priceCents,
+      validFrom,
+      req.body.notes || '',
+      req.user.id,
+    ])
+    if (costCents !== null) {
+      await client.query(
+        `UPDATE product_cost_history
+         SET valid_until = ($2::date - INTERVAL '1 day')::date
+         WHERE product_id = $1 AND valid_until IS NULL AND valid_from < $2::date`,
+        [req.params.id, validFrom],
+      )
+      await client.query('INSERT INTO product_cost_history (id, product_id, cost_cents, unit, source, valid_from, notes, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8)', [
+        randomUUID(),
+        req.params.id,
+        costCents,
+        unit,
+        req.body.source || 'manual',
+        validFrom,
+        req.body.notes || '',
+        req.user.id,
+      ])
+    }
+    await auditWithClient(client, req, 'update_cost_price', 'products', req.params.id, product.rows[0], { priceCents, costCents, unit })
+    await client.query('COMMIT')
+    res.json(productDto(updated.rows[0]))
+  } catch {
+    await client.query('ROLLBACK')
+    res.status(400).json({ error: 'Nao foi possivel atualizar custo e preco.' })
+  } finally {
+    client.release()
+  }
+})
+
+app.get('/api/management/reports/summary', auth('reports'), async (req, res) => {
+  const period = periodFilter(req.query)
+  if (period.error) return res.status(400).json({ error: period.error })
+  res.json(await managementSummary({ ...period, category: req.query.category || '', productId: req.query.productId || '', paymentMethod: req.query.paymentMethod || '' }))
+})
+
+app.get('/api/management/reports/products', auth('reports'), async (req, res) => {
+  const period = periodFilter(req.query)
+  if (period.error) return res.status(400).json({ error: period.error })
+  const result = await query(
+    `SELECT msi.product_id, msi.product_name_snapshot, msi.category, COALESCE(SUM(msi.quantity), 0)::numeric AS quantity,
+            COALESCE(SUM(msi.subtotal_cents), 0)::int AS revenue_cents,
+            COALESCE(SUM(CASE WHEN msi.unit_cost_cents IS NULL THEN 0 ELSE ROUND(msi.quantity * msi.unit_cost_cents)::int END), 0)::int AS cost_cents,
+            COUNT(*) FILTER (WHERE msi.unit_cost_cents IS NULL)::int AS missing_cost_count
+     FROM management_sale_items msi JOIN management_sales ms ON ms.id = msi.sale_id
+     WHERE ms.status = 'CONFIRMADO' AND ms.sale_date::date BETWEEN $1 AND $2
+     GROUP BY msi.product_id, msi.product_name_snapshot, msi.category ORDER BY revenue_cents DESC`,
+    [period.startDate, period.endDate],
+  )
+  res.json(result.rows.map((row) => ({ ...row, revenue: money(row.revenue_cents), cost: money(row.cost_cents), grossProfit: row.missing_cost_count > 0 ? null : money(row.revenue_cents - row.cost_cents), profitStatus: row.missing_cost_count > 0 ? 'LUCRO_INDISPONIVEL' : 'CALCULAVEL' })))
+})
+
+app.get('/api/management/reports.csv', auth('reports'), async (req, res) => {
+  const period = periodFilter(req.query)
+  if (period.error) return res.status(400).json({ error: period.error })
+  const summary = await managementSummary(period)
+  await audit(req, 'export_csv', 'report_exports', 'management-summary', null, { filters: period })
+  const rows = [['Indicador', 'Valor'], ['Faturamento esperado', summary.expectedRevenueCents], ['Valor recebido', summary.receivedCents], ['PIX', summary.pixCents], ['Cartao', summary.cardCents], ['Dinheiro', summary.cashCents], ['Dividas abertas', summary.pendingCents], ['Estornos', summary.refundsCents], ['Custos', summary.costCents], ['Despesas', summary.expensesCents], ['Cobertura de custos (%)', summary.costCoveragePercent], ['Lucro bruto estimado', summary.grossProfitCents ?? 'LUCRO INDISPONIVEL']]
+  res.setHeader('Content-Type', 'text/csv; charset=utf-8')
+  res.setHeader('Content-Disposition', `attachment; filename="salgados-r-relatorio-${period.startDate}-${period.endDate}.csv"`)
+  res.send(`\uFEFF${rows.map((row) => row.map((cell) => csvSafe(cell)).join(';')).join('\n')}`)
+})
+
+function pdfEscape(value) {
+  return String(value ?? '').replace(/[^\x20-\x7EÀ-ÿ]/g, ' ').replace(/\\/g, '\\\\').replace(/\(/g, '\\(').replace(/\)/g, '\\)')
+}
+
+function reportPdf({ title, subtitle, userName, filters, lines }) {
+  const issuedAt = new Date().toLocaleString('pt-BR', { timeZone: 'America/Bahia' })
+  const allLines = [
+    `PERIODO: ${filters.startDate} A ${filters.endDate}`,
+    `EMISSAO: ${issuedAt}`,
+    `RESPONSAVEL: ${userName}`,
+    `FILTROS: ${JSON.stringify(filters)}`,
+    '',
+    ...lines,
+  ]
+  const pageSize = 31
+  const pages = []
+  for (let index = 0; index < allLines.length; index += pageSize) pages.push(allLines.slice(index, index + pageSize))
+  if (pages.length === 0) pages.push(['SEM DADOS PARA O PERIODO.'])
+  const objects = ['1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj']
+  const pageRefs = []
+  let nextObject = 3
+  const fontObject = nextObject++
+  for (let pageIndex = 0; pageIndex < pages.length; pageIndex += 1) {
+    const pageObject = nextObject++
+    const contentObject = nextObject++
+    pageRefs.push(`${pageObject} 0 R`)
+    const textOps = pages[pageIndex]
+      .map((line, lineIndex) => `BT /F1 10 Tf 50 ${690 - lineIndex * 18} Td (${pdfEscape(line).slice(0, 96)}) Tj ET`)
+      .join('\n')
+    const stream = [
+      '0.8627 0 0.0314 rg 0 742 595 100 re f',
+      '1 0.7412 0.051 rg 0 736 595 6 re f',
+      `BT /F1 22 Tf 50 800 Td (${pdfEscape('SALGADOS R')}) Tj ET`,
+      `BT /F1 15 Tf 50 770 Td (${pdfEscape(title)}) Tj ET`,
+      `BT /F1 9 Tf 50 752 Td (${pdfEscape(subtitle)}) Tj ET`,
+      '0.8627 0 0.0314 rg',
+      textOps,
+      `BT /F1 8 Tf 50 28 Td (${pdfEscape(`PAGINA ${pageIndex + 1} DE ${pages.length} - SALGADOS R - ${issuedAt}`)}) Tj ET`,
+    ].join('\n')
+    objects.push(`${pageObject} 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 ${fontObject} 0 R >> >> /Contents ${contentObject} 0 R >> endobj`)
+    objects.push(`${contentObject} 0 obj << /Length ${Buffer.byteLength(stream)} >> stream\n${stream}\nendstream endobj`)
+  }
+  objects.splice(1, 0, `2 0 obj << /Type /Pages /Kids [${pageRefs.join(' ')}] /Count ${pages.length} >> endobj`)
+  objects.push(`${fontObject} 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >> endobj`)
+  let pdf = '%PDF-1.4\n'
+  const offsets = [0]
+  for (const object of objects) {
+    offsets.push(pdf.length)
+    pdf += `${object}\n`
+  }
+  const xref = pdf.length
+  pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
+  for (let index = 1; index < offsets.length; index += 1) pdf += `${String(offsets[index]).padStart(10, '0')} 00000 n \n`
+  pdf += `trailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xref}\n%%EOF`
+  return Buffer.from(pdf)
+}
+
+app.post('/api/management/reports/pdf', auth('reports'), async (req, res) => {
+  const period = periodFilter(req.body || {})
+  if (period.error) return res.status(400).json({ error: period.error })
+  const summary = await managementSummary(period)
+  await query('INSERT INTO report_exports (id, type, filters, generated_by) VALUES ($1,$2,$3,$4)', [randomUUID(), 'pdf', JSON.stringify(period), req.user.id])
+  await audit(req, 'export_pdf', 'report_exports', 'management-summary', null, { filters: period })
+  const pdf = reportPdf({
+    title: 'RELATORIO DE GESTAO',
+    subtitle: 'PRODUCAO, VENDAS, PAGAMENTOS, DIVIDAS, CUSTOS E RESULTADO',
+    userName: req.user.name,
+    filters: period,
+    lines: [
+      `PRODUCAO: ${summary.producedQuantity}`,
+      `QUANTIDADE VENDIDA: ${summary.soldQuantity}`,
+      `FATURAMENTO ESPERADO: ${summary.expectedRevenueCents} CENTAVOS`,
+      `VALOR RECEBIDO: ${summary.receivedCents} CENTAVOS`,
+      `PIX: ${summary.pixCents} CENTAVOS`,
+      `CARTAO: ${summary.cardCents} CENTAVOS`,
+      `DINHEIRO: ${summary.cashCents} CENTAVOS`,
+      `DIVIDA: ${summary.pendingCents} CENTAVOS`,
+      `ESTORNOS: ${summary.refundsCents} CENTAVOS`,
+      `CUSTOS: ${summary.costCents} CENTAVOS`,
+      `DESPESAS: ${summary.expensesCents} CENTAVOS`,
+      `COBERTURA DE CUSTOS: ${summary.costCoveragePercent}%`,
+      `LUCRO BRUTO ESTIMADO: ${summary.grossProfitCents === null ? 'INDISPONIVEL POR FALTA DE CUSTO' : `${summary.grossProfitCents} CENTAVOS`}`,
+      summary.grossProfitCents === null ? 'AVISO: LUCRO CALCULAVEL SOMENTE APOS CADASTRAR CUSTOS DOS PRODUTOS.' : 'RESULTADO CALCULADO COM CUSTOS CADASTRADOS.',
+    ],
+  })
+  res.setHeader('Content-Type', 'application/pdf')
+  res.setHeader('Content-Disposition', `attachment; filename="salgados-r-relatorio-${period.startDate}-${period.endDate}.pdf"`)
+  res.send(pdf)
 })
 
 app.get('/api/reports/summary', auth('reports'), async (_req, res) => {
