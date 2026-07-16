@@ -665,13 +665,13 @@ function MaturityPanel({
   return (
     <div className="grid gap-5">
       <div className="rounded-lg bg-[var(--sr-black)] p-5 text-white">
-        <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Inspirado no padrao Acai Olimpo</p>
+        <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Mapa operacional Salgados R</p>
         <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_260px] lg:items-end">
           <div>
             <h2 className="text-3xl font-black">Mapa de maturidade operacional da Salgados R</h2>
             <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-zinc-200">
               O objetivo e evoluir de catalogo online para sistema operacional completo, mantendo a identidade vermelha,
-              amarela e a tipografia atual da marca. O PDF foi usado apenas como referencia de arquitetura e modulos.
+              amarela e a tipografia atual da marca.
             </p>
           </div>
           <div className="rounded-lg bg-[var(--sr-yellow)] p-4 text-[var(--sr-black)]">

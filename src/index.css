@@ -5,7 +5,7 @@
   --sr-red: #dc0008;
   --sr-yellow: #ffbd0d;
   --sr-white: #ffffff;
-  --sr-black: #111111;
+  --sr-black: var(--sr-red);
   color: var(--sr-white);
   background: var(--sr-red);
   font-family:
@@ -149,7 +149,7 @@ textarea[data-preserve-case] {
   display: block;
   height: auto;
   object-fit: contain;
-  filter: drop-shadow(0 18px 40px rgb(0 0 0 / 0.28));
+  filter: drop-shadow(0 18px 40px rgb(220 0 8 / 0.28));
 }
 
 .sr-hero-product-pastel {
@@ -503,9 +503,9 @@ textarea[data-preserve-case] {
   width: 100%;
   min-width: 0;
   min-height: 100vh;
-  background: var(--sr-white);
+  background: var(--sr-red);
   color: var(--sr-red);
-  text-transform: none;
+  text-transform: uppercase;
 }
 
 .sr-admin-layout {
@@ -520,9 +520,7 @@ textarea[data-preserve-case] {
   min-width: 0;
   flex: 1 1 0%;
   flex-direction: column;
-  background:
-    radial-gradient(circle at 95% 0%, rgb(255 189 13 / 0.16), transparent 26rem),
-    linear-gradient(180deg, rgb(220 0 8 / 0.06), var(--sr-white) 22rem);
+  background: var(--sr-red);
 }
 
 .sr-admin-content {
@@ -1057,7 +1055,7 @@ textarea[data-preserve-case] {
   font-size: 1rem;
   font-weight: 800;
   padding: 0.85rem 1rem;
-  text-transform: none;
+  text-transform: uppercase;
 }
 
 .sr-admin-password-field {
@@ -1111,6 +1109,68 @@ textarea[data-preserve-case] {
   background: var(--sr-yellow);
   animation: sr-admin-loading 900ms ease-in-out infinite alternate;
   content: "";
+}
+
+.sr-admin-root :where(h1, h2, h3, h4, p, span, strong, small, label, button, a, li, td, th, pre, input, textarea, select) {
+  text-transform: uppercase;
+}
+
+.sr-admin-root :where(.bg-white) {
+  background: var(--sr-white) !important;
+}
+
+.sr-admin-root :where([class*="bg-zinc-"], [class*="bg-gray-"], [class*="bg-slate-"], [class*="bg-neutral-"], [class*="bg-black"], [class*="bg-[var(--sr-black)]"]) {
+  background: var(--sr-white) !important;
+  color: var(--sr-red) !important;
+}
+
+.sr-admin-root :where([class*="bg-zinc-9"], [class*="bg-zinc-950"], [class*="bg-black"], [class*="bg-[var(--sr-black)]"]) {
+  background: var(--sr-red) !important;
+  color: var(--sr-white) !important;
+}
+
+.sr-admin-root :where([class*="bg-yellow-"], [class*="bg-[var(--sr-yellow)]"]) {
+  background: var(--sr-yellow) !important;
+  color: var(--sr-red) !important;
+}
+
+.sr-admin-root :where([class*="bg-red-"], [class*="bg-[var(--sr-red)]"]) {
+  background: var(--sr-red) !important;
+  color: var(--sr-white) !important;
+}
+
+.sr-admin-root :where([class*="text-zinc-"], [class*="text-gray-"], [class*="text-slate-"], [class*="text-neutral-"], [class*="text-black"], [class*="text-[var(--sr-black)]"]) {
+  color: var(--sr-red) !important;
+}
+
+.sr-admin-root :where([class*="bg-[var(--sr-red)]"], [class*="bg-red-"], [class*="bg-black"], [class*="bg-zinc-9"], [class*="bg-[var(--sr-black)]"]) :where(h1, h2, h3, h4, p, span, strong, small, label, button, a, li, td, th) {
+  color: var(--sr-white) !important;
+}
+
+.sr-admin-root :where(button, a) {
+  text-decoration-color: var(--sr-yellow);
+}
+
+.sr-admin-root :where(input, textarea, select) {
+  border-color: rgb(220 0 8 / 0.28) !important;
+  background: var(--sr-white) !important;
+  color: var(--sr-red) !important;
+  caret-color: var(--sr-red);
+}
+
+.sr-admin-root :where(input::placeholder, textarea::placeholder) {
+  color: rgb(220 0 8 / 0.65);
+  opacity: 1;
+}
+
+.sr-admin-root :where(pre) {
+  border: 1px solid rgb(220 0 8 / 0.2);
+  background: var(--sr-white) !important;
+  color: var(--sr-red) !important;
+}
+
+.sr-admin-root :where(.shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+  box-shadow: 0 16px 34px rgb(220 0 8 / 0.12) !important;
 }
 
 @keyframes sr-admin-loading {
@@ -1461,7 +1521,7 @@ textarea[data-preserve-case] {
   height: 220px;
   object-fit: contain;
   object-position: center;
-  filter: drop-shadow(0 10px 16px rgb(0 0 0 / 0.18));
+  filter: drop-shadow(0 10px 16px rgb(220 0 8 / 0.18));
   transform: scale(1.08);
   transition: transform 250ms ease;
 }
@@ -1637,7 +1697,7 @@ textarea[data-preserve-case] {
   }
 
   .sr-hero-product {
-    filter: drop-shadow(0 14px 28px rgb(0 0 0 / 0.28));
+    filter: drop-shadow(0 14px 28px rgb(220 0 8 / 0.28));
   }
 
   .sr-hero-product-pastel {
