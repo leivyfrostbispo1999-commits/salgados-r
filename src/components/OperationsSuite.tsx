@@ -677,17 +677,17 @@ function MaturityPanel({
 
   return (
     <div className="grid gap-5">
-      <div className="rounded-lg bg-[var(--sr-black)] p-5 text-white">
+      <div className="rounded-lg bg-[var(--sr-red)] p-5 text-white">
         <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Mapa operacional Salgados R</p>
         <div className="mt-3 grid gap-4 lg:grid-cols-[1fr_260px] lg:items-end">
           <div>
             <h2 className="text-3xl font-black">Mapa de maturidade operacional da Salgados R</h2>
-            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-zinc-200">
+            <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-[var(--sr-white)]">
               O objetivo e evoluir de catalogo online para sistema operacional completo, mantendo a identidade vermelha,
               amarela e a tipografia atual da marca.
             </p>
           </div>
-          <div className="rounded-lg bg-[var(--sr-yellow)] p-4 text-[var(--sr-black)]">
+          <div className="rounded-lg bg-[var(--sr-yellow)] p-4 text-[var(--sr-white)]">
             <p className="text-sm font-black">Maturidade estimada</p>
             <p className="mt-1 text-5xl font-black">{score}%</p>
           </div>
@@ -724,13 +724,13 @@ function MaturityPanel({
         {maturityModules.map((item) => (
           <article key={item.area} className="rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
             <div className="flex flex-wrap items-start justify-between gap-3">
-              <h3 className="text-xl font-black text-[var(--sr-black)]">{item.area}</h3>
+              <h3 className="text-xl font-black text-[var(--sr-white)]">{item.area}</h3>
               <span className={`rounded-full px-3 py-1 text-xs font-black ${maturityStatusClass(item.status)}`}>
                 {item.status}
               </span>
             </div>
-            <p className="mt-3 text-sm font-semibold leading-6 text-zinc-700">{item.detail}</p>
-            <p className="mt-3 rounded-lg bg-zinc-50 p-3 text-sm font-bold text-zinc-800">
+            <p className="mt-3 text-sm font-semibold leading-6 text-[var(--sr-white)]">{item.detail}</p>
+            <p className="mt-3 rounded-lg bg-zinc-50 p-3 text-sm font-bold text-[var(--sr-white)]">
               Proximo passo: {item.next}
             </p>
           </article>
@@ -741,10 +741,10 @@ function MaturityPanel({
 }
 
 function maturityStatusClass(status: string) {
-  if (status === 'Pronto') return 'bg-[var(--sr-yellow)] text-zinc-950'
+  if (status === 'Pronto') return 'bg-[var(--sr-yellow)] text-[var(--sr-white)]'
   if (status === 'Base pronta') return 'bg-yellow-100 text-yellow-900'
   if (status === 'Pendente externo') return 'bg-red-100 text-red-900'
-  return 'bg-zinc-200 text-zinc-800'
+  return 'bg-zinc-200 text-[var(--sr-white)]'
 }
 
 function BootstrapForm({
@@ -919,7 +919,7 @@ function OrdersPanel({
           className="rounded border border-zinc-300 px-3 py-3 font-semibold"
         />
         <span className="rounded-full bg-[var(--sr-yellow)] px-4 py-2 text-sm font-black">Novos: {received}</span>
-        <button type="button" onClick={onUpdated} className="rounded-full bg-[var(--sr-black)] px-4 py-3 text-sm font-black text-white">
+        <button type="button" onClick={onUpdated} className="rounded-full bg-[var(--sr-red)] px-4 py-3 text-sm font-black text-white">
           Atualizar agora
         </button>
       </div>
@@ -933,12 +933,12 @@ function OrdersPanel({
                 <p className="text-xs font-black uppercase tracking-wide text-[var(--sr-red)]">
                   Pedido #{order.orderNumber || order.id.slice(0, 8)}
                 </p>
-                <h3 className="text-xl font-black text-[var(--sr-black)]">{order.customerName}</h3>
-                <p className="text-sm font-semibold text-zinc-600">{new Date(order.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                <h3 className="text-xl font-black text-[var(--sr-white)]">{order.customerName}</h3>
+                <p className="text-sm font-semibold text-[var(--sr-white)]">{new Date(order.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
               </div>
               <StatusBadge status={order.status} />
             </div>
-            <div className="mt-3 grid gap-1 text-sm font-semibold text-zinc-700">
+            <div className="mt-3 grid gap-1 text-sm font-semibold text-[var(--sr-white)]">
               <p>WhatsApp: {order.phone}</p>
               <p>Tipo: {labelChannel(order.channel)}</p>
               <p>Pagamento: {labelPayment(order.paymentMethod)}</p>
@@ -964,7 +964,7 @@ function OrdersPanel({
                     type="button"
                     onClick={() => setStatus(order, action.status)}
                     disabled={busyOrderId === order.id}
-                    className="rounded bg-[var(--sr-black)] px-3 py-3 text-xs font-black text-white"
+                    className="rounded bg-[var(--sr-red)] px-3 py-3 text-xs font-black text-white"
                   >
                     {action.label}
                   </button>
@@ -976,10 +976,10 @@ function OrdersPanel({
                 ) : null}
               </div>
               <div className="grid grid-cols-2 gap-2">
-                <a href={buildOrderWhatsAppUrl(order)} target="_blank" rel="noreferrer" className="rounded bg-[var(--sr-yellow)] px-3 py-3 text-center text-xs font-black text-[var(--sr-black)]">
+                <a href={buildOrderWhatsAppUrl(order)} target="_blank" rel="noreferrer" className="rounded bg-[var(--sr-yellow)] px-3 py-3 text-center text-xs font-black text-[var(--sr-white)]">
                   WhatsApp
                 </a>
-                <button type="button" onClick={() => copy(order)} className="rounded bg-zinc-100 px-3 py-3 text-xs font-black text-zinc-800">
+                <button type="button" onClick={() => copy(order)} className="rounded bg-zinc-100 px-3 py-3 text-xs font-black text-[var(--sr-white)]">
                   Copiar resumo
                 </button>
               </div>
@@ -1041,16 +1041,16 @@ function KitchenPanel({
 
   return (
     <div className={`grid gap-5 ${kitchenMode ? 'fixed inset-0 z-50 overflow-auto bg-zinc-100 p-5' : ''}`}>
-      <div className="flex flex-col gap-3 rounded-2xl bg-zinc-950 p-4 text-white sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-3 rounded-2xl bg-[var(--sr-red)] p-4 text-white sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Painel da cozinha</p>
           <h2 className="text-3xl font-black">Fila ativa em tempo quase real</h2>
-          <p className="mt-1 text-sm font-semibold text-zinc-300">
+          <p className="mt-1 text-sm font-semibold text-[var(--sr-white)]">
             {isOnline ? 'ONLINE' : 'SEM CONEXAO'} · pedidos mais antigos primeiro · tempos atualizados na tela
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={onUpdated} className="rounded-full bg-[var(--sr-yellow)] px-4 py-3 text-sm font-black text-zinc-950">
+          <button type="button" onClick={onUpdated} className="rounded-full bg-[var(--sr-yellow)] px-4 py-3 text-sm font-black text-[var(--sr-white)]">
             Atualizar
           </button>
           <button type="button" onClick={toggleFullscreen} className="rounded-full border border-[var(--sr-yellow)] px-4 py-3 text-sm font-black text-white">
@@ -1067,11 +1067,11 @@ function KitchenPanel({
           return (
             <section key={column.id} className="min-h-80 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
               <div className="flex items-center justify-between gap-3 border-b border-zinc-100 pb-3">
-                <h3 className="text-2xl font-black text-zinc-950">{column.title}</h3>
-                <span className="rounded-full bg-[var(--sr-yellow)] px-3 py-1 text-sm font-black text-zinc-950">{columnOrders.length}</span>
+                <h3 className="text-2xl font-black text-[var(--sr-white)]">{column.title}</h3>
+                <span className="rounded-full bg-[var(--sr-yellow)] px-3 py-1 text-sm font-black text-[var(--sr-white)]">{columnOrders.length}</span>
               </div>
               <div className="mt-4 grid gap-3">
-                {columnOrders.length === 0 ? <p className="rounded-xl bg-zinc-50 p-4 text-sm font-bold text-zinc-600">Sem pedidos neste estagio.</p> : null}
+                {columnOrders.length === 0 ? <p className="rounded-xl bg-zinc-50 p-4 text-sm font-bold text-[var(--sr-white)]">Sem pedidos neste estagio.</p> : null}
                 {columnOrders.map((order) => {
                   const action = nextActions(order.status)[0]
                   return (
@@ -1081,12 +1081,12 @@ function KitchenPanel({
                           <p className="text-xs font-black uppercase tracking-wide text-[var(--sr-red)]">
                             Pedido #{order.orderNumber || order.id.slice(0, 8)} · {elapsedLabel(order.createdAt, now)}
                           </p>
-                          <h4 className="text-2xl font-black text-zinc-950">{labelChannel(order.channel)}</h4>
-                          <p className="text-sm font-semibold text-zinc-600">{new Date(order.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
+                          <h4 className="text-2xl font-black text-[var(--sr-white)]">{labelChannel(order.channel)}</h4>
+                          <p className="text-sm font-semibold text-[var(--sr-white)]">{new Date(order.createdAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</p>
                         </div>
                         <StatusBadge status={order.status} />
                       </div>
-                      <ul className="mt-4 space-y-2 rounded-xl bg-zinc-50 p-3 text-base font-black text-zinc-900">
+                      <ul className="mt-4 space-y-2 rounded-xl bg-zinc-50 p-3 text-base font-black text-[var(--sr-white)]">
                         {order.items.map((item) => (
                           <li key={item.id}>
                             {item.quantity}x {item.productName}
@@ -1094,9 +1094,9 @@ function KitchenPanel({
                           </li>
                         ))}
                       </ul>
-                      {order.notes ? <p className="mt-3 rounded-xl border border-[var(--sr-yellow)] bg-[var(--sr-yellow)] p-3 text-sm font-black text-zinc-950">Obs: {order.notes}</p> : null}
+                      {order.notes ? <p className="mt-3 rounded-xl border border-[var(--sr-yellow)] bg-[var(--sr-yellow)] p-3 text-sm font-black text-[var(--sr-white)]">Obs: {order.notes}</p> : null}
                       {order.channel === 'delivery' ? (
-                        <p className="mt-3 rounded-xl bg-zinc-950 p-3 text-sm font-bold text-white">
+                        <p className="mt-3 rounded-xl bg-[var(--sr-red)] p-3 text-sm font-bold text-white">
                           Entrega: {order.neighborhood || 'bairro nao informado'} · {order.address || 'endereco no pedido'}
                         </p>
                       ) : null}
@@ -1110,7 +1110,7 @@ function KitchenPanel({
                           {busyOrderId === order.id ? 'Atualizando...' : action.label}
                         </button>
                       ) : (
-                        <p className="mt-4 rounded-xl bg-zinc-100 p-3 text-sm font-black text-zinc-700">Aguardando regra operacional.</p>
+                        <p className="mt-4 rounded-xl bg-zinc-100 p-3 text-sm font-black text-[var(--sr-white)]">Aguardando regra operacional.</p>
                       )}
                     </article>
                   )
@@ -1179,7 +1179,7 @@ function AdminPanel({
             </select>
           </div>
           <input value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Preco, ex: 5,00" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-          <button type="button" onClick={createProduct} className="rounded bg-black px-4 py-3 font-black text-[var(--sr-yellow)]">
+          <button type="button" onClick={createProduct} className="rounded bg-[var(--sr-red)] px-4 py-3 font-black text-[var(--sr-yellow)]">
             Salvar produto
           </button>
         </div>
@@ -1192,7 +1192,7 @@ function AdminPanel({
             <span className="font-black">{formatCurrency(product.price)}</span>
             {hasPermission(user, 'products.update') ? <button type="button" onClick={() => toggleProduct(product)} className="rounded bg-zinc-100 px-3 py-2 text-xs font-black">
               {product.active ? 'Desativar' : 'Ativar'}
-            </button> : <span className="text-xs font-black text-zinc-500">Consulta</span>}
+            </button> : <span className="text-xs font-black text-[var(--sr-white)]">Consulta</span>}
           </div>
         ))}
       </div>
@@ -1261,7 +1261,7 @@ function StockPanel({
           <input value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder="Qtd atual" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
           <input value={minQuantity} onChange={(event) => setMinQuantity(event.target.value)} placeholder="Qtd minima" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
         </div>
-        <button type="button" onClick={createItem} className="mt-3 rounded bg-[var(--sr-black)] px-4 py-3 text-sm font-black text-white">
+        <button type="button" onClick={createItem} className="mt-3 rounded bg-[var(--sr-red)] px-4 py-3 text-sm font-black text-white">
           Cadastrar item
         </button>
       </div> : <EmptyState text="Seu perfil pode acompanhar o estoque, mas nao ajustar livremente." />}
@@ -1272,7 +1272,7 @@ function StockPanel({
             <div className="flex items-start justify-between gap-3">
               <div>
                 <h3 className="text-lg font-black">{item.name}</h3>
-                <p className="text-sm font-semibold text-zinc-600">
+                <p className="text-sm font-semibold text-[var(--sr-white)]">
                   Minimo: {item.minQuantity} {item.unit}
                 </p>
               </div>
@@ -1289,7 +1289,7 @@ function StockPanel({
             </div> : <p className="mt-4 text-2xl font-black">{item.quantity} {item.unit}</p>}
             {hasPermission(user, 'inventory.adjust') ? <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_auto_auto]">
               <input value={movementQuantity} onChange={(event) => setMovementQuantity(event.target.value)} placeholder="Qtd movimento" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-              <button type="button" onClick={() => move(item, 'entrada')} className="rounded bg-[var(--sr-yellow)] px-3 py-3 text-xs font-black text-zinc-950">Entrada</button>
+              <button type="button" onClick={() => move(item, 'entrada')} className="rounded bg-[var(--sr-yellow)] px-3 py-3 text-xs font-black text-[var(--sr-white)]">Entrada</button>
               <button type="button" onClick={() => move(item, 'saida')} className="rounded bg-red-100 px-3 py-3 text-xs font-black text-red-900">Saida</button>
             </div> : null}
           </article>
@@ -1334,7 +1334,7 @@ function UsersPanel({
             <option value="FUNCIONARIO">Funcionario</option>
             <option value="GERENTE">Gerente</option>
           </select>
-          <button type="button" onClick={createUser} className="rounded bg-[var(--sr-black)] px-4 py-3 font-black text-[var(--sr-yellow)]">
+          <button type="button" onClick={createUser} className="rounded bg-[var(--sr-red)] px-4 py-3 font-black text-[var(--sr-yellow)]">
             Criar usuario
           </button>
         </div>
@@ -1346,7 +1346,7 @@ function UsersPanel({
             <span>{item.name}</span>
             <span>{item.email}</span>
             <span className="rounded bg-yellow-100 px-2 py-1 text-xs font-black text-yellow-900">{item.displayRole || displayRole(item.role)}</span>
-            <span className={item.active === false ? 'text-[var(--sr-red)]' : 'text-zinc-900'}>{item.active === false ? 'Inativo' : 'Ativo'}</span>
+            <span className={item.active === false ? 'text-[var(--sr-red)]' : 'text-[var(--sr-white)]'}>{item.active === false ? 'Inativo' : 'Ativo'}</span>
           </div>
         ))}
       </div>
@@ -1367,10 +1367,10 @@ function PrintingPanel({ printing, setMessage }: { printing: PrintStatus | null;
       <Metric label="Modo" value={printing?.mode || 'Indisponivel'} />
       <div className="rounded-lg bg-white p-5 shadow-sm lg:col-span-3">
         <h3 className="text-xl font-black">Impressao termica</h3>
-        <p className="mt-2 text-sm font-semibold text-zinc-600">
+        <p className="mt-2 text-sm font-semibold text-[var(--sr-white)]">
           {printing?.message || 'Status de impressao ainda nao disponivel para este perfil.'}
         </p>
-        <button type="button" onClick={testPrint} className="mt-4 rounded bg-[var(--sr-black)] px-4 py-3 text-sm font-black text-white">
+        <button type="button" onClick={testPrint} className="mt-4 rounded bg-[var(--sr-red)] px-4 py-3 text-sm font-black text-white">
           Testar impressao
         </button>
       </div>
@@ -1454,13 +1454,13 @@ function FinancePanel({
       </div>
       <div className="rounded-lg border border-zinc-200 bg-white p-5">
         <h3 className="text-xl font-black">Caixa</h3>
-        <p className="mt-2 text-sm font-semibold text-zinc-600">
+        <p className="mt-2 text-sm font-semibold text-[var(--sr-white)]">
           {finance.openSession ? 'Caixa aberto. Pedidos finalizados entram no controle.' : 'Caixa fechado. Abra o caixa para controle financeiro correto.'}
         </p>
         <div className="mt-4 grid gap-3 sm:grid-cols-[1fr_1fr_auto_auto]">
           <input value={amount} onChange={(event) => setAmount(event.target.value)} placeholder="Valor, ex: 50,00" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
           <input value={description} onChange={(event) => setDescription(event.target.value)} placeholder="Descricao" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-          <button type="button" onClick={finance.openSession ? closeCash : openCash} className="rounded bg-[var(--sr-black)] px-4 py-3 text-sm font-black text-white">
+          <button type="button" onClick={finance.openSession ? closeCash : openCash} className="rounded bg-[var(--sr-red)] px-4 py-3 text-sm font-black text-white">
             {finance.openSession ? 'Fechar caixa' : 'Abrir caixa'}
           </button>
           <button type="button" onClick={expense} className="rounded bg-[var(--sr-red)] px-4 py-3 text-sm font-black text-white">
@@ -1468,7 +1468,7 @@ function FinancePanel({
           </button>
         </div>
         <div className="mt-3 grid gap-2 sm:grid-cols-2">
-          <button type="button" onClick={() => movement('entrada')} className="rounded bg-[var(--sr-yellow)] px-4 py-3 text-sm font-black text-zinc-950">
+          <button type="button" onClick={() => movement('entrada')} className="rounded bg-[var(--sr-yellow)] px-4 py-3 text-sm font-black text-[var(--sr-white)]">
             Entrada manual
           </button>
           <button type="button" onClick={() => movement('saida')} className="rounded bg-yellow-100 px-4 py-3 text-sm font-black text-yellow-900">
@@ -1476,7 +1476,7 @@ function FinancePanel({
           </button>
         </div>
         <div className="mt-4 space-y-3">
-          {finance.byMethod.length === 0 ? <p className="text-sm font-semibold text-zinc-600">Sem movimentos financeiros hoje.</p> : null}
+          {finance.byMethod.length === 0 ? <p className="text-sm font-semibold text-[var(--sr-white)]">Sem movimentos financeiros hoje.</p> : null}
           {finance.byMethod.map((item) => (
             <p key={item.method} className="flex justify-between text-sm font-bold">
               <span>{item.method}</span>
@@ -1496,7 +1496,7 @@ function SimpleListPanel({ title, items, empty }: { title: string; items: unknow
       <div className="mt-4 grid gap-3">
         {items.length === 0 ? <EmptyState text={empty} /> : null}
         {items.slice(0, 20).map((item, index) => (
-          <pre key={index} className="overflow-auto rounded bg-zinc-50 p-3 text-xs font-semibold text-zinc-700">
+          <pre key={index} className="overflow-auto rounded bg-zinc-50 p-3 text-xs font-semibold text-[var(--sr-white)]">
             {JSON.stringify(item, null, 2)}
           </pre>
         ))}
@@ -1527,12 +1527,12 @@ function StatusBadge({ status }: { status: ApiOrder['status'] }) {
       : status === 'PREPARANDO'
         ? 'bg-red-100 text-red-900'
         : status === 'PRONTO'
-          ? 'bg-[var(--sr-yellow)] text-zinc-950'
+          ? 'bg-[var(--sr-yellow)] text-[var(--sr-white)]'
           : status === 'FINALIZADO'
             ? 'bg-zinc-900 text-white'
             : status === 'CANCELADO'
-              ? 'bg-zinc-200 text-zinc-700'
-              : 'bg-zinc-100 text-zinc-900'
+              ? 'bg-zinc-200 text-[var(--sr-white)]'
+              : 'bg-zinc-100 text-[var(--sr-white)]'
 
   return <span className={`rounded-full px-3 py-1 text-xs font-black ${color}`}>{status}</span>
 }

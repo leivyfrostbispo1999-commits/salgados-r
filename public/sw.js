@@ -1,5 +1,5 @@
-const CACHE_NAME = 'salgados-r-v20260716-admin-cores-oficiais-uppercase'
-const HERO_REVISION = 'admin-cores-oficiais-uppercase'
+const CACHE_NAME = 'salgados-r-v20260716-admin-paleta-print-oficial'
+const HERO_REVISION = 'admin-paleta-print-oficial'
 self.__SR_HERO_REVISION = HERO_REVISION
 const CORE_ASSETS = [
   '/',

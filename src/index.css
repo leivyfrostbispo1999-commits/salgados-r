@@ -504,7 +504,7 @@ textarea[data-preserve-case] {
   min-width: 0;
   min-height: 100vh;
   background: var(--sr-red);
-  color: var(--sr-red);
+  color: var(--sr-white);
   text-transform: uppercase;
 }
 
@@ -527,6 +527,7 @@ textarea[data-preserve-case] {
   width: 100%;
   min-width: 0;
   flex: 1 1 0%;
+  background: var(--sr-red);
   padding: clamp(1rem, 2vw, 2rem);
 }
 
@@ -698,14 +699,14 @@ textarea[data-preserve-case] {
   align-items: center;
   grid-template-columns: auto 1fr auto;
   gap: 1rem;
-  border-bottom: 1px solid rgb(220 0 8 / 0.14);
-  background: var(--sr-white);
+  border-bottom: 3px solid var(--sr-yellow);
+  background: var(--sr-red);
   padding: clamp(1rem, 2vw, 1.5rem) clamp(1rem, 2vw, 2rem);
 }
 
 .sr-admin-header p,
 .sr-admin-hero-panel p {
-  color: var(--sr-yellow);
+  color: var(--sr-white);
   font-size: 0.78rem;
   font-weight: 950;
   letter-spacing: 0.16em;
@@ -715,7 +716,7 @@ textarea[data-preserve-case] {
 .sr-admin-header h1,
 .sr-admin-hero-panel h2 {
   margin-top: 0.25rem;
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-family: "Bebas Neue", "Arial Narrow", Impact, sans-serif;
   font-size: clamp(2.2rem, 3vw, 3.4rem);
   line-height: 0.95;
@@ -727,7 +728,7 @@ textarea[data-preserve-case] {
 .sr-admin-hero-panel span {
   display: block;
   margin-top: 0.25rem;
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-size: 0.95rem;
   font-weight: 700;
 }
@@ -757,10 +758,10 @@ textarea[data-preserve-case] {
   display: inline-flex;
   min-height: 36px;
   align-items: center;
-  border: 1px solid rgb(220 0 8 / 0.16);
+  border: 1px solid var(--sr-white);
   border-radius: 999px;
-  background: var(--sr-white);
-  color: var(--sr-red);
+  background: var(--sr-red);
+  color: var(--sr-white);
   font-size: 0.8rem;
   font-weight: 900;
   padding: 0.5rem 0.8rem;
@@ -768,6 +769,7 @@ textarea[data-preserve-case] {
 
 .sr-admin-header-actions span:first-child {
   background: var(--sr-yellow);
+  color: var(--sr-white);
 }
 
 .sr-admin-alert-stack {
@@ -780,8 +782,8 @@ textarea[data-preserve-case] {
 .sr-admin-message {
   border: 1px solid rgb(255 189 13 / 0.7);
   border-radius: 1rem;
-  background: rgb(255 189 13 / 0.2);
-  color: var(--sr-red);
+  background: var(--sr-yellow);
+  color: var(--sr-white);
   font-size: 0.9rem;
   font-weight: 900;
   padding: 0.85rem 1rem;
@@ -803,17 +805,18 @@ textarea[data-preserve-case] {
   justify-content: space-between;
   gap: 1rem;
   overflow: hidden;
-  border: 1px solid rgb(220 0 8 / 0.14);
+  border: 2px solid var(--sr-yellow);
   border-radius: 1.5rem;
-  background: var(--sr-white);
+  background: var(--sr-yellow);
   padding: clamp(1.1rem, 2vw, 1.6rem);
-  box-shadow: 0 18px 44px rgb(220 0 8 / 0.08);
+  box-shadow: 0 18px 44px rgb(120 0 0 / 0.18);
 }
 
 .sr-admin-hero-panel strong {
+  border: 2px solid var(--sr-white);
   border-radius: 999px;
   background: var(--sr-yellow);
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-size: 1rem;
   font-weight: 950;
   padding: 0.85rem 1rem;
@@ -829,12 +832,12 @@ textarea[data-preserve-case] {
 .sr-admin-metric {
   position: relative;
   overflow: hidden;
-  border: 1px solid rgb(220 0 8 / 0.14);
+  border: 1px solid rgb(255 255 255 / 0.65);
   border-radius: 1.25rem;
-  background: var(--sr-white);
-  color: var(--sr-red);
+  background: var(--sr-red);
+  color: var(--sr-white);
   padding: 1rem;
-  box-shadow: 0 14px 32px rgb(220 0 8 / 0.07);
+  box-shadow: 0 14px 32px rgb(120 0 0 / 0.18);
 }
 
 .sr-admin-metric > span {
@@ -849,7 +852,7 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-metric p {
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-size: 0.8rem;
   font-weight: 950;
   letter-spacing: 0.08em;
@@ -859,7 +862,7 @@ textarea[data-preserve-case] {
 .sr-admin-metric strong {
   display: block;
   margin-top: 0.5rem;
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-family: "Bebas Neue", "Arial Narrow", Impact, sans-serif;
   font-size: clamp(2.3rem, 3vw, 3.2rem);
   line-height: 0.92;
@@ -868,7 +871,7 @@ textarea[data-preserve-case] {
 .sr-admin-metric small {
   display: block;
   margin-top: 0.45rem;
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-size: 0.78rem;
   font-weight: 800;
 }
@@ -878,11 +881,12 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-panel {
-  border: 1px solid rgb(220 0 8 / 0.14);
+  border: 1px solid rgb(255 255 255 / 0.62);
   border-radius: 1.25rem;
-  background: var(--sr-white);
+  background: var(--sr-red);
+  color: var(--sr-white);
   padding: 1rem;
-  box-shadow: 0 12px 30px rgb(220 0 8 / 0.06);
+  box-shadow: 0 12px 30px rgb(120 0 0 / 0.16);
 }
 
 .sr-admin-panel-head {
@@ -893,7 +897,7 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-panel-head h3 {
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-size: 1.35rem;
   text-shadow: none;
 }
@@ -901,7 +905,7 @@ textarea[data-preserve-case] {
 .sr-admin-panel-head a {
   border-radius: 999px;
   background: var(--sr-yellow);
-  color: var(--sr-red);
+  color: var(--sr-white);
   font-size: 0.78rem;
   font-weight: 950;
   padding: 0.55rem 0.75rem;
@@ -915,16 +919,16 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-list article {
-  border: 1px solid rgb(220 0 8 / 0.12);
+  border: 1px solid rgb(255 255 255 / 0.55);
   border-radius: 0.9rem;
-  background: rgb(220 0 8 / 0.035);
+  background: var(--sr-red);
   padding: 0.85rem;
 }
 
 .sr-admin-list strong,
 .sr-admin-list span {
   display: block;
-  color: var(--sr-red);
+  color: var(--sr-white);
 }
 
 .sr-admin-list strong {
@@ -938,10 +942,10 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-empty {
-  border: 1px dashed rgb(220 0 8 / 0.25);
+  border: 1px dashed rgb(255 255 255 / 0.65);
   border-radius: 1rem;
-  background: rgb(220 0 8 / 0.04);
-  color: var(--sr-red);
+  background: var(--sr-red);
+  color: var(--sr-white);
   font-size: 0.9rem;
   font-weight: 850;
   padding: 1rem;
@@ -1116,12 +1120,13 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-root :where(.bg-white) {
-  background: var(--sr-white) !important;
+  background: var(--sr-red) !important;
+  color: var(--sr-white) !important;
 }
 
 .sr-admin-root :where([class*="bg-zinc-"], [class*="bg-gray-"], [class*="bg-slate-"], [class*="bg-neutral-"], [class*="bg-black"], [class*="bg-[var(--sr-black)]"]) {
-  background: var(--sr-white) !important;
-  color: var(--sr-red) !important;
+  background: var(--sr-red) !important;
+  color: var(--sr-white) !important;
 }
 
 .sr-admin-root :where([class*="bg-zinc-9"], [class*="bg-zinc-950"], [class*="bg-black"], [class*="bg-[var(--sr-black)]"]) {
@@ -1131,7 +1136,7 @@ textarea[data-preserve-case] {
 
 .sr-admin-root :where([class*="bg-yellow-"], [class*="bg-[var(--sr-yellow)]"]) {
   background: var(--sr-yellow) !important;
-  color: var(--sr-red) !important;
+  color: var(--sr-white) !important;
 }
 
 .sr-admin-root :where([class*="bg-red-"], [class*="bg-[var(--sr-red)]"]) {
@@ -1140,10 +1145,10 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-root :where([class*="text-zinc-"], [class*="text-gray-"], [class*="text-slate-"], [class*="text-neutral-"], [class*="text-black"], [class*="text-[var(--sr-black)]"]) {
-  color: var(--sr-red) !important;
+  color: var(--sr-white) !important;
 }
 
-.sr-admin-root :where([class*="bg-[var(--sr-red)]"], [class*="bg-red-"], [class*="bg-black"], [class*="bg-zinc-9"], [class*="bg-[var(--sr-black)]"]) :where(h1, h2, h3, h4, p, span, strong, small, label, button, a, li, td, th) {
+.sr-admin-root :where(.bg-white, [class*="bg-[var(--sr-red)]"], [class*="bg-red-"], [class*="bg-black"], [class*="bg-zinc-"], [class*="bg-gray-"], [class*="bg-slate-"], [class*="bg-neutral-"], [class*="bg-[var(--sr-black)]"]) :where(h1, h2, h3, h4, p, span, strong, small, label, button, a, li, td, th) {
   color: var(--sr-white) !important;
 }
 
@@ -1152,21 +1157,21 @@ textarea[data-preserve-case] {
 }
 
 .sr-admin-root :where(input, textarea, select) {
-  border-color: rgb(220 0 8 / 0.28) !important;
+  border-color: var(--sr-yellow) !important;
   background: var(--sr-white) !important;
   color: var(--sr-red) !important;
   caret-color: var(--sr-red);
 }
 
 .sr-admin-root :where(input::placeholder, textarea::placeholder) {
-  color: rgb(220 0 8 / 0.65);
+  color: var(--sr-red);
   opacity: 1;
 }
 
 .sr-admin-root :where(pre) {
-  border: 1px solid rgb(220 0 8 / 0.2);
-  background: var(--sr-white) !important;
-  color: var(--sr-red) !important;
+  border: 1px solid rgb(255 255 255 / 0.62);
+  background: var(--sr-red) !important;
+  color: var(--sr-white) !important;
 }
 
 .sr-admin-root :where(.shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
