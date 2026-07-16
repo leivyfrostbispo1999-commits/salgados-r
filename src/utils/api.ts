@@ -223,6 +223,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   })
 
   if (!response.ok) {
+    if (response.status === 401) tokenStore.clear()
     const payload = await response.json().catch(() => ({ error: 'Erro na API.' }))
     throw new Error(payload.error ?? 'Erro na API.')
   }

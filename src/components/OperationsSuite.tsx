@@ -17,23 +17,31 @@ import { buildOrderWhatsAppUrl } from '../utils/whatsapp'
 import { ProductionCalculator } from './ProductionCalculator'
 
 const tabs = [
-  { id: 'dashboard', label: 'Dashboard' },
-  { id: 'maturidade', label: 'Maturidade' },
-  { id: 'pedidos', label: 'Pedidos' },
-  { id: 'cozinha', label: 'Cozinha' },
-  { id: 'produtos', label: 'Produtos' },
-  { id: 'estoque', label: 'Estoque' },
-  { id: 'calculos', label: 'Calculadora' },
-  { id: 'clientes', label: 'Clientes' },
-  { id: 'caixa', label: 'Caixa' },
-  { id: 'relatorios', label: 'Relatorios' },
-  { id: 'usuarios', label: 'Usuarios' },
-  { id: 'impressao', label: 'Impressao' },
-  { id: 'auditoria', label: 'Auditoria' },
-  { id: 'seguranca', label: 'Seguranca' },
+  { id: 'dashboard', label: 'Painel geral', path: '/admin' },
+  { id: 'maturidade', label: 'Maturidade', path: '/admin/roadmap' },
+  { id: 'pedidos', label: 'Pedidos', path: '/admin/pedidos' },
+  { id: 'cozinha', label: 'Cozinha', path: '/admin/cozinha' },
+  { id: 'produtos', label: 'Produtos', path: '/admin/produtos' },
+  { id: 'estoque', label: 'Estoque', path: '/admin/estoque' },
+  { id: 'calculos', label: 'Produção', path: '/admin/producao' },
+  { id: 'clientes', label: 'Clientes', path: '/admin/clientes' },
+  { id: 'caixa', label: 'Caixa', path: '/admin/caixa' },
+  { id: 'relatorios', label: 'Relatórios', path: '/admin/relatorios' },
+  { id: 'usuarios', label: 'Equipe', path: '/admin/equipe' },
+  { id: 'impressao', label: 'Impressão', path: '/admin/impressao' },
+  { id: 'auditoria', label: 'Auditoria', path: '/admin/auditoria' },
+  { id: 'seguranca', label: 'Configurações', path: '/admin/configuracoes' },
 ] as const
 
 type TabId = (typeof tabs)[number]['id']
+type Tab = (typeof tabs)[number]
+
+const adminNavGroups: Array<{ title: string; items: TabId[] }> = [
+  { title: 'Visão geral', items: ['dashboard', 'maturidade'] },
+  { title: 'Operação', items: ['pedidos', 'cozinha', 'produtos', 'estoque', 'calculos'] },
+  { title: 'Gestão', items: ['clientes', 'caixa', 'relatorios'] },
+  { title: 'Administração', items: ['usuarios', 'impressao', 'auditoria', 'seguranca'] },
+]
 
 const statusFlow: ApiOrder['status'][] = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA', 'FINALIZADO']
 const activeOrderStatuses: ApiOrder['status'][] = ['RECEBIDO', 'ACEITO', 'PREPARANDO', 'PRONTO', 'SAIU_PARA_ENTREGA']
@@ -148,6 +156,7 @@ export function OperationsSuite() {
   const [printing, setPrinting] = useState<PrintStatus | null>(null)
   const [message, setMessage] = useState('')
   const [loading, setLoading] = useState(true)
+  const [mobileNavOpen, setMobileNavOpen] = useState(false)
   const [lastUpdatedAt, setLastUpdatedAt] = useState<string | null>(null)
   const [refreshError, setRefreshError] = useState('')
   const [isOnline, setIsOnline] = useState(() => navigator.onLine)
@@ -187,6 +196,7 @@ export function OperationsSuite() {
         setHasUsers(status.hasUsers)
         setAuthChecked(true)
         if (!status.hasUsers || !api.token.get()) {
+          if (window.location.pathname !== '/admin/login') window.history.replaceState({}, '', '/admin/login')
           setLoading(false)
           return
         }
@@ -197,7 +207,8 @@ export function OperationsSuite() {
           })
           .catch((error: Error) => {
             api.token.clear()
-            setMessage(error.message)
+            window.history.replaceState({}, '', '/admin/login')
+            setMessage(error.message || 'Sessao expirada. Entre novamente.')
           })
           .finally(() => setLoading(false))
       })
@@ -210,6 +221,10 @@ export function OperationsSuite() {
 
   async function afterAuth(nextUser: AuthUser) {
     setUser(nextUser)
+    setMessage('')
+    if (window.location.pathname === '/admin/login' || window.location.pathname === '/login') {
+      window.history.replaceState({}, '', tabToPath(activeTab))
+    }
     setLoading(true)
     await refresh(nextUser)
     setLoading(false)
@@ -217,10 +232,18 @@ export function OperationsSuite() {
 
   function logout() {
     api.token.clear()
+    window.history.replaceState({}, '', '/admin/login')
     setUser(null)
     setOrders([])
     setStock([])
     setSummary(null)
+    setMessage('')
+  }
+
+  function selectTab(tabId: TabId) {
+    setActiveTab(tabId)
+    setMobileNavOpen(false)
+    window.history.pushState({}, '', tabToPath(tabId))
   }
 
   useEffect(() => {
@@ -259,142 +282,347 @@ export function OperationsSuite() {
     setActiveTab(visibleTabs[0]?.id || 'dashboard')
   }, [activeTab, user, visibleTabs])
 
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setMobileNavOpen(false)
+    }
+    if (!mobileNavOpen) return undefined
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [mobileNavOpen])
+
+  const activeTabLabel = tabs.find((tab) => tab.id === activeTab)?.label || 'Painel geral'
+
+  if (loading || !authChecked) {
+    return <AdminLoadingScreen />
+  }
+
+  if (!user) {
+    return (
+      <AdminAuthScreen message={message}>
+        {!hasUsers ? (
+          <BootstrapForm onReady={afterAuth} setMessage={setMessage} />
+        ) : (
+          <LoginForm onReady={afterAuth} setMessage={setMessage} />
+        )}
+      </AdminAuthScreen>
+    )
+  }
+
   return (
-    <section id="sistema" className="min-h-screen bg-zinc-100 text-zinc-950">
-      <div className="mx-auto grid max-w-[1560px] gap-0 lg:grid-cols-[280px_1fr]">
-        {user ? (
-          <aside className="hidden min-h-screen border-r border-zinc-200 bg-zinc-950 p-5 text-white lg:block">
-            <a href="/" className="text-sm font-black text-[var(--sr-yellow)]">← Voltar para o site</a>
-            <p className="mt-6 text-xs font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Central interna</p>
-            <h1 className="mt-2 text-3xl font-black leading-none">Salgados R Operacao</h1>
-            <div className="mt-5 rounded-2xl border border-[var(--sr-yellow)] p-4">
-              <p className="text-sm font-black">{user.name}</p>
-              <p className="mt-1 text-xs font-bold text-zinc-300">{displayRole(user.role)}</p>
-              <p className="mt-3 text-xs font-bold text-zinc-300">
-                {isOnline ? 'ONLINE' : 'SEM CONEXAO'}
-                {lastUpdatedAt ? ` · ${new Date(lastUpdatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
-              </p>
-            </div>
-            <nav className="mt-5 grid gap-2">
-              {visibleTabs.map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`rounded-xl px-4 py-3 text-left text-sm font-black transition ${
-                    activeTab === tab.id ? 'bg-[var(--sr-yellow)] text-zinc-950' : 'bg-white/5 text-white hover:bg-white/10'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
-            </nav>
-            <button type="button" onClick={logout} className="mt-5 w-full rounded-xl border border-[var(--sr-yellow)] px-4 py-3 text-sm font-black text-white">
-              Sair
-            </button>
-          </aside>
-        ) : null}
+    <section id="sistema" className="sr-admin-root">
+      <div className="sr-admin-layout">
+        <AdminSidebar
+          activeTab={activeTab}
+          isOnline={isOnline}
+          lastUpdatedAt={lastUpdatedAt}
+          logout={logout}
+          mobileOpen={mobileNavOpen}
+          selectTab={selectTab}
+          setMobileOpen={setMobileNavOpen}
+          user={user}
+          visibleTabs={visibleTabs}
+        />
 
-        <div className="min-w-0 px-4 py-5 sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-4 rounded-2xl bg-[var(--sr-red)] p-5 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <a href="/" className="text-sm font-black text-[var(--sr-yellow)]">← Voltar para o site</a>
-              <p className="mt-3 text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Sistema operacional</p>
-              <h1 className="mt-2 text-3xl font-black sm:text-4xl">Pedidos, cozinha e comando da loja.</h1>
-              <p className="mt-2 max-w-3xl text-sm font-semibold leading-6 text-white">
-                Central unica da equipe com RBAC, PostgreSQL, API, operacao de pedidos, cozinha, estoque, caixa simples e auditoria.
-              </p>
-            </div>
-            <div className="grid gap-2 text-sm font-black sm:text-right">
-              <span className="w-fit rounded-full bg-[var(--sr-yellow)] px-4 py-2 text-zinc-950 sm:ml-auto">PostgreSQL + API</span>
-              {user ? <span>{activeOrders.length} pedido(s) na fila</span> : null}
-            </div>
-          </div>
-
-          {user ? (
-            <div className="mt-4 grid gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm lg:hidden">
-              <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-sm font-bold">
-                  Logado como <span className="text-[var(--sr-red)]">{user.name}</span> {user.role ? `(${displayRole(user.role)})` : null}
-                </p>
-                <button type="button" onClick={logout} className="rounded-full bg-[var(--sr-yellow)] px-4 py-2 text-sm font-black text-zinc-950">
-                  Sair
-                </button>
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {visibleTabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`whitespace-nowrap rounded-full px-4 py-3 text-sm font-black ${
-                      activeTab === tab.id ? 'bg-zinc-950 text-[var(--sr-yellow)]' : 'bg-zinc-100 text-zinc-900'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ) : null}
-
-          {user ? (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-              <Metric label="Novos" value={String(orders.filter((order) => order.status === 'RECEBIDO').length)} />
-              <Metric label="Em preparo" value={String(orders.filter((order) => order.status === 'PREPARANDO').length)} />
-              <Metric label="Prontos" value={String(orders.filter((order) => order.status === 'PRONTO').length)} />
-              <Metric label="Fila ativa" value={String(activeOrders.length)} />
-            </div>
-          ) : null}
+        <div className="sr-admin-main">
+          <AdminHeader
+            activeOrders={activeOrders.length}
+            activeTabLabel={activeTabLabel}
+            isOnline={isOnline}
+            lastUpdatedAt={lastUpdatedAt}
+            setMobileOpen={setMobileNavOpen}
+            user={user}
+          />
 
           {operationalAlerts.length > 0 ? (
-            <div className="mt-4 grid gap-2">
+            <div className="sr-admin-alert-stack">
               {operationalAlerts.map((alert) => (
-                <p key={alert} className="rounded-xl border border-[var(--sr-yellow)] bg-[var(--sr-yellow)] p-3 text-sm font-black text-zinc-950">
+                <p key={alert} className="sr-admin-alert">
                   {alert}
                 </p>
               ))}
             </div>
           ) : null}
 
-          {message ? <p className="mt-4 rounded-xl bg-[var(--sr-yellow)] p-3 text-sm font-black text-zinc-950">{message}</p> : null}
+          {message ? <p className="sr-admin-message">{message}</p> : null}
 
-          <div className="mt-6">
-          {loading || !authChecked ? <p className="font-bold">Carregando sistema...</p> : null}
-          {!loading && authChecked && !user && !hasUsers ? (
-            <BootstrapForm onReady={afterAuth} setMessage={setMessage} />
-          ) : null}
-          {!loading && authChecked && !user && hasUsers ? <LoginForm onReady={afterAuth} setMessage={setMessage} /> : null}
-          {!loading && user && activeTab === 'dashboard' ? <ReportsPanel summary={summary} orders={orders} /> : null}
-          {!loading && user && activeTab === 'maturidade' ? (
+          <main className="sr-admin-content">
+          {activeTab === 'dashboard' ? <AdminDashboard summary={summary} orders={orders} stock={stock} finance={finance} customers={customers} /> : null}
+          {activeTab === 'maturidade' ? (
             <MaturityPanel products={products} orders={orders} stock={stock} summary={summary} finance={finance} />
           ) : null}
-          {!loading && user && activeTab === 'pedidos' ? (
+          {activeTab === 'pedidos' ? (
             <OrdersPanel orders={orders} user={user} onUpdated={() => refresh(user)} setMessage={setMessage} />
           ) : null}
-          {!loading && user && activeTab === 'cozinha' ? (
+          {activeTab === 'cozinha' ? (
             <KitchenPanel orders={orders} isOnline={isOnline} onUpdated={() => refresh(user)} setMessage={setMessage} />
           ) : null}
-          {!loading && user && activeTab === 'produtos' ? (
+          {activeTab === 'produtos' ? (
             <AdminPanel products={products} user={user} onCreated={() => refresh(user)} setMessage={setMessage} />
           ) : null}
-          {!loading && user && activeTab === 'estoque' ? (
+          {activeTab === 'estoque' ? (
             <StockPanel stock={stock} user={user} onUpdated={() => refresh(user)} setMessage={setMessage} />
           ) : null}
-          {!loading && user && activeTab === 'calculos' ? (
+          {activeTab === 'calculos' ? (
             <ProductionCalculator products={products} user={user} setMessage={setMessage} />
           ) : null}
-          {!loading && user && activeTab === 'clientes' ? <SimpleListPanel title="Clientes" items={customers} empty="Ainda nao ha clientes cadastrados." /> : null}
-          {!loading && user && activeTab === 'caixa' ? <FinancePanel finance={finance} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
-          {!loading && user && activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
-          {!loading && user && activeTab === 'usuarios' ? <UsersPanel users={users} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
-          {!loading && user && activeTab === 'impressao' ? <PrintingPanel printing={printing} setMessage={setMessage} /> : null}
-          {!loading && user && activeTab === 'auditoria' ? <SimpleListPanel title="Auditoria" items={auditLogs} empty="Ainda nao ha eventos de auditoria." /> : null}
-          {!loading && user && activeTab === 'seguranca' ? <SecurityPanel security={security} /> : null}
-          </div>
+          {activeTab === 'clientes' ? <SimpleListPanel title="Clientes" items={customers} empty="Ainda nao ha clientes cadastrados." /> : null}
+          {activeTab === 'caixa' ? <FinancePanel finance={finance} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
+          {activeTab === 'relatorios' ? <ReportsPanel summary={summary} orders={orders} /> : null}
+          {activeTab === 'usuarios' ? <UsersPanel users={users} onUpdated={() => refresh(user)} setMessage={setMessage} /> : null}
+          {activeTab === 'impressao' ? <PrintingPanel printing={printing} setMessage={setMessage} /> : null}
+          {activeTab === 'auditoria' ? <SimpleListPanel title="Auditoria" items={auditLogs} empty="Ainda nao ha eventos de auditoria." /> : null}
+          {activeTab === 'seguranca' ? <SecurityPanel security={security} /> : null}
+          </main>
         </div>
       </div>
     </section>
+  )
+}
+
+function AdminLoadingScreen() {
+  return (
+    <section className="sr-admin-loading">
+      <div>
+        <p>SALGADOS R</p>
+        <h1>CARREGANDO SESSÃO</h1>
+        <span />
+      </div>
+    </section>
+  )
+}
+
+function AdminAuthScreen({ children, message }: { children: ReactNode; message: string }) {
+  return (
+    <section className="sr-admin-auth">
+      <a href="/" className="sr-admin-auth-back">← Voltar ao site</a>
+      <div className="sr-admin-auth-card">
+        <div className="sr-admin-auth-brand">
+          <img src="/assets-reais/logomarca-oficial-header.png" alt="SALGADOS R" />
+          <span>Acesso restrito</span>
+        </div>
+        {message ? <p className="sr-admin-auth-message">{message}</p> : null}
+        {children}
+      </div>
+    </section>
+  )
+}
+
+function AdminSidebar({
+  activeTab,
+  isOnline,
+  lastUpdatedAt,
+  logout,
+  mobileOpen,
+  selectTab,
+  setMobileOpen,
+  user,
+  visibleTabs,
+}: {
+  activeTab: TabId
+  isOnline: boolean
+  lastUpdatedAt: string | null
+  logout: () => void
+  mobileOpen: boolean
+  selectTab: (tab: TabId) => void
+  setMobileOpen: (open: boolean) => void
+  user: AuthUser
+  visibleTabs: readonly Tab[]
+}) {
+  const visibleIds = new Set(visibleTabs.map((tab) => tab.id))
+  const sidebar = (
+    <aside className="sr-admin-sidebar" aria-label="Navegação administrativa">
+      <div className="sr-admin-sidebar-top">
+        <a href="/" className="sr-admin-logo" aria-label="Voltar para o site Salgados R">
+          <img src="/assets-reais/logomarca-oficial-header.png" alt="SALGADOS R" />
+        </a>
+        <button type="button" className="sr-admin-drawer-close" onClick={() => setMobileOpen(false)} aria-label="Fechar menu">
+          ×
+        </button>
+      </div>
+
+      <div className="sr-admin-user-card">
+        <strong>{user.name}</strong>
+        <span>{displayRole(user.role)}</span>
+        <small>
+          {isOnline ? 'API online' : 'Sem conexão'}
+          {lastUpdatedAt ? ` · ${new Date(lastUpdatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}` : ''}
+        </small>
+      </div>
+
+      <nav className="sr-admin-nav">
+        {adminNavGroups.map((group) => {
+          const items = group.items.filter((id) => visibleIds.has(id))
+          if (items.length === 0) return null
+          return (
+            <div key={group.title} className="sr-admin-nav-group">
+              <p>{group.title}</p>
+              {items.map((id) => {
+                const tab = tabs.find((item) => item.id === id)
+                if (!tab) return null
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => selectTab(tab.id)}
+                    className={activeTab === tab.id ? 'is-active' : ''}
+                    aria-current={activeTab === tab.id ? 'page' : undefined}
+                  >
+                    <span>{tab.label.slice(0, 1)}</span>
+                    {tab.label}
+                  </button>
+                )
+              })}
+            </div>
+          )
+        })}
+      </nav>
+
+      <div className="sr-admin-sidebar-footer">
+        <a href="/" className="sr-admin-site-link">Ver site</a>
+        <button type="button" onClick={logout}>Encerrar sessão</button>
+      </div>
+    </aside>
+  )
+
+  return (
+    <>
+      <div className="sr-admin-desktop-sidebar">{sidebar}</div>
+      {mobileOpen ? (
+        <div className="sr-admin-drawer">
+          <button type="button" className="sr-admin-drawer-overlay" onClick={() => setMobileOpen(false)} aria-label="Fechar menu" />
+          {sidebar}
+        </div>
+      ) : null}
+    </>
+  )
+}
+
+function AdminHeader({
+  activeOrders,
+  activeTabLabel,
+  isOnline,
+  lastUpdatedAt,
+  setMobileOpen,
+  user,
+}: {
+  activeOrders: number
+  activeTabLabel: string
+  isOnline: boolean
+  lastUpdatedAt: string | null
+  setMobileOpen: (open: boolean) => void
+  user: AuthUser
+}) {
+  return (
+    <header className="sr-admin-header">
+      <button type="button" className="sr-admin-menu-trigger" onClick={() => setMobileOpen(true)} aria-label="Abrir menu administrativo">
+        ☰
+      </button>
+      <div>
+        <p>Centro de comando</p>
+        <h1>{activeTabLabel}</h1>
+        <span>Visão operacional da SALGADOS R com dados reais da API.</span>
+      </div>
+      <div className="sr-admin-header-actions">
+        <span>{activeOrders} na fila</span>
+        <span>{isOnline ? 'Online' : 'Offline'}</span>
+        <small>{lastUpdatedAt ? new Date(lastUpdatedAt).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : user.email}</small>
+      </div>
+    </header>
+  )
+}
+
+function AdminDashboard({
+  customers,
+  finance,
+  orders,
+  stock,
+  summary,
+}: {
+  customers: unknown[]
+  finance: FinanceSummary | null
+  orders: ApiOrder[]
+  stock: StockItem[]
+  summary: ReportSummary | null
+}) {
+  const activeOrders = orders.filter(isActiveOrder)
+  const recent = orders.slice(0, 6)
+  const lowStock = stock.filter((item) => item.low)
+
+  return (
+    <div className="sr-admin-dashboard">
+      <section className="sr-admin-hero-panel">
+        <div>
+          <p>Centro de comando</p>
+          <h2>Visão geral da operação do Salgados R</h2>
+          <span>Pedidos, cozinha, estoque, caixa e equipe em uma área única.</span>
+        </div>
+        <strong>{activeOrders.length} pedido(s) ativos</strong>
+      </section>
+
+      <div className="sr-admin-metric-grid">
+        <Metric label="Pedidos hoje" value={String(summary?.orders ?? orders.length)} hint="Registrados pela API" />
+        <Metric label="Pendentes" value={String(summary?.pendingOrders ?? activeOrders.length)} hint="Aguardando andamento" />
+        <Metric label="Em preparo" value={String(orders.filter((order) => order.status === 'PREPARANDO').length)} hint="Fila da cozinha" />
+        <Metric label="Prontos" value={String(orders.filter((order) => order.status === 'PRONTO').length)} hint="Aguardando saída" />
+        <Metric label="Faturamento" value={formatCurrency(summary?.revenue ?? finance?.revenue ?? 0)} hint="Hoje" />
+        <Metric label="Ticket médio" value={formatCurrency(summary?.averageTicket ?? 0)} hint="Sem dados fictícios" />
+        <Metric label="Estoque baixo" value={String(summary?.lowStockItems ?? lowStock.length)} hint="Itens em alerta" />
+        <Metric label="Clientes" value={String(summary?.loyaltyCustomers ?? customers.length)} hint="Base consolidada" />
+      </div>
+
+      <div className="sr-admin-dashboard-grid">
+        <section className="sr-admin-panel">
+          <div className="sr-admin-panel-head">
+            <h3>Pedidos recentes</h3>
+            <a href="/admin/pedidos">Abrir pedidos</a>
+          </div>
+          <div className="sr-admin-list">
+            {recent.length === 0 ? <EmptyState text="Ainda não há pedidos registrados." /> : null}
+            {recent.map((order) => (
+              <article key={order.id}>
+                <strong>#{order.orderNumber || order.id.slice(0, 8)} · {order.customerName}</strong>
+                <span>{labelChannel(order.channel)} · {formatCurrency(order.total)} · {order.status}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="sr-admin-panel">
+          <div className="sr-admin-panel-head">
+            <h3>Fila da cozinha</h3>
+            <a href="/admin/cozinha">Abrir cozinha</a>
+          </div>
+          <div className="sr-admin-list">
+            {kitchenColumns.map((column) => {
+              const count = activeOrders.filter((order) => column.statuses.includes(order.status)).length
+              return (
+                <article key={column.id}>
+                  <strong>{column.title}</strong>
+                  <span>{count} pedido(s)</span>
+                </article>
+              )
+            })}
+          </div>
+        </section>
+
+        <section className="sr-admin-panel">
+          <div className="sr-admin-panel-head">
+            <h3>Alertas operacionais</h3>
+            <a href="/admin/estoque">Ver estoque</a>
+          </div>
+          <div className="sr-admin-list">
+            {lowStock.length === 0 ? <EmptyState text="Nenhum alerta crítico no momento." /> : null}
+            {lowStock.slice(0, 6).map((item) => (
+              <article key={item.id}>
+                <strong>{item.name}</strong>
+                <span>{item.quantity} {item.unit} · mínimo {item.minQuantity}</span>
+              </article>
+            ))}
+          </div>
+        </section>
+      </div>
+    </div>
   )
 }
 
@@ -410,6 +638,10 @@ function pathToTab(path: string): TabId {
   if (path.includes('/relatorios')) return 'relatorios'
   if (path.includes('/auditoria')) return 'auditoria'
   return 'dashboard'
+}
+
+function tabToPath(tabId: TabId) {
+  return tabs.find((tab) => tab.id === tabId)?.path || '/admin'
 }
 
 function MaturityPanel({
@@ -509,27 +741,41 @@ function BootstrapForm({
   onReady: (user: AuthUser) => Promise<void>
   setMessage: (message: string) => void
 }) {
-  const [name, setName] = useState('Regina')
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
 
   async function submit() {
+    if (busy) return
     try {
+      setBusy(true)
       const result = await api.bootstrap({ name, email, password })
       setMessage('SUPER_US criado. Guarde essa senha com cuidado.')
       await onReady(result.user)
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Erro no bootstrap.')
+    } finally {
+      setBusy(false)
     }
   }
 
   return (
-    <AuthBox title="Criar primeiro SUPER_US" subtitle="Esse passo aparece apenas enquanto nao existe usuario no banco.">
-      <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-      <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-      <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha inicial" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-      <button type="button" onClick={submit} className="rounded bg-black px-4 py-3 font-black text-[var(--sr-yellow)]">
-        Criar SUPER_US
+    <AuthBox title="Criar primeiro SUPER_US" subtitle="Esse passo aparece apenas enquanto não existe usuário no banco.">
+      <label>
+        Nome
+        <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome do responsável" />
+      </label>
+      <label>
+        Email
+        <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="email@exemplo.com" />
+      </label>
+      <label>
+        Senha inicial
+        <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha inicial" type="password" />
+      </label>
+      <button type="button" onClick={submit} disabled={busy || !name || !email || !password}>
+        {busy ? 'Criando...' : 'Criar SUPER_US'}
       </button>
     </AuthBox>
   )
@@ -544,23 +790,46 @@ function LoginForm({
 }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
+  const [busy, setBusy] = useState(false)
 
   async function submit() {
+    if (busy) return
     try {
+      setBusy(true)
       const result = await api.login({ email, password })
       setMessage('Login realizado.')
       await onReady(result.user)
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Erro no login.')
+    } finally {
+      setBusy(false)
     }
   }
 
   return (
-    <AuthBox title="Entrar no painel" subtitle="Acesso restrito a SUPER_US, GERENTE e FUNCIONARIO.">
-      <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Email" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-      <input value={password} onChange={(event) => setPassword(event.target.value)} placeholder="Senha" type="password" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-      <button type="button" onClick={submit} className="rounded bg-black px-4 py-3 font-black text-[var(--sr-yellow)]">
-        Entrar
+    <AuthBox title="Login" subtitle="Acesso restrito à operação do Salgados R.">
+      <label>
+        Email
+        <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="email@exemplo.com" autoComplete="email" />
+      </label>
+      <label>
+        Senha
+        <span className="sr-admin-password-field">
+          <input
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Sua senha"
+            type={showPassword ? 'text' : 'password'}
+            autoComplete="current-password"
+          />
+          <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}>
+            {showPassword ? 'Ocultar' : 'Mostrar'}
+          </button>
+        </span>
+      </label>
+      <button type="button" onClick={submit} disabled={busy || !email || !password}>
+        {busy ? 'Entrando...' : 'Entrar'}
       </button>
     </AuthBox>
   )
@@ -568,10 +837,10 @@ function LoginForm({
 
 function AuthBox({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
-    <div className="mx-auto max-w-xl rounded-lg border border-zinc-200 bg-white p-5 shadow-sm">
-      <h3 className="text-xl font-black">{title}</h3>
-      <p className="mt-2 text-sm font-semibold text-zinc-600">{subtitle}</p>
-      <div className="mt-4 grid gap-3">{children}</div>
+    <div className="sr-admin-auth-form">
+      <h3>{title}</h3>
+      <p>{subtitle}</p>
+      <div>{children}</div>
     </div>
   )
 }
@@ -1299,14 +1568,16 @@ function SimpleListPanel({ title, items, empty }: { title: string; items: unknow
 }
 
 function EmptyState({ text }: { text: string }) {
-  return <p className="rounded-lg bg-zinc-50 p-4 text-sm font-bold text-zinc-600">{text}</p>
+  return <p className="sr-admin-empty">{text}</p>
 }
 
-function Metric({ label, value }: { label: string; value: string }) {
+function Metric({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-lg bg-black p-5 text-white">
-      <p className="text-sm font-black uppercase tracking-wide text-[var(--sr-yellow)]">{label}</p>
-      <p className="mt-2 text-3xl font-black">{value}</p>
+    <div className="sr-admin-metric">
+      <span aria-hidden="true" />
+      <p>{label}</p>
+      <strong>{value}</strong>
+      {hint ? <small>{hint}</small> : null}
     </div>
   )
 }
