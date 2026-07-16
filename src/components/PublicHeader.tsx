@@ -2,17 +2,20 @@ import { useEffect, useMemo, useState } from 'react'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 
 const navItems = [
-  { href: '/', label: 'Inicio', match: 'home' },
-  { href: '/cardapio', label: 'Cardapio', match: 'cardapio' },
-  { href: '/#como-pedir', label: 'Como pedir', match: 'como-pedir' },
-  { href: '/#refil', label: 'Refil', match: 'refil' },
+  { href: '/', label: 'Inicio', match: 'home', icon: 'home' },
+  { href: '/cardapio', label: 'Cardapio', match: 'cardapio', icon: 'menu' },
+  { href: '/#como-pedir', label: 'Como pedir', match: 'como-pedir', icon: 'bag' },
+  { href: '/#refil', label: 'Refil', match: 'refil', icon: 'cup' },
+  { href: '/admin', label: 'Admin', match: 'admin', icon: 'shield' },
 ] as const
 
 const menuItems = [
-  ...navItems.map((item, index) => ({ ...item, icon: ['I', 'C', '3', 'R'][index] })),
-  { href: '/carrinho', icon: 'P', label: 'Carrinho' },
-  { href: buildWhatsAppUrl({ name: 'Atendimento Salgados R', price: 'consulta', quantity: 1 }), icon: 'W', label: 'WhatsApp' },
+  ...navItems,
+  { href: '/carrinho', icon: 'cart', label: 'Carrinho' },
+  { href: buildWhatsAppUrl({ name: 'Atendimento Salgados R', price: 'consulta', quantity: 1 }), icon: 'whatsapp', label: 'WhatsApp' },
 ]
+
+type IconName = (typeof menuItems)[number]['icon']
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false)
@@ -58,62 +61,55 @@ export function PublicHeader() {
   function isActive(match: (typeof navItems)[number]['match']) {
     if (match === 'home') return currentLocation.pathname === '/' && !currentLocation.hash
     if (match === 'cardapio') return currentLocation.pathname.startsWith('/cardapio')
+    if (match === 'admin') return currentLocation.pathname.startsWith('/admin')
     return currentLocation.hash === `#${match}`
   }
 
   return (
     <>
-      <header className="relative z-40 border-b border-[var(--sr-yellow)] bg-[var(--sr-red)]">
-        <div className="mx-auto grid min-h-[78px] w-full max-w-7xl grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-4 py-2 sm:min-h-[88px] sm:px-6 lg:min-h-[92px] lg:grid-cols-[minmax(230px,1fr)_auto_minmax(230px,1fr)] lg:px-8 xl:px-4">
-          <div className="flex min-w-0 items-center justify-start">
-            <a href="/" className="flex min-w-0 items-center" aria-label="Salgados R - inicio">
+      <header className="sr-public-header">
+        <div className="sr-header-shell">
+          <div className="sr-header-brand">
+            <a href="/" className="sr-header-logo-link" aria-label="Salgados R - inicio">
               <img
                 src="/assets-reais/logomarca-oficial-header.png"
                 alt="SALGADOS R"
-                className="sr-logo-mark h-[58px] w-[188px] object-contain object-left sm:h-[72px] sm:w-[248px] lg:h-[78px] lg:w-[272px]"
+                className="sr-logo-mark"
               />
             </a>
           </div>
 
-          <nav aria-label="Menu principal" className="hidden items-center justify-center gap-6 text-base font-black text-[var(--sr-white)] lg:flex xl:gap-8">
+          <nav aria-label="Menu principal" className="sr-header-nav">
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 aria-current={isActive(item.match) ? 'page' : undefined}
-                className={`relative px-2 py-3 tracking-wide transition hover:text-[var(--sr-yellow)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] ${
-                  isActive(item.match) ? 'after:absolute after:inset-x-2 after:bottom-1 after:h-1 after:rounded-full after:bg-[var(--sr-yellow)]' : ''
-                }`}
+                className="sr-header-nav-link"
               >
+                <Icon name={item.icon} />
                 {item.label}
               </a>
             ))}
           </nav>
 
-          <div className="flex min-w-0 items-center justify-start gap-1.5 sm:justify-end sm:gap-3">
-            <a
-              href="/carrinho"
-              className="relative grid h-11 min-w-11 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:-translate-y-0.5 hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-5 sm:py-3"
-              aria-label={`Carrinho com ${cartCount} itens`}
-            >
-              <span className="sm:hidden">{cartCount}</span>
-              <span className="hidden sm:inline">Carrinho</span>
-              {cartCount > 0 ? (
-                <span className="absolute -right-1 -top-2 grid h-6 min-w-6 place-items-center rounded-full bg-[var(--sr-yellow)] px-1 text-xs text-[var(--sr-red)]">
-                  {cartCount}
-                </span>
-              ) : null}
+          <div className="sr-header-actions">
+            <a href="/cardapio" className="sr-header-order">
+              <Icon name="whatsapp" />
+              <span>Pedir agora</span>
             </a>
             <a
-              href="/cardapio"
-              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-red)] shadow-[0_8px_20px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] md:inline-flex"
+              href="/carrinho"
+              className="sr-header-cart"
+              aria-label={`Carrinho com ${cartCount} itens`}
             >
-              Pedir agora
+              <Icon name="cart" />
+              <span>{cartCount}</span>
             </a>
             <button
               type="button"
               onClick={() => setOpen(true)}
-              className="grid h-11 w-11 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] lg:hidden"
+              className="sr-header-menu-button"
               aria-label="Abrir menu"
               aria-expanded={open}
               aria-controls="salgados-mobile-menu"
@@ -160,7 +156,7 @@ export function PublicHeader() {
                   className="flex items-center gap-3 rounded-xl px-3 py-3 text-base font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
                 >
                   <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--sr-yellow)] text-sm text-[var(--sr-red)]">
-                    {item.icon}
+                    <Icon name={item.icon} />
                   </span>
                   {item.label}
                 </a>
@@ -183,5 +179,25 @@ export function PublicHeader() {
         </div>
       ) : null}
     </>
+  )
+}
+
+function Icon({ name }: { name: IconName }) {
+  const paths: Record<IconName, string[]> = {
+    home: ['M3 11.5 12 4l9 7.5', 'M5.5 10.5V20h5v-5.5h3V20h5v-9.5'],
+    menu: ['M6 7h12', 'M6 12h12', 'M6 17h12'],
+    bag: ['M7 9h10l-1 11H8L7 9Z', 'M9 9a3 3 0 0 1 6 0', 'M10 14l2 2 4-4'],
+    cup: ['M7 4h10l-1 15H8L7 4Z', 'M9 8h6', 'M17 8h2a2 2 0 0 1 0 4h-2'],
+    shield: ['M12 3 20 6v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V6l8-3Z', 'M12 8v7', 'M12 18h.01'],
+    cart: ['M4 5h2l2 10h9l2-7H7', 'M9 20h.01', 'M17 20h.01'],
+    whatsapp: ['M5 19l1-3a7 7 0 1 1 3 3l-4 1Z', 'M9.5 8.8c.4 3 2.2 4.8 5.4 5.7', 'M10 8h.01', 'M15 14h.01'],
+  }
+
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+      {paths[name].map((path) => (
+        <path key={path} d={path} />
+      ))}
+    </svg>
   )
 }
