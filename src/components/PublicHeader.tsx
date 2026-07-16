@@ -64,25 +64,25 @@ export function PublicHeader() {
   return (
     <>
       <header className="relative z-40 border-b border-[var(--sr-yellow)] bg-[var(--sr-red)]">
-        <div className="mx-auto grid min-h-[86px] w-full max-w-[1440px] grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-3 py-2 sm:min-h-[94px] sm:gap-3 sm:px-6 lg:min-h-[98px] lg:grid-cols-[minmax(220px,1fr)_auto_minmax(220px,1fr)] lg:px-8">
+        <div className="mx-auto grid min-h-[78px] w-full max-w-7xl grid-cols-[auto_minmax(0,1fr)] items-center gap-3 px-4 py-2 sm:min-h-[88px] sm:px-6 lg:min-h-[92px] lg:grid-cols-[minmax(230px,1fr)_auto_minmax(230px,1fr)] lg:px-8 xl:px-4">
           <div className="flex min-w-0 items-center justify-start">
             <a href="/" className="flex min-w-0 items-center" aria-label="Salgados R - inicio">
               <img
                 src="/assets-reais/logomarca-oficial-header.png"
                 alt="SALGADOS R"
-                className="sr-logo-mark h-[64px] w-[188px] object-contain object-left sm:h-[80px] sm:w-[268px] lg:h-[84px] lg:w-[292px]"
+                className="sr-logo-mark h-[58px] w-[188px] object-contain object-left sm:h-[72px] sm:w-[248px] lg:h-[78px] lg:w-[272px]"
               />
             </a>
           </div>
 
-          <nav aria-label="Menu principal" className="hidden items-center justify-center gap-7 text-base font-black text-[var(--sr-white)] lg:flex xl:gap-9">
+          <nav aria-label="Menu principal" className="hidden items-center justify-center gap-6 text-base font-black text-[var(--sr-white)] lg:flex xl:gap-8">
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 aria-current={isActive(item.match) ? 'page' : undefined}
-                className={`relative px-1 py-3 transition hover:text-[var(--sr-yellow)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] ${
-                  isActive(item.match) ? 'after:absolute after:inset-x-1 after:bottom-1 after:h-1 after:rounded-full after:bg-[var(--sr-yellow)]' : ''
+                className={`relative px-2 py-3 tracking-wide transition hover:text-[var(--sr-yellow)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] ${
+                  isActive(item.match) ? 'after:absolute after:inset-x-2 after:bottom-1 after:h-1 after:rounded-full after:bg-[var(--sr-yellow)]' : ''
                 }`}
               >
                 {item.label}
@@ -106,7 +106,7 @@ export function PublicHeader() {
             </a>
             <a
               href="/cardapio"
-              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-white)] shadow-[0_8px_20px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] md:inline-flex"
+              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-red)] shadow-[0_8px_20px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] md:inline-flex"
             >
               Pedir agora
             </a>
@@ -168,7 +168,7 @@ export function PublicHeader() {
               <a
                 href="/cardapio"
                 onClick={close}
-                className="mt-3 rounded-full bg-[var(--sr-yellow)] px-5 py-4 text-center text-base font-black text-[var(--sr-white)] shadow-[0_8px_20px_rgba(0,0,0,0.18)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
+                className="mt-3 rounded-full bg-[var(--sr-yellow)] px-5 py-4 text-center text-base font-black text-[var(--sr-red)] shadow-[0_8px_20px_rgba(0,0,0,0.18)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
               >
                 Pedir agora
               </a>
