@@ -1,18 +1,26 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { buildWhatsAppUrl } from '../utils/whatsapp'
 
+const navItems = [
+  { href: '/', label: 'Inicio', match: 'home' },
+  { href: '/cardapio', label: 'Cardapio', match: 'cardapio' },
+  { href: '/#como-pedir', label: 'Como pedir', match: 'como-pedir' },
+  { href: '/#refil', label: 'Refil', match: 'refil' },
+] as const
+
 const menuItems = [
-  { href: '/', icon: 'I', label: 'Inicio' },
-  { href: '/cardapio', icon: 'C', label: 'Cardapio' },
+  ...navItems.map((item, index) => ({ ...item, icon: ['I', 'C', '3', 'R'][index] })),
   { href: '/carrinho', icon: 'P', label: 'Carrinho' },
-  { href: '/#como-pedir', icon: '3', label: 'Como pedir' },
-  { href: '/#refil', icon: 'R', label: 'Refil' },
   { href: buildWhatsAppUrl({ name: 'Atendimento Salgados R', price: 'consulta', quantity: 1 }), icon: 'W', label: 'WhatsApp' },
 ]
 
 export function PublicHeader() {
   const [open, setOpen] = useState(false)
   const [cartCount, setCartCount] = useState(0)
+  const currentLocation = useMemo(() => {
+    if (typeof window === 'undefined') return { pathname: '/', hash: '' }
+    return { pathname: window.location.pathname, hash: window.location.hash }
+  }, [])
 
   useEffect(() => {
     function syncCart() {
@@ -33,47 +41,59 @@ export function PublicHeader() {
     }
   }, [])
 
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    if (!open) return undefined
+    window.addEventListener('keydown', closeOnEscape)
+    return () => window.removeEventListener('keydown', closeOnEscape)
+  }, [open])
+
   function close() {
     setOpen(false)
+  }
+
+  function isActive(match: (typeof navItems)[number]['match']) {
+    if (match === 'home') return currentLocation.pathname === '/' && !currentLocation.hash
+    if (match === 'cardapio') return currentLocation.pathname.startsWith('/cardapio')
+    return currentLocation.hash === `#${match}`
   }
 
   return (
     <>
       <header className="relative z-40 border-b border-[var(--sr-yellow)] bg-[var(--sr-red)]">
-        <div className="mx-auto flex h-[86px] max-w-7xl items-center justify-between px-4 py-2 sm:h-24 sm:px-6">
-          <div className="flex items-center gap-4">
-            <button
-              type="button"
-              onClick={() => setOpen(true)}
-              className="grid h-10 w-10 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] lg:hidden"
-              aria-label="Abrir menu"
-            >
-              <span className="space-y-1.5">
-                <span className="block h-0.5 w-5 rounded bg-current" />
-                <span className="block h-0.5 w-5 rounded bg-current" />
-                <span className="block h-0.5 w-5 rounded bg-current" />
-              </span>
-            </button>
-            <a href="/" className="flex min-w-0 items-center gap-3" aria-label="Salgados R - inicio">
+        <div className="mx-auto grid min-h-[86px] w-full max-w-[1440px] grid-cols-[auto_minmax(0,1fr)] items-center gap-2 px-3 py-2 sm:min-h-[94px] sm:gap-3 sm:px-6 lg:min-h-[98px] lg:grid-cols-[minmax(220px,1fr)_auto_minmax(220px,1fr)] lg:px-8">
+          <div className="flex min-w-0 items-center justify-start">
+            <a href="/" className="flex min-w-0 items-center" aria-label="Salgados R - inicio">
               <img
                 src="/assets-reais/logomarca-oficial-header.png"
                 alt="SALGADOS R"
-                className="sr-logo-mark h-[72px] w-[230px] object-contain object-left sm:h-[82px] sm:w-[292px]"
+                className="sr-logo-mark h-[64px] w-[188px] object-contain object-left sm:h-[80px] sm:w-[268px] lg:h-[84px] lg:w-[292px]"
               />
             </a>
           </div>
 
-          <nav className="hidden items-center gap-6 text-base font-black text-[var(--sr-white)] lg:flex">
-            <a href="/" className="transition hover:text-[var(--sr-yellow)]">Inicio</a>
-            <a href="/cardapio" className="transition hover:text-[var(--sr-yellow)]">Cardapio</a>
-            <a href="/#como-pedir" className="transition hover:text-[var(--sr-yellow)]">Como pedir</a>
-            <a href="/#refil" className="transition hover:text-[var(--sr-yellow)]">Refil</a>
+          <nav aria-label="Menu principal" className="hidden items-center justify-center gap-7 text-base font-black text-[var(--sr-white)] lg:flex xl:gap-9">
+            {navItems.map((item) => (
+              <a
+                key={item.href}
+                href={item.href}
+                aria-current={isActive(item.match) ? 'page' : undefined}
+                className={`relative px-1 py-3 transition hover:text-[var(--sr-yellow)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] ${
+                  isActive(item.match) ? 'after:absolute after:inset-x-1 after:bottom-1 after:h-1 after:rounded-full after:bg-[var(--sr-yellow)]' : ''
+                }`}
+              >
+                {item.label}
+              </a>
+            ))}
           </nav>
 
-          <div className="flex items-center gap-2">
+          <div className="flex min-w-0 items-center justify-start gap-1.5 sm:justify-end sm:gap-3">
             <a
               href="/carrinho"
-              className="relative grid h-11 min-w-11 place-items-center rounded-full border border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-5 sm:py-3"
+              className="relative grid h-11 min-w-11 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] px-3 text-sm font-black text-[var(--sr-white)] transition hover:-translate-y-0.5 hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:block sm:h-auto sm:px-5 sm:py-3"
               aria-label={`Carrinho com ${cartCount} itens`}
             >
               <span className="sm:hidden">{cartCount}</span>
@@ -86,10 +106,24 @@ export function PublicHeader() {
             </a>
             <a
               href="/cardapio"
-              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-white)] transition hover:scale-[1.03] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] sm:inline-flex"
+              className="hidden min-h-11 items-center rounded-full bg-[var(--sr-yellow)] px-6 py-3 text-sm font-black text-[var(--sr-white)] shadow-[0_8px_20px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:brightness-95 focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] md:inline-flex"
             >
               Pedir agora
             </a>
+            <button
+              type="button"
+              onClick={() => setOpen(true)}
+              className="grid h-11 w-11 place-items-center rounded-full border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] text-[var(--sr-white)] transition hover:bg-[var(--sr-yellow)] hover:text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)] lg:hidden"
+              aria-label="Abrir menu"
+              aria-expanded={open}
+              aria-controls="salgados-mobile-menu"
+            >
+              <span className="space-y-1.5">
+                <span className="block h-0.5 w-5 rounded bg-current" />
+                <span className="block h-0.5 w-5 rounded bg-current" />
+                <span className="block h-0.5 w-5 rounded bg-current" />
+              </span>
+            </button>
           </div>
         </div>
       </header>
@@ -102,20 +136,20 @@ export function PublicHeader() {
             onClick={close}
             aria-label="Fechar menu"
           />
-          <aside className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
+          <aside id="salgados-mobile-menu" className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]" aria-label="Menu movel">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/logomarca-oficial-header.png" alt="SALGADOS R" className="sr-logo-mark h-24 w-[310px] object-contain object-left" />
+              <img src="/assets-reais/logomarca-oficial-header.png" alt="SALGADOS R" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
               <button
                 type="button"
                 onClick={close}
-                className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-red)]"
+                className="grid h-10 w-10 place-items-center rounded-full bg-[var(--sr-yellow)] text-xl font-black text-[var(--sr-red)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
                 aria-label="Fechar menu"
               >
                 x
               </button>
             </div>
 
-            <nav className="mt-8 grid gap-2">
+            <nav className="mt-8 grid gap-2" aria-label="Menu movel principal">
               {menuItems.map((item) => (
                 <a
                   key={item.href}
@@ -131,6 +165,13 @@ export function PublicHeader() {
                   {item.label}
                 </a>
               ))}
+              <a
+                href="/cardapio"
+                onClick={close}
+                className="mt-3 rounded-full bg-[var(--sr-yellow)] px-5 py-4 text-center text-base font-black text-[var(--sr-white)] shadow-[0_8px_20px_rgba(0,0,0,0.18)] focus:outline-none focus:ring-4 focus:ring-[var(--sr-yellow)]"
+              >
+                Pedir agora
+              </a>
             </nav>
 
             <div className="mt-auto rounded-2xl border-2 border-[var(--sr-yellow)] bg-[var(--sr-red)] p-4">
