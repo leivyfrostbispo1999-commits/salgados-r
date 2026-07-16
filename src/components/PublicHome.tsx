@@ -100,21 +100,21 @@ export function PublicHome() {
 function Hero() {
   return (
     <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
-      <div className="mx-auto grid min-h-[600px] max-w-[96rem] items-center gap-8 px-4 py-8 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:py-10">
-        <div className="relative z-10 max-w-2xl">
-          <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] px-7 py-4 text-2xl font-black uppercase text-[var(--sr-white)] sm:px-11 sm:text-4xl">
+      <div className="mx-auto grid min-h-[520px] max-w-7xl items-center gap-7 px-4 py-7 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:py-8">
+        <div className="relative z-10 max-w-[38rem]">
+          <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] px-7 py-4 text-2xl font-black uppercase text-[var(--sr-white)] sm:px-10 sm:text-4xl">
             Loja popular, quente e saborosa
           </span>
-          <h1 className="sr-hero-title mt-12 font-black uppercase">
+          <h1 className="sr-hero-title mt-8 font-black uppercase">
             <span>Pastel caprichado,</span>
             <span>Coxinha crocante</span>
             <span>E enroladinho</span>
             <span>Douradinho.</span>
           </h1>
-          <p className="sr-hero-subtitle mt-8 font-black uppercase text-[var(--sr-white)]">
+          <p className="sr-hero-subtitle mt-6 font-black uppercase text-[var(--sr-white)]">
             Cardapio forte, pedido rapido e aquele visual de fome na hora.
           </p>
-          <div className="sr-hero-actions mt-11 flex flex-col gap-5 sm:flex-row">
+          <div className="sr-hero-actions mt-8 flex flex-col gap-4 sm:flex-row">
             <a href="/cardapio" className="sr-primary-cta">
               Pedir agora
             </a>
