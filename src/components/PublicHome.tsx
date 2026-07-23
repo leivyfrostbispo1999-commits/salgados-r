@@ -1,13 +1,14 @@
+import { useEffect } from 'react'
 import { Footer } from './Footer'
 import { PublicHeader } from './PublicHeader'
 
 const realAssets = {
-  logo: '/assets-reais/logomarca-oficial-clean.png',
-  pastel: '/assets-reais/produto-pastel-clean.png',
-  coxinha: '/assets-reais/produto-coxinha-clean.png',
-  enroladinho: '/assets-reais/produto-enroladinho-clean.png',
-  cardapio: '/assets-reais/cardapio-oficial.png',
-  refil: '/assets-reais/refil-sucos-v2.png',
+  logo: '/assets-reais/optimized/logomarca-oficial-header.webp',
+  pastel: '/assets-reais/optimized/produto-pastel-clean.webp',
+  coxinha: '/assets-reais/optimized/produto-coxinha-clean.webp',
+  enroladinho: '/assets-reais/optimized/produto-enroladinho-clean.webp',
+  cardapio: '/assets-reais/optimized/cardapio-oficial.webp',
+  refil: '/assets-reais/optimized/refil-sucos-v2.webp',
 }
 
 const categories = [
@@ -80,6 +81,19 @@ const heroProducts = [
 ]
 
 export function PublicHome() {
+  useEffect(() => {
+    if (!window.location.hash) return
+
+    const scrollToHash = () => {
+      const target = document.getElementById(window.location.hash.slice(1))
+      target?.scrollIntoView({ block: 'start' })
+    }
+
+    window.requestAnimationFrame(() => window.requestAnimationFrame(scrollToHash))
+    const timeouts = [180, 600, 1200].map((delay) => window.setTimeout(scrollToHash, delay))
+    return () => timeouts.forEach((timeout) => window.clearTimeout(timeout))
+  }, [])
+
   return (
     <div className="min-h-screen bg-[var(--sr-red)] text-[var(--sr-white)]">
       <PublicHeader />
@@ -100,21 +114,21 @@ export function PublicHome() {
 function Hero() {
   return (
     <section className="sr-hero-stage overflow-hidden text-[var(--sr-white)]">
-      <div className="mx-auto grid min-h-[520px] max-w-7xl items-center gap-7 px-4 py-7 sm:px-6 lg:grid-cols-[0.78fr_1.22fr] lg:py-8">
-        <div className="relative z-10 max-w-[38rem]">
-          <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] px-7 py-4 text-2xl font-black uppercase text-[var(--sr-white)] sm:px-10 sm:text-4xl">
+      <div className="sr-home-container sr-hero-layout">
+        <div className="relative z-10 min-w-0">
+          <span className="sr-hero-kicker inline-flex rounded-full bg-[var(--sr-yellow)] font-black uppercase text-[var(--sr-white)]">
             Loja popular, quente e saborosa
           </span>
-          <h1 className="sr-hero-title mt-8 font-black uppercase">
+          <h1 className="sr-hero-title font-black uppercase">
             <span>Pastel caprichado,</span>
             <span>Coxinha crocante</span>
             <span>E enroladinho</span>
             <span>Douradinho.</span>
           </h1>
-          <p className="sr-hero-subtitle mt-6 font-black uppercase text-[var(--sr-white)]">
+          <p className="sr-hero-subtitle font-black uppercase text-[var(--sr-white)]">
             Cardapio forte, pedido rapido e aquele visual de fome na hora.
           </p>
-          <div className="sr-hero-actions mt-8 flex flex-col gap-4 sm:flex-row">
+          <div className="sr-hero-actions flex flex-col gap-3 sm:flex-row">
             <a href="/cardapio" className="sr-primary-cta">
               Pedir agora
             </a>
@@ -128,7 +142,7 @@ function Hero() {
           {heroProducts.map((product) => (
             <article key={product.title} className="sr-hero-product-card">
               <div className="sr-hero-product-media">
-                <img src={product.image} alt={product.alt} />
+                <img src={product.image} alt={product.alt} width="520" height="520" fetchPriority="high" decoding="async" />
               </div>
               <h2>{product.title}</h2>
               <p>{product.description}</p>
@@ -143,8 +157,8 @@ function Hero() {
 
 function CategoryStripHome() {
   return (
-    <section className="bg-[var(--sr-red)] py-5 text-[var(--sr-white)]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section className="sr-category-section bg-[var(--sr-red)] text-[var(--sr-white)]">
+      <div className="sr-home-container">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
             <a key={category.label} href={category.href} className="group sr-category-tile">
@@ -165,8 +179,8 @@ function CategoryStripHome() {
 
 function FeaturedHome() {
   return (
-    <section className="sr-hot-bg scroll-mt-20 py-12 text-[var(--sr-white)]">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6">
+    <section className="sr-hot-bg sr-featured-section scroll-mt-20 text-[var(--sr-white)]">
+      <div className="sr-home-container">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.18em] text-[var(--sr-yellow)]">Mais pedidos</p>
@@ -181,7 +195,7 @@ function FeaturedHome() {
           {featured.map((item) => (
             <article key={item.name} className="sr-food-card">
               <div className="sr-food-media">
-                <img src={item.imageUrl} alt={item.name} width="900" height="640" loading="lazy" className={item.imageClassName || 'sr-food-image'} />
+                <img src={item.imageUrl} alt={item.name} width="520" height="520" loading="lazy" decoding="async" className={item.imageClassName || 'sr-food-image'} />
               </div>
               <div className="sr-food-body">
                 <h3 className="sr-food-name">{item.name}</h3>
@@ -251,7 +265,7 @@ function RefillBannerHome() {
             <p className="mt-2 max-w-2xl text-lg font-black leading-7 text-[var(--sr-white)]">Goiaba e maracujá geladinhos.</p>
           </div>
           <figure className="sr-refill-art" aria-label="Arte oficial do refil de sucos naturais">
-            <img src={realAssets.refil} alt="Refil de sucos naturais da Salgados R" loading="lazy" />
+            <img src={realAssets.refil} alt="Refil de sucos naturais da Salgados R" width="640" height="640" loading="lazy" decoding="async" />
           </figure>
         </div>
       </div>

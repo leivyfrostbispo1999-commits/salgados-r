@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#DC0008" />
+    <title>SALGADOS R offline</title>
+    <style>
+      :root {
+        --sr-red: #dc0008;
+        --sr-yellow: #ffbd0d;
+        --sr-white: #ffffff;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+      }
+
+      body {
+        display: grid;
+        min-width: 320px;
+        min-height: 100svh;
+        margin: 0;
+        padding:
+          max(1.25rem, env(safe-area-inset-top))
+          max(1.25rem, env(safe-area-inset-right))
+          max(1.25rem, env(safe-area-inset-bottom))
+          max(1.25rem, env(safe-area-inset-left));
+        place-items: center;
+        background: var(--sr-red);
+        color: var(--sr-white);
+        font-family: Impact, "Arial Narrow", system-ui, sans-serif;
+        text-align: center;
+        text-transform: uppercase;
+      }
+
+      main {
+        width: min(100%, 32rem);
+        border: 2px solid var(--sr-yellow);
+        border-radius: 1.5rem;
+        padding: clamp(1.5rem, 7vw, 3rem);
+      }
+
+      h1 {
+        margin: 0;
+        color: var(--sr-white);
+        font-size: clamp(2.4rem, 12vw, 4.5rem);
+        line-height: 0.95;
+      }
+
+      p {
+        margin: 1rem 0 0;
+        font-size: clamp(1rem, 4vw, 1.25rem);
+        font-weight: 800;
+        line-height: 1.35;
+      }
+
+      a {
+        display: inline-flex;
+        min-height: 3.25rem;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1.5rem;
+        border-radius: 999px;
+        background: var(--sr-yellow);
+        color: var(--sr-white);
+        padding: 0.85rem 1.4rem;
+        font-weight: 900;
+        text-decoration: none;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>VOCÊ ESTÁ SEM INTERNET</h1>
+      <p>O CARDÁPIO PODE ESTAR PARCIALMENTE DISPONÍVEL. CONECTE-SE PARA FINALIZAR O PEDIDO.</p>
+      <a href="/">TENTAR NOVAMENTE</a>
+    </main>
+  </body>
+</html>

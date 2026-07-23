@@ -72,8 +72,11 @@ export function PublicHeader() {
           <div className="sr-header-brand">
             <a href="/" className="sr-header-logo-link" aria-label="Salgados R - inicio">
               <img
-                src="/assets-reais/logomarca-oficial-header.png"
+                src="/assets-reais/optimized/logomarca-oficial-header.webp"
                 alt="SALGADOS R"
+                width="520"
+                height="223"
+                decoding="async"
                 className="sr-logo-mark"
               />
             </a>
@@ -134,7 +137,7 @@ export function PublicHeader() {
           />
           <aside id="salgados-mobile-menu" className="relative flex h-full w-[min(88vw,360px)] flex-col bg-[var(--sr-red)] p-5 text-[var(--sr-white)]" aria-label="Menu movel">
             <div className="flex items-center justify-between gap-4">
-              <img src="/assets-reais/logomarca-oficial-header.png" alt="SALGADOS R" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
+              <img src="/assets-reais/optimized/logomarca-oficial-header.webp" alt="SALGADOS R" width="520" height="223" decoding="async" className="sr-logo-mark h-20 w-[260px] object-contain object-left" />
               <button
                 type="button"
                 onClick={close}
