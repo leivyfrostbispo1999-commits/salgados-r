@@ -1938,7 +1938,7 @@ app.get('/api/admin/catalog', auth('products.view'), async (_req, res) => {
       FROM categories c
       LEFT JOIN product_subcategories sc ON sc.category_id = c.id
       LEFT JOIN products p ON p.category_id = c.id
-      GROUP BY c.id
+      GROUP BY c.id, c.sort_order, c.name
       ORDER BY c.sort_order, c.name`),
     query(`SELECT sc.*, c.name AS category_name,
       COUNT(p.id)::int AS products_count,
@@ -1946,7 +1946,7 @@ app.get('/api/admin/catalog', auth('products.view'), async (_req, res) => {
       FROM product_subcategories sc
       JOIN categories c ON c.id = sc.category_id
       LEFT JOIN products p ON p.subcategory_id = sc.id
-      GROUP BY sc.id, c.name
+      GROUP BY sc.id, c.name, c.sort_order
       ORDER BY c.sort_order, sc.sort_order, sc.name`),
     query('SELECT * FROM product_flavors ORDER BY sort_order, name'),
     query('SELECT * FROM product_variants ORDER BY sort_order, name'),
@@ -1970,7 +1970,7 @@ app.get('/api/admin/catalog/categories', auth('products.view'), async (_req, res
     FROM categories c
     LEFT JOIN product_subcategories sc ON sc.category_id = c.id
     LEFT JOIN products p ON p.category_id = c.id
-    GROUP BY c.id
+    GROUP BY c.id, c.sort_order, c.name
     ORDER BY c.sort_order, c.name`)
   res.json(result.rows.map(categoryDto))
 })
@@ -2064,7 +2064,7 @@ app.get('/api/admin/catalog/subcategories', auth('products.view'), async (_req, 
     FROM product_subcategories sc
     JOIN categories c ON c.id = sc.category_id
     LEFT JOIN products p ON p.subcategory_id = sc.id
-    GROUP BY sc.id, c.name
+    GROUP BY sc.id, c.name, c.sort_order
     ORDER BY c.sort_order, sc.sort_order, sc.name`)
   res.json(result.rows.map(subcategoryDto))
 })
