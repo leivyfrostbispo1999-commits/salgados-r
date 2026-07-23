@@ -3,16 +3,95 @@ export type ApiProduct = {
   name: string
   description: string
   category: string
+  categoryId: string | null
+  categoryName: string
+  categorySlug: string
+  categorySortOrder: number
+  subcategoryId: string | null
+  subcategoryName: string
+  subcategorySortOrder: number
+  flavorId: string | null
+  flavorName: string
+  variantId: string | null
+  variantName: string
   availability: 'delivery' | 'presencial' | 'ambos'
   priceCents: number
   price: number
+  imageUrl: string
+  unit: string
+  volumeMl: number | null
   featured: boolean
   deliveryEnabled: boolean
   pickupEnabled: boolean
   dineInOnly: boolean
+  establishmentOnly: boolean
+  showPublic: boolean
+  availableForSale: boolean
+  availableForProduction: boolean
   stockControlled: boolean
   sortOrder: number
   active: boolean
+  archivedAt: string | null
+}
+
+export type CatalogCategory = {
+  id: string
+  name: string
+  slug: string
+  description: string
+  icon: string
+  sortOrder: number
+  active: boolean
+  showPublic: boolean
+  showAdmin: boolean
+  archivedAt: string | null
+  productsCount: number
+  activeProductsCount: number
+  historicalProductsCount: number
+  subcategoriesCount: number
+}
+
+export type CatalogSubcategory = {
+  id: string
+  categoryId: string
+  categoryName: string
+  name: string
+  slug: string
+  description: string
+  sortOrder: number
+  active: boolean
+  showPublic: boolean
+  showAdmin: boolean
+  archivedAt: string | null
+  productsCount: number
+  activeProductsCount: number
+}
+
+export type CatalogFlavor = {
+  id: string
+  name: string
+  slug: string
+  description: string
+  sortOrder: number
+  active: boolean
+}
+
+export type CatalogVariant = {
+  id: string
+  name: string
+  slug: string
+  unit: string
+  volumeMl: number | null
+  sortOrder: number
+  active: boolean
+}
+
+export type CatalogPayload = {
+  categories: CatalogCategory[]
+  subcategories: CatalogSubcategory[]
+  flavors: CatalogFlavor[]
+  variants: CatalogVariant[]
+  products: ApiProduct[]
 }
 
 export type ApiOrderItem = {
@@ -315,8 +394,18 @@ export const api = {
     name: string
     description?: string
     category: string
+    categoryId?: string | null
+    subcategoryId?: string | null
+    flavorId?: string | null
+    variantId?: string | null
     availability: string
     priceCents: number
+    unit?: string
+    volumeMl?: number | null
+    showPublic?: boolean
+    availableForSale?: boolean
+    availableForProduction?: boolean
+    establishmentOnly?: boolean
     active?: boolean
     featured?: boolean
     deliveryEnabled?: boolean
@@ -327,6 +416,54 @@ export const api = {
   }) => request<ApiProduct>('/products', { method: 'POST', body: JSON.stringify(payload) }),
   updateProduct: (id: string, payload: Partial<ApiProduct> & { priceCents?: number }) =>
     request<ApiProduct>(`/products/${id}`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  catalog: () => request<CatalogPayload>('/admin/catalog'),
+  createCatalogCategory: (payload: Partial<CatalogCategory> & { name: string }) =>
+    request<CatalogCategory>('/admin/catalog/categories', { method: 'POST', body: JSON.stringify(payload) }),
+  updateCatalogCategory: (id: string, payload: Partial<CatalogCategory>) =>
+    request<CatalogCategory>(`/admin/catalog/categories/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  archiveCatalogCategory: (id: string) =>
+    request<CatalogCategory>(`/admin/catalog/categories/${id}/archive`, { method: 'POST' }),
+  restoreCatalogCategory: (id: string) =>
+    request<CatalogCategory>(`/admin/catalog/categories/${id}/restore`, { method: 'POST' }),
+  createCatalogSubcategory: (payload: Partial<CatalogSubcategory> & { categoryId: string; name: string }) =>
+    request<CatalogSubcategory>('/admin/catalog/subcategories', { method: 'POST', body: JSON.stringify(payload) }),
+  updateCatalogSubcategory: (id: string, payload: Partial<CatalogSubcategory>) =>
+    request<CatalogSubcategory>(`/admin/catalog/subcategories/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  archiveCatalogSubcategory: (id: string) =>
+    request<CatalogSubcategory>(`/admin/catalog/subcategories/${id}/archive`, { method: 'POST' }),
+  restoreCatalogSubcategory: (id: string) =>
+    request<CatalogSubcategory>(`/admin/catalog/subcategories/${id}/restore`, { method: 'POST' }),
+  createCatalogFlavor: (payload: Partial<CatalogFlavor> & { name: string }) =>
+    request<CatalogFlavor>('/admin/catalog/flavors', { method: 'POST', body: JSON.stringify(payload) }),
+  updateCatalogFlavor: (id: string, payload: Partial<CatalogFlavor>) =>
+    request<CatalogFlavor>(`/admin/catalog/flavors/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  createCatalogVariant: (payload: Partial<CatalogVariant> & { name: string }) =>
+    request<CatalogVariant>('/admin/catalog/variants', { method: 'POST', body: JSON.stringify(payload) }),
+  updateCatalogVariant: (id: string, payload: Partial<CatalogVariant>) =>
+    request<CatalogVariant>(`/admin/catalog/variants/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  createCatalogProduct: (payload: Partial<ApiProduct> & { name: string; categoryId: string; availability: string; priceCents: number }) =>
+    request<ApiProduct>('/admin/catalog/products', { method: 'POST', body: JSON.stringify(payload) }),
+  updateCatalogProduct: (id: string, payload: Partial<ApiProduct> & { priceCents?: number }) =>
+    request<ApiProduct>(`/admin/catalog/products/${id}`, { method: 'PUT', body: JSON.stringify(payload) }),
+  archiveCatalogProduct: (id: string) =>
+    request<ApiProduct>(`/admin/catalog/products/${id}/archive`, { method: 'POST' }),
+  restoreCatalogProduct: (id: string) =>
+    request<ApiProduct>(`/admin/catalog/products/${id}/restore`, { method: 'POST' }),
+  uploadCatalogProductImage: async (id: string, file: File) => {
+    const response = await fetch(`/api/admin/catalog/products/${id}/image`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${tokenStore.get()}`,
+        'Content-Type': file.type,
+      },
+      body: file,
+    })
+    if (!response.ok) {
+      const payload = await response.json().catch(() => ({ error: 'Erro ao enviar imagem.' }))
+      throw new Error(payload.error ?? 'Erro ao enviar imagem.')
+    }
+    return response.json() as Promise<ApiProduct>
+  },
   orders: () => request<ApiOrder[]>('/orders'),
   createOrder: (payload: {
     customerName: string

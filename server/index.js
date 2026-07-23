@@ -3,7 +3,16 @@ import express from 'express'
 import jwt from 'jsonwebtoken'
 import pg from 'pg'
 import { randomUUID } from 'node:crypto'
+import { mkdir, writeFile } from 'node:fs/promises'
+import path from 'node:path'
 import { allowedRoles, displayRole, hasPermission, normalizeRole, permissionsFor } from './access-control.js'
+import {
+  assertCatalogName,
+  assertNonNegativeInteger,
+  assertSubcategoryBelongsToCategory,
+  catalogDuplicate,
+  slugifyCatalogName,
+} from './catalog-domain.js'
 import {
   calculatePaymentTotals,
   calculateRefillCents,
@@ -50,6 +59,11 @@ app.use((req, res, next) => {
   if (req.method === 'OPTIONS') return res.sendStatus(204)
   next()
 })
+app.use('/uploads', express.static(process.env.UPLOAD_DIR || path.resolve('uploads'), {
+  fallthrough: false,
+  immutable: true,
+  maxAge: '30d',
+}))
 
 const loginAttempts = new Map()
 
@@ -137,14 +151,93 @@ function productDto(row) {
     name: row.name,
     description: row.description || '',
     category: row.category,
+    categoryId: row.category_id || null,
+    categoryName: row.category_name || row.category,
+    categorySlug: row.category_slug || row.category,
+    categorySortOrder: Number(row.category_sort_order || 0),
+    subcategoryId: row.subcategory_id || null,
+    subcategoryName: row.subcategory_name || '',
+    subcategorySortOrder: Number(row.subcategory_sort_order || 0),
+    flavorId: row.flavor_id || null,
+    flavorName: row.flavor_name || '',
+    variantId: row.variant_id || null,
+    variantName: row.variant_name || '',
     availability: row.availability,
     priceCents: row.price_cents,
     price: money(row.price_cents),
+    imageUrl: row.image_url || '',
+    unit: row.unit || 'unidade',
+    volumeMl: row.volume_ml ?? null,
     featured: Boolean(row.featured),
     deliveryEnabled: Boolean(row.delivery_enabled),
     pickupEnabled: Boolean(row.pickup_enabled),
     dineInOnly: Boolean(row.dine_in_only),
+    establishmentOnly: Boolean(row.establishment_only ?? row.dine_in_only),
+    showPublic: row.show_public !== false,
+    availableForSale: row.available_for_sale !== false,
+    availableForProduction: row.available_for_production !== false,
     stockControlled: Boolean(row.stock_controlled),
+    sortOrder: Number(row.sort_order || 0),
+    active: row.active,
+    archivedAt: row.archived_at || null,
+  }
+}
+
+function categoryDto(row, counts = {}) {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description || '',
+    icon: row.icon || '',
+    sortOrder: Number(row.sort_order || 0),
+    active: row.active,
+    showPublic: row.show_public !== false,
+    showAdmin: row.show_admin !== false,
+    archivedAt: row.archived_at || null,
+    productsCount: Number(counts.products_count || row.products_count || 0),
+    activeProductsCount: Number(counts.active_products_count || row.active_products_count || 0),
+    historicalProductsCount: Number(counts.historical_products_count || row.historical_products_count || 0),
+    subcategoriesCount: Number(counts.subcategories_count || row.subcategories_count || 0),
+  }
+}
+
+function subcategoryDto(row) {
+  return {
+    id: row.id,
+    categoryId: row.category_id,
+    categoryName: row.category_name || '',
+    name: row.name,
+    slug: row.slug,
+    description: row.description || '',
+    sortOrder: Number(row.sort_order || 0),
+    active: row.active,
+    showPublic: row.show_public !== false,
+    showAdmin: row.show_admin !== false,
+    archivedAt: row.archived_at || null,
+    productsCount: Number(row.products_count || 0),
+    activeProductsCount: Number(row.active_products_count || 0),
+  }
+}
+
+function flavorDto(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description || '',
+    sortOrder: Number(row.sort_order || 0),
+    active: row.active,
+  }
+}
+
+function variantDto(row) {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    unit: row.unit || 'unidade',
+    volumeMl: row.volume_ml ?? null,
     sortOrder: Number(row.sort_order || 0),
     active: row.active,
   }
@@ -466,8 +559,56 @@ async function initDb() {
       id TEXT PRIMARY KEY,
       name TEXT NOT NULL,
       slug TEXT UNIQUE NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      icon TEXT NOT NULL DEFAULT '',
       sort_order INTEGER NOT NULL DEFAULT 0,
       active BOOLEAN NOT NULL DEFAULT TRUE,
+      show_public BOOLEAN NOT NULL DEFAULT TRUE,
+      show_admin BOOLEAN NOT NULL DEFAULT TRUE,
+      archived_at TIMESTAMPTZ,
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS product_subcategories (
+      id TEXT PRIMARY KEY,
+      category_id TEXT NOT NULL REFERENCES categories(id) ON DELETE RESTRICT,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      slug TEXT NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      show_public BOOLEAN NOT NULL DEFAULT TRUE,
+      show_admin BOOLEAN NOT NULL DEFAULT TRUE,
+      archived_at TIMESTAMPTZ,
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      UNIQUE (category_id, slug)
+    );
+
+    CREATE TABLE IF NOT EXISTS product_flavors (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      description TEXT NOT NULL DEFAULT '',
+      slug TEXT UNIQUE NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_by TEXT,
+      created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    );
+
+    CREATE TABLE IF NOT EXISTS product_variants (
+      id TEXT PRIMARY KEY,
+      name TEXT NOT NULL,
+      unit TEXT NOT NULL DEFAULT 'unidade',
+      volume_ml INTEGER,
+      slug TEXT UNIQUE NOT NULL,
+      sort_order INTEGER NOT NULL DEFAULT 0,
+      active BOOLEAN NOT NULL DEFAULT TRUE,
+      created_by TEXT,
       created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
     );
@@ -845,6 +986,24 @@ async function initDb() {
     ALTER TABLE products ADD COLUMN IF NOT EXISTS dine_in_only BOOLEAN NOT NULL DEFAULT FALSE;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS stock_controlled BOOLEAN NOT NULL DEFAULT FALSE;
     ALTER TABLE products ADD COLUMN IF NOT EXISTS sort_order INTEGER NOT NULL DEFAULT 0;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS category_id TEXT REFERENCES categories(id) ON DELETE RESTRICT;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS subcategory_id TEXT REFERENCES product_subcategories(id) ON DELETE SET NULL;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS flavor_id TEXT REFERENCES product_flavors(id) ON DELETE SET NULL;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS variant_id TEXT REFERENCES product_variants(id) ON DELETE SET NULL;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS volume_ml INTEGER;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS show_public BOOLEAN NOT NULL DEFAULT TRUE;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS available_for_sale BOOLEAN NOT NULL DEFAULT TRUE;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS available_for_production BOOLEAN NOT NULL DEFAULT TRUE;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS establishment_only BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+    ALTER TABLE products ADD COLUMN IF NOT EXISTS created_by TEXT;
+
+    ALTER TABLE categories ADD COLUMN IF NOT EXISTS description TEXT NOT NULL DEFAULT '';
+    ALTER TABLE categories ADD COLUMN IF NOT EXISTS icon TEXT NOT NULL DEFAULT '';
+    ALTER TABLE categories ADD COLUMN IF NOT EXISTS show_public BOOLEAN NOT NULL DEFAULT TRUE;
+    ALTER TABLE categories ADD COLUMN IF NOT EXISTS show_admin BOOLEAN NOT NULL DEFAULT TRUE;
+    ALTER TABLE categories ADD COLUMN IF NOT EXISTS archived_at TIMESTAMPTZ;
+    ALTER TABLE categories ADD COLUMN IF NOT EXISTS created_by TEXT;
 
     ALTER TABLE orders ADD COLUMN IF NOT EXISTS order_number INTEGER;
     ALTER TABLE orders ALTER COLUMN order_number SET DEFAULT nextval('orders_order_number_seq');
@@ -887,6 +1046,9 @@ async function initDb() {
     CREATE INDEX IF NOT EXISTS idx_product_price_history_validity ON product_price_history (product_id, valid_from, valid_until);
     CREATE INDEX IF NOT EXISTS idx_product_cost_history_validity ON product_cost_history (product_id, valid_from, valid_until);
     CREATE INDEX IF NOT EXISTS idx_payment_entries_receivable ON payment_entries (receivable_id);
+    CREATE INDEX IF NOT EXISTS idx_product_subcategories_category ON product_subcategories (category_id, sort_order, name);
+    CREATE INDEX IF NOT EXISTS idx_products_catalog_category ON products (category_id, subcategory_id, sort_order, name);
+    CREATE INDEX IF NOT EXISTS idx_products_catalog_active ON products (active, show_public, available_for_sale);
   `)
 
   await query('ALTER TABLE management_sales ADD COLUMN IF NOT EXISTS idempotency_key TEXT')
@@ -955,10 +1117,65 @@ async function initDb() {
 
   for (const [index, category] of ['pasteis', 'salgados', 'sucos', 'refil'].entries()) {
     await query(
-      `INSERT INTO categories (id, name, slug, sort_order)
+      `INSERT INTO categories (id, name, slug, sort_order, description)
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (slug) DO NOTHING`,
+      [
+        category,
+        category === 'pasteis' ? 'Pasteis' : category === 'salgados' ? 'Salgados' : category === 'sucos' ? 'Sucos' : 'Refil',
+        category,
+        index,
+        category === 'pasteis'
+          ? 'Pasteis crocantes da SALGADOS R.'
+          : category === 'salgados'
+            ? 'Coxinhas, enroladinhos e outros salgados.'
+            : category === 'sucos'
+              ? 'Sucos naturais e opcoes presenciais.'
+              : 'Refil de sucos naturais.',
+      ],
+    )
+  }
+
+  const subcategorySeed = [
+    ['pasteis', 'pasteis-tradicionais', 'Pasteis', 'Pastel de carne, frango, misto e especiais.', 1],
+    ['salgados', 'outros-salgados', 'Outros salgados', 'Coxinha, enroladinho e novos salgados.', 1],
+    ['sucos', 'goiaba', 'Goiaba', 'Sucos de goiaba.', 1],
+    ['sucos', 'maracuja', 'Maracuja', 'Sucos de maracuja.', 2],
+    ['sucos', 'garrafinha', 'Garrafinha', 'Sucos naturais para delivery.', 3],
+    ['refil', 'refil', 'Refil', 'Refil por volume.', 1],
+  ]
+  for (const [categoryId, slug, name, description, sortOrder] of subcategorySeed) {
+    await query(
+      `INSERT INTO product_subcategories (id, category_id, name, slug, description, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (category_id, slug) DO NOTHING`,
+      [`${categoryId}-${slug}`, categoryId, name, slug, description, sortOrder],
+    )
+  }
+
+  for (const [index, flavor] of ['Carne', 'Frango', 'Misto', 'Calabresa', 'Queijo', 'Goiaba', 'Maracuja'].entries()) {
+    const slug = slugifyCatalogName(flavor)
+    await query(
+      `INSERT INTO product_flavors (id, name, slug, sort_order)
        VALUES ($1, $2, $3, $4)
        ON CONFLICT (slug) DO NOTHING`,
-      [category, category.charAt(0).toUpperCase() + category.slice(1), category, index],
+      [slug, flavor, slug, index],
+    )
+  }
+
+  const variantSeed = [
+    ['unidade', 'Unidade', 'unidade', null, 1],
+    ['copo-pequeno', 'Copo pequeno', 'copo', null, 2],
+    ['copo-grande', 'Copo grande', 'copo', null, 3],
+    ['garrafinha-300-ml', 'Garrafinha 300 ml', 'garrafa', 300, 4],
+    ['refil-100-ml', 'Refil 100 ml', '100 ml', 100, 5],
+  ]
+  for (const [id, name, unit, volumeMl, sortOrder] of variantSeed) {
+    await query(
+      `INSERT INTO product_variants (id, name, slug, unit, volume_ml, sort_order)
+       VALUES ($1, $2, $3, $4, $5, $6)
+       ON CONFLICT (slug) DO NOTHING`,
+      [id, name, id, unit, volumeMl, sortOrder],
     )
   }
 
@@ -996,6 +1213,41 @@ async function initDb() {
       )
     }
   }
+
+  const productCatalogLinks = [
+    ['pastel-carne', 'pasteis', 'pasteis-pasteis-tradicionais', 'carne', 'unidade'],
+    ['pastel-frango', 'pasteis', 'pasteis-pasteis-tradicionais', 'frango', 'unidade'],
+    ['pastel-misto', 'pasteis', 'pasteis-pasteis-tradicionais', 'misto', 'unidade'],
+    ['pastel-calabresa-queijo', 'pasteis', 'pasteis-pasteis-tradicionais', 'calabresa', 'unidade'],
+    ['pastel-frango-queijo', 'pasteis', 'pasteis-pasteis-tradicionais', 'frango', 'unidade'],
+    ['coxinha', 'salgados', 'salgados-outros-salgados', null, 'unidade'],
+    ['enroladinho', 'salgados', 'salgados-outros-salgados', null, 'unidade'],
+    ['suco-goiaba-pequeno', 'sucos', 'sucos-goiaba', 'goiaba', 'copo-pequeno'],
+    ['suco-goiaba-grande', 'sucos', 'sucos-goiaba', 'goiaba', 'copo-grande'],
+    ['suco-maracuja-pequeno', 'sucos', 'sucos-maracuja', 'maracuja', 'copo-pequeno'],
+    ['suco-maracuja-grande', 'sucos', 'sucos-maracuja', 'maracuja', 'copo-grande'],
+    ['suco-natural-garrafinha-300ml', 'sucos', 'sucos-garrafinha', null, 'garrafinha-300-ml'],
+    ['refil-suco-100ml', 'refil', 'refil-refil', null, 'refil-100-ml'],
+  ]
+  for (const [productId, categoryId, subcategoryId, flavorId, variantId] of productCatalogLinks) {
+    await query(
+      `UPDATE products
+       SET category_id = COALESCE(category_id, $2),
+           subcategory_id = COALESCE(subcategory_id, $3),
+           flavor_id = COALESCE(flavor_id, $4),
+           variant_id = COALESCE(variant_id, $5),
+           unit = COALESCE(NULLIF(unit, ''), 'unidade')
+       WHERE id = $1`,
+      [productId, categoryId, subcategoryId, flavorId, variantId],
+    )
+  }
+
+  await query(`
+    UPDATE products p
+    SET category_id = c.id
+    FROM categories c
+    WHERE p.category_id IS NULL AND c.slug = p.category
+  `)
 
   const stockCount = await query('SELECT COUNT(*)::int AS total FROM stock_items')
   if (stockCount.rows[0].total === 0) {
@@ -1094,6 +1346,27 @@ function parseCents(value) {
   return Number.isFinite(parsed) ? parsed : null
 }
 
+const productSelectSql = `
+  SELECT
+    p.*,
+    c.name AS category_name,
+    c.slug AS category_slug,
+    c.sort_order AS category_sort_order,
+    sc.name AS subcategory_name,
+    sc.sort_order AS subcategory_sort_order,
+    f.name AS flavor_name,
+    v.name AS variant_name
+  FROM products p
+  LEFT JOIN categories c ON c.id = p.category_id
+  LEFT JOIN product_subcategories sc ON sc.id = p.subcategory_id
+  LEFT JOIN product_flavors f ON f.id = p.flavor_id
+  LEFT JOIN product_variants v ON v.id = p.variant_id
+`
+
+function productOrderSql() {
+  return 'ORDER BY COALESCE(c.sort_order, 999), COALESCE(sc.sort_order, 999), p.sort_order, p.price_cents, p.name'
+}
+
 app.get('/api/health', async (_req, res) => {
   await query('SELECT 1')
   res.json({ ok: true, service: 'salgados-r-api', database: 'postgresql', timestamp: new Date().toISOString() })
@@ -1170,12 +1443,20 @@ app.post('/api/users', auth('users.create'), async (req, res) => {
 })
 
 app.get('/api/products/public', async (_req, res) => {
-  const result = await query('SELECT * FROM products WHERE active = TRUE ORDER BY category, sort_order, price_cents, name')
+  const result = await query(`
+    ${productSelectSql}
+    WHERE p.active = TRUE
+      AND p.show_public = TRUE
+      AND p.available_for_sale = TRUE
+      AND (c.id IS NULL OR c.active = TRUE)
+      AND (sc.id IS NULL OR sc.active = TRUE)
+    ${productOrderSql()}
+  `)
   res.json(result.rows.map(productDto))
 })
 
 app.get('/api/products', auth('products.view'), async (_req, res) => {
-  const result = await query('SELECT * FROM products ORDER BY category, sort_order, price_cents, name')
+  const result = await query(`${productSelectSql} ${productOrderSql()}`)
   res.json(result.rows.map(productDto))
 })
 
@@ -1184,6 +1465,10 @@ app.post('/api/products', auth('products.create'), async (req, res) => {
     name,
     description = '',
     category,
+    categoryId = null,
+    subcategoryId = null,
+    flavorId = null,
+    variantId = null,
     availability,
     priceCents,
     imageUrl = '',
@@ -1193,24 +1478,48 @@ app.post('/api/products', auth('products.create'), async (req, res) => {
     deliveryEnabled = availability !== 'presencial',
     pickupEnabled = true,
     dineInOnly = availability === 'presencial',
+    unit = 'unidade',
+    volumeMl = null,
+    showPublic = true,
+    availableForSale = true,
+    availableForProduction = true,
+    establishmentOnly = dineInOnly,
     stockControlled = false,
     sortOrder = 0,
   } = req.body
-  if (!name || !category || !availability || !Number.isInteger(priceCents)) {
+  if (!name || (!category && !categoryId) || !availability || !Number.isInteger(priceCents)) {
     return res.status(400).json({ error: 'Produto invalido.' })
+  }
+  const categoryRow = categoryId
+    ? (await query('SELECT * FROM categories WHERE id = $1', [categoryId])).rows[0]
+    : (await query('SELECT * FROM categories WHERE slug = $1 OR id = $1', [category])).rows[0]
+  if (!categoryRow) return res.status(400).json({ error: 'Categoria invalida.' })
+  const subcategoryRow = subcategoryId
+    ? (await query('SELECT * FROM product_subcategories WHERE id = $1', [subcategoryId])).rows[0]
+    : null
+  try {
+    assertCatalogName(name, 'Produto')
+    assertSubcategoryBelongsToCategory({ subcategory: subcategoryRow, categoryId: categoryRow.id })
+    assertNonNegativeInteger(priceCents, 'Preco')
+    assertNonNegativeInteger(volumeMl, 'Volume')
+  } catch (error) {
+    return res.status(400).json({ error: error.message || 'Produto invalido.' })
   }
 
   const created = await query(
     `INSERT INTO products (
       id, name, description, category, availability, price_cents, image_url, promotion_price_cents, promotion_label,
-      featured, delivery_enabled, pickup_enabled, dine_in_only, stock_controlled, sort_order
-    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+      featured, delivery_enabled, pickup_enabled, dine_in_only, stock_controlled, sort_order,
+      category_id, subcategory_id, flavor_id, variant_id, unit, volume_ml, show_public,
+      available_for_sale, available_for_production, establishment_only, created_by
+    ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15,
+      $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)
     RETURNING *`,
     [
       randomUUID(),
       name,
       description,
-      category,
+      categoryRow.slug,
       availability,
       priceCents,
       imageUrl,
@@ -1222,6 +1531,17 @@ app.post('/api/products', auth('products.create'), async (req, res) => {
       dineInOnly,
       stockControlled,
       sortOrder,
+      categoryRow.id,
+      subcategoryId || null,
+      flavorId || null,
+      variantId || null,
+      unit,
+      volumeMl === null || volumeMl === '' ? null : Number(volumeMl),
+      showPublic,
+      availableForSale,
+      availableForProduction,
+      establishmentOnly,
+      req.user.id,
     ],
   )
   await audit(req, 'create', 'products', created.rows[0].id, null, productDto(created.rows[0]))
@@ -1233,17 +1553,39 @@ app.patch('/api/products/:id', auth('products.update'), async (req, res) => {
   if (!current.rows[0]) return res.status(404).json({ error: 'Produto nao encontrado.' })
 
   const row = current.rows[0]
+  const nextCategoryId = req.body.categoryId ?? row.category_id
+  const nextCategoryRow = nextCategoryId
+    ? (await query('SELECT * FROM categories WHERE id = $1', [nextCategoryId])).rows[0]
+    : req.body.category
+      ? (await query('SELECT * FROM categories WHERE slug = $1 OR id = $1', [req.body.category])).rows[0]
+      : null
+  const nextSubcategoryId = req.body.subcategoryId === '' ? null : (req.body.subcategoryId ?? row.subcategory_id)
+  const nextSubcategoryRow = nextSubcategoryId
+    ? (await query('SELECT * FROM product_subcategories WHERE id = $1', [nextSubcategoryId])).rows[0]
+    : null
+  try {
+    if (req.body.name !== undefined) assertCatalogName(req.body.name, 'Produto')
+    if (nextCategoryRow) assertSubcategoryBelongsToCategory({ subcategory: nextSubcategoryRow, categoryId: nextCategoryRow.id })
+    if (req.body.priceCents !== undefined) assertNonNegativeInteger(req.body.priceCents, 'Preco')
+    if (req.body.volumeMl !== undefined) assertNonNegativeInteger(req.body.volumeMl, 'Volume')
+  } catch (error) {
+    return res.status(400).json({ error: error.message || 'Produto invalido.' })
+  }
   const updated = await query(
     `UPDATE products
      SET name = $1, description = $2, category = $3, availability = $4, price_cents = $5, active = $6,
          featured = $7, delivery_enabled = $8, pickup_enabled = $9, dine_in_only = $10,
-         stock_controlled = $11, sort_order = $12, updated_at = NOW()
-     WHERE id = $13
+         stock_controlled = $11, sort_order = $12, category_id = $13, subcategory_id = $14,
+         flavor_id = $15, variant_id = $16, unit = $17, volume_ml = $18, show_public = $19,
+         available_for_sale = $20, available_for_production = $21, establishment_only = $22,
+         archived_at = CASE WHEN $6 = FALSE THEN COALESCE(archived_at, NOW()) ELSE NULL END,
+         updated_at = NOW()
+     WHERE id = $23
      RETURNING *`,
     [
       req.body.name ?? row.name,
       req.body.description ?? row.description,
-      req.body.category ?? row.category,
+      nextCategoryRow?.slug ?? req.body.category ?? row.category,
       req.body.availability ?? row.availability,
       Number.isInteger(req.body.priceCents) ? req.body.priceCents : row.price_cents,
       typeof req.body.active === 'boolean' ? req.body.active : row.active,
@@ -1253,6 +1595,16 @@ app.patch('/api/products/:id', auth('products.update'), async (req, res) => {
       typeof req.body.dineInOnly === 'boolean' ? req.body.dineInOnly : row.dine_in_only,
       typeof req.body.stockControlled === 'boolean' ? req.body.stockControlled : row.stock_controlled,
       Number.isInteger(req.body.sortOrder) ? req.body.sortOrder : row.sort_order,
+      nextCategoryRow?.id ?? row.category_id,
+      nextSubcategoryId,
+      req.body.flavorId === '' ? null : (req.body.flavorId ?? row.flavor_id),
+      req.body.variantId === '' ? null : (req.body.variantId ?? row.variant_id),
+      req.body.unit ?? row.unit ?? 'unidade',
+      req.body.volumeMl === undefined ? row.volume_ml : req.body.volumeMl === '' || req.body.volumeMl === null ? null : Number(req.body.volumeMl),
+      typeof req.body.showPublic === 'boolean' ? req.body.showPublic : row.show_public,
+      typeof req.body.availableForSale === 'boolean' ? req.body.availableForSale : row.available_for_sale,
+      typeof req.body.availableForProduction === 'boolean' ? req.body.availableForProduction : row.available_for_production,
+      typeof req.body.establishmentOnly === 'boolean' ? req.body.establishmentOnly : row.establishment_only,
       req.params.id,
     ],
   )
@@ -1270,7 +1622,10 @@ app.patch('/api/products/:id/availability', auth('products.update'), async (req,
   const row = current.rows[0]
   const updated = await query(
     `UPDATE products
-     SET active = $1, delivery_enabled = $2, pickup_enabled = $3, dine_in_only = $4, updated_at = NOW()
+     SET active = $1, delivery_enabled = $2, pickup_enabled = $3, dine_in_only = $4,
+         available_for_sale = $1,
+         archived_at = CASE WHEN $1 = FALSE THEN COALESCE(archived_at, NOW()) ELSE NULL END,
+         updated_at = NOW()
      WHERE id = $5 RETURNING *`,
     [
       req.body.active ?? row.active,
@@ -1572,6 +1927,473 @@ app.patch('/api/categories/:id', auth('products.update'), async (req, res) => {
   await audit(req, 'update', 'categories', req.params.id, row, updated.rows[0])
   res.json(updated.rows[0])
 })
+
+app.get('/api/admin/catalog', auth('products.view'), async (_req, res) => {
+  const [categories, subcategories, flavors, variants, products] = await Promise.all([
+    query(`SELECT c.*,
+      COUNT(sc.id)::int AS subcategories_count,
+      COUNT(p.id)::int AS products_count,
+      COUNT(p.id) FILTER (WHERE p.active = TRUE)::int AS active_products_count,
+      COUNT(p.id) FILTER (WHERE p.active = FALSE)::int AS historical_products_count
+      FROM categories c
+      LEFT JOIN product_subcategories sc ON sc.category_id = c.id
+      LEFT JOIN products p ON p.category_id = c.id
+      GROUP BY c.id
+      ORDER BY c.sort_order, c.name`),
+    query(`SELECT sc.*, c.name AS category_name,
+      COUNT(p.id)::int AS products_count,
+      COUNT(p.id) FILTER (WHERE p.active = TRUE)::int AS active_products_count
+      FROM product_subcategories sc
+      JOIN categories c ON c.id = sc.category_id
+      LEFT JOIN products p ON p.subcategory_id = sc.id
+      GROUP BY sc.id, c.name
+      ORDER BY c.sort_order, sc.sort_order, sc.name`),
+    query('SELECT * FROM product_flavors ORDER BY sort_order, name'),
+    query('SELECT * FROM product_variants ORDER BY sort_order, name'),
+    query(`${productSelectSql} ${productOrderSql()}`),
+  ])
+  res.json({
+    categories: categories.rows.map(categoryDto),
+    subcategories: subcategories.rows.map(subcategoryDto),
+    flavors: flavors.rows.map(flavorDto),
+    variants: variants.rows.map(variantDto),
+    products: products.rows.map(productDto),
+  })
+})
+
+app.get('/api/admin/catalog/categories', auth('products.view'), async (_req, res) => {
+  const result = await query(`SELECT c.*,
+    COUNT(sc.id)::int AS subcategories_count,
+    COUNT(p.id)::int AS products_count,
+    COUNT(p.id) FILTER (WHERE p.active = TRUE)::int AS active_products_count,
+    COUNT(p.id) FILTER (WHERE p.active = FALSE)::int AS historical_products_count
+    FROM categories c
+    LEFT JOIN product_subcategories sc ON sc.category_id = c.id
+    LEFT JOIN products p ON p.category_id = c.id
+    GROUP BY c.id
+    ORDER BY c.sort_order, c.name`)
+  res.json(result.rows.map(categoryDto))
+})
+
+app.post('/api/admin/catalog/categories', auth('products.create'), async (req, res) => {
+  const existing = await query('SELECT id, name, slug FROM categories')
+  let name
+  try {
+    name = assertCatalogName(req.body.name, 'Categoria')
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+  if (catalogDuplicate(existing.rows, name)) return res.status(409).json({ error: 'Categoria equivalente ja existe.' })
+  const slug = slugifyCatalogName(req.body.slug || name)
+  const created = await query(
+    `INSERT INTO categories (id, name, slug, description, icon, sort_order, active, show_public, show_admin, created_by)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+     RETURNING *`,
+    [
+      randomUUID(),
+      name,
+      slug,
+      req.body.description || '',
+      req.body.icon || '',
+      Number(req.body.sortOrder || 0),
+      req.body.active !== false,
+      req.body.showPublic !== false,
+      req.body.showAdmin !== false,
+      req.user.id,
+    ],
+  )
+  await audit(req, 'create', 'categories', created.rows[0].id, null, created.rows[0])
+  res.status(201).json(categoryDto(created.rows[0]))
+})
+
+app.put('/api/admin/catalog/categories/:id', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM categories WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Categoria nao encontrada.' })
+  let name
+  try {
+    name = req.body.name === undefined ? current.rows[0].name : assertCatalogName(req.body.name, 'Categoria')
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+  const existing = await query('SELECT id, name, slug FROM categories WHERE id <> $1', [req.params.id])
+  if (catalogDuplicate(existing.rows, name)) return res.status(409).json({ error: 'Categoria equivalente ja existe.' })
+  const updated = await query(
+    `UPDATE categories
+     SET name = $1, description = $2, icon = $3, sort_order = $4, active = $5,
+         show_public = $6, show_admin = $7, updated_at = NOW()
+     WHERE id = $8 RETURNING *`,
+    [
+      name,
+      req.body.description ?? current.rows[0].description,
+      req.body.icon ?? current.rows[0].icon,
+      Number(req.body.sortOrder ?? current.rows[0].sort_order),
+      typeof req.body.active === 'boolean' ? req.body.active : current.rows[0].active,
+      typeof req.body.showPublic === 'boolean' ? req.body.showPublic : current.rows[0].show_public,
+      typeof req.body.showAdmin === 'boolean' ? req.body.showAdmin : current.rows[0].show_admin,
+      req.params.id,
+    ],
+  )
+  await audit(req, 'update', 'categories', req.params.id, current.rows[0], updated.rows[0])
+  res.json(categoryDto(updated.rows[0]))
+})
+
+app.post('/api/admin/catalog/categories/:id/archive', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM categories WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Categoria nao encontrada.' })
+  const updated = await query(
+    `UPDATE categories SET active = FALSE, show_public = FALSE, archived_at = COALESCE(archived_at, NOW()), updated_at = NOW()
+     WHERE id = $1 RETURNING *`,
+    [req.params.id],
+  )
+  await audit(req, 'archive', 'categories', req.params.id, current.rows[0], updated.rows[0])
+  res.json(categoryDto(updated.rows[0]))
+})
+
+app.post('/api/admin/catalog/categories/:id/restore', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM categories WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Categoria nao encontrada.' })
+  const updated = await query('UPDATE categories SET active = TRUE, archived_at = NULL, updated_at = NOW() WHERE id = $1 RETURNING *', [req.params.id])
+  await audit(req, 'restore', 'categories', req.params.id, current.rows[0], updated.rows[0])
+  res.json(categoryDto(updated.rows[0]))
+})
+
+app.get('/api/admin/catalog/subcategories', auth('products.view'), async (_req, res) => {
+  const result = await query(`SELECT sc.*, c.name AS category_name,
+    COUNT(p.id)::int AS products_count,
+    COUNT(p.id) FILTER (WHERE p.active = TRUE)::int AS active_products_count
+    FROM product_subcategories sc
+    JOIN categories c ON c.id = sc.category_id
+    LEFT JOIN products p ON p.subcategory_id = sc.id
+    GROUP BY sc.id, c.name
+    ORDER BY c.sort_order, sc.sort_order, sc.name`)
+  res.json(result.rows.map(subcategoryDto))
+})
+
+app.post('/api/admin/catalog/subcategories', auth('products.create'), async (req, res) => {
+  const category = await query('SELECT * FROM categories WHERE id = $1', [req.body.categoryId])
+  if (!category.rows[0]) return res.status(400).json({ error: 'Categoria obrigatoria.' })
+  let name
+  try {
+    name = assertCatalogName(req.body.name, 'Subcategoria')
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+  const existing = await query('SELECT * FROM product_subcategories WHERE category_id = $1', [req.body.categoryId])
+  if (catalogDuplicate(existing.rows, name, { categoryId: req.body.categoryId })) return res.status(409).json({ error: 'Subcategoria equivalente ja existe nessa categoria.' })
+  const created = await query(
+    `INSERT INTO product_subcategories (id, category_id, name, slug, description, sort_order, active, show_public, show_admin, created_by)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *`,
+    [randomUUID(), req.body.categoryId, name, slugifyCatalogName(req.body.slug || name), req.body.description || '', Number(req.body.sortOrder || 0), req.body.active !== false, req.body.showPublic !== false, req.body.showAdmin !== false, req.user.id],
+  )
+  await audit(req, 'create', 'product_subcategories', created.rows[0].id, null, created.rows[0])
+  res.status(201).json(subcategoryDto({ ...created.rows[0], category_name: category.rows[0].name }))
+})
+
+app.put('/api/admin/catalog/subcategories/:id', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM product_subcategories WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Subcategoria nao encontrada.' })
+  const nextCategoryId = req.body.categoryId ?? current.rows[0].category_id
+  const category = await query('SELECT * FROM categories WHERE id = $1', [nextCategoryId])
+  if (!category.rows[0]) return res.status(400).json({ error: 'Categoria invalida.' })
+  let name
+  try {
+    name = req.body.name === undefined ? current.rows[0].name : assertCatalogName(req.body.name, 'Subcategoria')
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+  const updated = await query(
+    `UPDATE product_subcategories
+     SET category_id = $1, name = $2, description = $3, sort_order = $4, active = $5,
+         show_public = $6, show_admin = $7, updated_at = NOW()
+     WHERE id = $8 RETURNING *`,
+    [
+      nextCategoryId,
+      name,
+      req.body.description ?? current.rows[0].description,
+      Number(req.body.sortOrder ?? current.rows[0].sort_order),
+      typeof req.body.active === 'boolean' ? req.body.active : current.rows[0].active,
+      typeof req.body.showPublic === 'boolean' ? req.body.showPublic : current.rows[0].show_public,
+      typeof req.body.showAdmin === 'boolean' ? req.body.showAdmin : current.rows[0].show_admin,
+      req.params.id,
+    ],
+  )
+  await audit(req, 'update', 'product_subcategories', req.params.id, current.rows[0], updated.rows[0])
+  res.json(subcategoryDto({ ...updated.rows[0], category_name: category.rows[0].name }))
+})
+
+app.post('/api/admin/catalog/subcategories/:id/archive', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM product_subcategories WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Subcategoria nao encontrada.' })
+  const updated = await query('UPDATE product_subcategories SET active = FALSE, show_public = FALSE, archived_at = COALESCE(archived_at, NOW()), updated_at = NOW() WHERE id = $1 RETURNING *', [req.params.id])
+  await audit(req, 'archive', 'product_subcategories', req.params.id, current.rows[0], updated.rows[0])
+  res.json(subcategoryDto(updated.rows[0]))
+})
+
+app.post('/api/admin/catalog/subcategories/:id/restore', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM product_subcategories WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Subcategoria nao encontrada.' })
+  const updated = await query('UPDATE product_subcategories SET active = TRUE, archived_at = NULL, updated_at = NOW() WHERE id = $1 RETURNING *', [req.params.id])
+  await audit(req, 'restore', 'product_subcategories', req.params.id, current.rows[0], updated.rows[0])
+  res.json(subcategoryDto(updated.rows[0]))
+})
+
+app.get('/api/admin/catalog/flavors', auth('products.view'), async (_req, res) => {
+  const result = await query('SELECT * FROM product_flavors ORDER BY sort_order, name')
+  res.json(result.rows.map(flavorDto))
+})
+
+app.post('/api/admin/catalog/flavors', auth('products.create'), async (req, res) => {
+  let name
+  try {
+    name = assertCatalogName(req.body.name, 'Sabor')
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+  const existing = await query('SELECT * FROM product_flavors')
+  if (catalogDuplicate(existing.rows, name)) return res.status(409).json({ error: 'Sabor equivalente ja existe.' })
+  const slug = slugifyCatalogName(req.body.slug || name)
+  const created = await query(
+    'INSERT INTO product_flavors (id, name, slug, description, sort_order, active, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING *',
+    [randomUUID(), name, slug, req.body.description || '', Number(req.body.sortOrder || 0), req.body.active !== false, req.user.id],
+  )
+  await audit(req, 'create', 'product_flavors', created.rows[0].id, null, created.rows[0])
+  res.status(201).json(flavorDto(created.rows[0]))
+})
+
+app.put('/api/admin/catalog/flavors/:id', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM product_flavors WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Sabor nao encontrado.' })
+  const updated = await query(
+    'UPDATE product_flavors SET name = $1, description = $2, sort_order = $3, active = $4, updated_at = NOW() WHERE id = $5 RETURNING *',
+    [req.body.name ?? current.rows[0].name, req.body.description ?? current.rows[0].description, Number(req.body.sortOrder ?? current.rows[0].sort_order), typeof req.body.active === 'boolean' ? req.body.active : current.rows[0].active, req.params.id],
+  )
+  await audit(req, 'update', 'product_flavors', req.params.id, current.rows[0], updated.rows[0])
+  res.json(flavorDto(updated.rows[0]))
+})
+
+app.get('/api/admin/catalog/variants', auth('products.view'), async (_req, res) => {
+  const result = await query('SELECT * FROM product_variants ORDER BY sort_order, name')
+  res.json(result.rows.map(variantDto))
+})
+
+app.post('/api/admin/catalog/variants', auth('products.create'), async (req, res) => {
+  let name
+  try {
+    name = assertCatalogName(req.body.name, 'Variacao')
+    assertNonNegativeInteger(req.body.volumeMl, 'Volume')
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+  const existing = await query('SELECT * FROM product_variants')
+  if (catalogDuplicate(existing.rows, name)) return res.status(409).json({ error: 'Variacao equivalente ja existe.' })
+  const slug = slugifyCatalogName(req.body.slug || name)
+  const created = await query(
+    'INSERT INTO product_variants (id, name, slug, unit, volume_ml, sort_order, active, created_by) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING *',
+    [randomUUID(), name, slug, req.body.unit || 'unidade', req.body.volumeMl === '' || req.body.volumeMl === undefined ? null : Number(req.body.volumeMl), Number(req.body.sortOrder || 0), req.body.active !== false, req.user.id],
+  )
+  await audit(req, 'create', 'product_variants', created.rows[0].id, null, created.rows[0])
+  res.status(201).json(variantDto(created.rows[0]))
+})
+
+app.put('/api/admin/catalog/variants/:id', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM product_variants WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Variacao nao encontrada.' })
+  try {
+    if (req.body.volumeMl !== undefined) assertNonNegativeInteger(req.body.volumeMl, 'Volume')
+  } catch (error) {
+    return res.status(400).json({ error: error.message })
+  }
+  const updated = await query(
+    'UPDATE product_variants SET name = $1, unit = $2, volume_ml = $3, sort_order = $4, active = $5, updated_at = NOW() WHERE id = $6 RETURNING *',
+    [req.body.name ?? current.rows[0].name, req.body.unit ?? current.rows[0].unit, req.body.volumeMl === undefined ? current.rows[0].volume_ml : req.body.volumeMl === '' ? null : Number(req.body.volumeMl), Number(req.body.sortOrder ?? current.rows[0].sort_order), typeof req.body.active === 'boolean' ? req.body.active : current.rows[0].active, req.params.id],
+  )
+  await audit(req, 'update', 'product_variants', req.params.id, current.rows[0], updated.rows[0])
+  res.json(variantDto(updated.rows[0]))
+})
+
+app.get('/api/admin/catalog/products', auth('products.view'), async (_req, res) => {
+  const result = await query(`${productSelectSql} ${productOrderSql()}`)
+  res.json(result.rows.map(productDto))
+})
+
+app.post('/api/admin/catalog/products', auth('products.create'), async (req, res) => {
+  const categoryRow = req.body.categoryId
+    ? (await query('SELECT * FROM categories WHERE id = $1', [req.body.categoryId])).rows[0]
+    : (await query('SELECT * FROM categories WHERE slug = $1 OR id = $1', [req.body.category])).rows[0]
+  if (!categoryRow) return res.status(400).json({ error: 'Categoria invalida.' })
+  const subcategoryRow = req.body.subcategoryId
+    ? (await query('SELECT * FROM product_subcategories WHERE id = $1', [req.body.subcategoryId])).rows[0]
+    : null
+  try {
+    assertCatalogName(req.body.name, 'Produto')
+    assertSubcategoryBelongsToCategory({ subcategory: subcategoryRow, categoryId: categoryRow.id })
+    assertNonNegativeInteger(req.body.priceCents, 'Preco')
+    assertNonNegativeInteger(req.body.volumeMl, 'Volume')
+  } catch (error) {
+    return res.status(400).json({ error: error.message || 'Produto invalido.' })
+  }
+  const availability = req.body.availability || 'ambos'
+  const created = await query(
+    `INSERT INTO products (
+      id, name, description, category, availability, price_cents, active, featured,
+      delivery_enabled, pickup_enabled, dine_in_only, stock_controlled, sort_order,
+      category_id, subcategory_id, flavor_id, variant_id, unit, volume_ml, show_public,
+      available_for_sale, available_for_production, establishment_only, created_by
+    ) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24)
+    RETURNING *`,
+    [
+      randomUUID(),
+      req.body.name,
+      req.body.description || '',
+      categoryRow.slug,
+      availability,
+      req.body.priceCents,
+      req.body.active !== false,
+      Boolean(req.body.featured),
+      typeof req.body.deliveryEnabled === 'boolean' ? req.body.deliveryEnabled : availability !== 'presencial',
+      typeof req.body.pickupEnabled === 'boolean' ? req.body.pickupEnabled : true,
+      typeof req.body.dineInOnly === 'boolean' ? req.body.dineInOnly : availability === 'presencial',
+      Boolean(req.body.stockControlled),
+      Number(req.body.sortOrder || 0),
+      categoryRow.id,
+      req.body.subcategoryId || null,
+      req.body.flavorId || null,
+      req.body.variantId || null,
+      req.body.unit || 'unidade',
+      req.body.volumeMl === '' || req.body.volumeMl === undefined ? null : Number(req.body.volumeMl),
+      req.body.showPublic !== false,
+      req.body.availableForSale !== false,
+      req.body.availableForProduction !== false,
+      Boolean(req.body.establishmentOnly),
+      req.user.id,
+    ],
+  )
+  await audit(req, 'create', 'products', created.rows[0].id, null, productDto(created.rows[0]))
+  res.status(201).json(productDto(created.rows[0]))
+})
+
+app.put('/api/admin/catalog/products/:id', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM products WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Produto nao encontrado.' })
+  req.body = { ...req.body, active: typeof req.body.active === 'boolean' ? req.body.active : current.rows[0].active }
+  const row = current.rows[0]
+  const nextCategoryId = req.body.categoryId ?? row.category_id
+  const nextCategoryRow = nextCategoryId
+    ? (await query('SELECT * FROM categories WHERE id = $1', [nextCategoryId])).rows[0]
+    : req.body.category
+      ? (await query('SELECT * FROM categories WHERE slug = $1 OR id = $1', [req.body.category])).rows[0]
+      : null
+  const nextSubcategoryId = req.body.subcategoryId === '' ? null : (req.body.subcategoryId ?? row.subcategory_id)
+  const nextSubcategoryRow = nextSubcategoryId
+    ? (await query('SELECT * FROM product_subcategories WHERE id = $1', [nextSubcategoryId])).rows[0]
+    : null
+  try {
+    if (req.body.name !== undefined) assertCatalogName(req.body.name, 'Produto')
+    if (nextCategoryRow) assertSubcategoryBelongsToCategory({ subcategory: nextSubcategoryRow, categoryId: nextCategoryRow.id })
+    if (req.body.priceCents !== undefined) assertNonNegativeInteger(req.body.priceCents, 'Preco')
+    if (req.body.volumeMl !== undefined) assertNonNegativeInteger(req.body.volumeMl, 'Volume')
+  } catch (error) {
+    return res.status(400).json({ error: error.message || 'Produto invalido.' })
+  }
+  const updated = await query(
+    `UPDATE products
+     SET name = $1, description = $2, category = $3, availability = $4, price_cents = $5, active = $6,
+         featured = $7, delivery_enabled = $8, pickup_enabled = $9, dine_in_only = $10,
+         stock_controlled = $11, sort_order = $12, category_id = $13, subcategory_id = $14,
+         flavor_id = $15, variant_id = $16, unit = $17, volume_ml = $18, show_public = $19,
+         available_for_sale = $20, available_for_production = $21, establishment_only = $22,
+         archived_at = CASE WHEN $6 = FALSE THEN COALESCE(archived_at, NOW()) ELSE NULL END,
+         updated_at = NOW()
+     WHERE id = $23 RETURNING *`,
+    [
+      req.body.name ?? row.name,
+      req.body.description ?? row.description,
+      nextCategoryRow?.slug ?? req.body.category ?? row.category,
+      req.body.availability ?? row.availability,
+      Number.isInteger(req.body.priceCents) ? req.body.priceCents : row.price_cents,
+      typeof req.body.active === 'boolean' ? req.body.active : row.active,
+      typeof req.body.featured === 'boolean' ? req.body.featured : row.featured,
+      typeof req.body.deliveryEnabled === 'boolean' ? req.body.deliveryEnabled : row.delivery_enabled,
+      typeof req.body.pickupEnabled === 'boolean' ? req.body.pickupEnabled : row.pickup_enabled,
+      typeof req.body.dineInOnly === 'boolean' ? req.body.dineInOnly : row.dine_in_only,
+      typeof req.body.stockControlled === 'boolean' ? req.body.stockControlled : row.stock_controlled,
+      Number.isInteger(req.body.sortOrder) ? req.body.sortOrder : row.sort_order,
+      nextCategoryRow?.id ?? row.category_id,
+      nextSubcategoryId,
+      req.body.flavorId === '' ? null : (req.body.flavorId ?? row.flavor_id),
+      req.body.variantId === '' ? null : (req.body.variantId ?? row.variant_id),
+      req.body.unit ?? row.unit ?? 'unidade',
+      req.body.volumeMl === undefined ? row.volume_ml : req.body.volumeMl === '' || req.body.volumeMl === null ? null : Number(req.body.volumeMl),
+      typeof req.body.showPublic === 'boolean' ? req.body.showPublic : row.show_public,
+      typeof req.body.availableForSale === 'boolean' ? req.body.availableForSale : row.available_for_sale,
+      typeof req.body.availableForProduction === 'boolean' ? req.body.availableForProduction : row.available_for_production,
+      typeof req.body.establishmentOnly === 'boolean' ? req.body.establishmentOnly : row.establishment_only,
+      req.params.id,
+    ],
+  )
+  await audit(req, 'update', 'products', req.params.id, productDto(row), productDto(updated.rows[0]))
+  res.json(productDto(updated.rows[0]))
+})
+
+app.post('/api/admin/catalog/products/:id/archive', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM products WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Produto nao encontrado.' })
+  const updated = await query(
+    `UPDATE products
+     SET active = FALSE, available_for_sale = FALSE, show_public = FALSE,
+         archived_at = COALESCE(archived_at, NOW()), updated_at = NOW()
+     WHERE id = $1 RETURNING *`,
+    [req.params.id],
+  )
+  await audit(req, 'archive', 'products', req.params.id, productDto(current.rows[0]), productDto(updated.rows[0]))
+  res.json(productDto(updated.rows[0]))
+})
+
+app.post('/api/admin/catalog/products/:id/restore', auth('products.update'), async (req, res) => {
+  const current = await query('SELECT * FROM products WHERE id = $1', [req.params.id])
+  if (!current.rows[0]) return res.status(404).json({ error: 'Produto nao encontrado.' })
+  const category = current.rows[0].category_id ? await query('SELECT * FROM categories WHERE id = $1 AND active = TRUE', [current.rows[0].category_id]) : { rows: [{}] }
+  if (!category.rows[0]) return res.status(409).json({ error: 'Reative a categoria antes de reativar o produto.' })
+  const updated = await query(
+    `UPDATE products
+     SET active = TRUE, available_for_sale = TRUE, archived_at = NULL, updated_at = NOW()
+     WHERE id = $1 RETURNING *`,
+    [req.params.id],
+  )
+  await audit(req, 'restore', 'products', req.params.id, productDto(current.rows[0]), productDto(updated.rows[0]))
+  res.json(productDto(updated.rows[0]))
+})
+
+app.post(
+  '/api/admin/catalog/products/:id/image',
+  auth('products.update'),
+  express.raw({ type: ['image/png', 'image/jpeg', 'image/webp'], limit: '2mb' }),
+  async (req, res) => {
+    const current = await query('SELECT * FROM products WHERE id = $1', [req.params.id])
+    if (!current.rows[0]) return res.status(404).json({ error: 'Produto nao encontrado.' })
+    if (!Buffer.isBuffer(req.body) || req.body.length < 16) return res.status(400).json({ error: 'Imagem invalida.' })
+
+    const contentType = String(req.headers['content-type'] || '').split(';')[0].toLowerCase()
+    const signatures = {
+      'image/png': { ext: 'png', ok: req.body[0] === 0x89 && req.body[1] === 0x50 && req.body[2] === 0x4e && req.body[3] === 0x47 },
+      'image/jpeg': { ext: 'jpg', ok: req.body[0] === 0xff && req.body[1] === 0xd8 && req.body[2] === 0xff },
+      'image/webp': { ext: 'webp', ok: req.body.toString('ascii', 0, 4) === 'RIFF' && req.body.toString('ascii', 8, 12) === 'WEBP' },
+    }
+    const signature = signatures[contentType]
+    if (!signature?.ok) return res.status(400).json({ error: 'Formato de imagem nao permitido.' })
+
+    const uploadRoot = process.env.UPLOAD_DIR || path.resolve('uploads')
+    const productsDir = path.join(uploadRoot, 'products')
+    await mkdir(productsDir, { recursive: true })
+    const fileName = `${req.params.id}-${randomUUID()}.${signature.ext}`
+    const filePath = path.join(productsDir, fileName)
+    await writeFile(filePath, req.body, { flag: 'wx' })
+    const imageUrl = `/uploads/products/${fileName}`
+    const updated = await query('UPDATE products SET image_url = $1, updated_at = NOW() WHERE id = $2 RETURNING *', [imageUrl, req.params.id])
+    await audit(req, 'upload_image', 'products', req.params.id, { imageUrl: current.rows[0].image_url || '' }, { imageUrl })
+    res.json(productDto(updated.rows[0]))
+  },
+)
 
 app.get('/api/orders', auth('orders'), async (req, res) => {
   const status = req.query.status

@@ -24,6 +24,7 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3001
+      UPLOAD_DIR: /app/uploads
       PGHOST: salgados-r-db
       PGPORT: 5432
       PGDATABASE: salgadosr
@@ -33,6 +34,8 @@ services:
     depends_on:
       salgados-r-db:
         condition: service_healthy
+    volumes:
+      - salgados-r-uploads:/app/uploads
     ports:
       - "3001:3001"
 
@@ -44,8 +47,11 @@ services:
     restart: unless-stopped
     depends_on:
       - salgados-r-api
+    volumes:
+      - salgados-r-uploads:/usr/share/nginx/html/uploads:ro
     ports:
       - "3000:3000"
 
 volumes:
   salgados-r-postgres:
+  salgados-r-uploads:

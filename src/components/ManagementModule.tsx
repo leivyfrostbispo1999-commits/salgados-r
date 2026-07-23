@@ -8,6 +8,7 @@ import {
   type ManagementSale,
   type ManagementSummary,
 } from '../utils/api'
+import { GroupedProductCombobox } from './GroupedProductCombobox'
 
 type Mode = 'producao' | 'vendas' | 'contas' | 'custos' | 'relatorios'
 
@@ -87,12 +88,7 @@ export function ManagementModule({ mode, products, setMessage }: Props) {
           </label>
           <label className="grid gap-1 text-sm font-black">
             PRODUTO
-            <select value={productId} onChange={(event) => setProductId(event.target.value)} className="rounded border px-3 py-3">
-              <option value="">TODOS</option>
-              {products.map((product) => (
-                <option key={product.id} value={product.id}>{product.name}</option>
-              ))}
-            </select>
+            <GroupedProductCombobox products={products} value={productId} onChange={setProductId} includeInactive placeholder="TODOS" label="" />
           </label>
         </div>
       </section>
@@ -148,9 +144,7 @@ function ProductionEntryForm({ products, setMessage, onSaved }: { products: ApiP
     <section className="rounded-lg bg-white p-5 shadow-sm">
       <h3 className="text-xl font-black">REGISTRO DIÁRIO DE PRODUÇÃO</h3>
       <div className="mt-4 grid gap-3 md:grid-cols-[1fr_140px_140px_160px_auto]">
-        <select value={productId} onChange={(event) => setProductId(event.target.value)} className="rounded border px-3 py-3 font-bold">
-          {products.map((product) => <option key={product.id} value={product.id}>{product.name}</option>)}
-        </select>
+        <GroupedProductCombobox products={products} value={productId} onChange={setProductId} />
         <input value={quantity} onChange={(event) => setQuantity(event.target.value)} placeholder="PRODUZIDO" className="rounded border px-3 py-3 font-bold" />
         <input value={lost} onChange={(event) => setLost(event.target.value)} placeholder="PERDA" className="rounded border px-3 py-3 font-bold" />
         <select value={status} onChange={(event) => setStatus(event.target.value)} className="rounded border px-3 py-3 font-bold">
@@ -209,9 +203,7 @@ function SalesEntryForm({ products, sales, setMessage, onSaved }: { products: Ap
     <section className="rounded-lg bg-white p-5 shadow-sm">
       <h3 className="text-xl font-black">REGISTRAR VENDA</h3>
       <div className="mt-4 grid gap-3 lg:grid-cols-[1fr_100px_repeat(4,120px)_auto]">
-        <select value={productId} onChange={(event) => setProductId(event.target.value)} className="rounded border px-3 py-3 font-bold">
-          {products.map((product) => <option key={product.id} value={product.id}>{product.name} - {formatCurrency(product.price)}</option>)}
-        </select>
+        <GroupedProductCombobox products={products} value={productId} onChange={setProductId} />
         <input value={quantity} onChange={(event) => setQuantity(event.target.value)} className="rounded border px-3 py-3 font-bold" />
         <input value={pix} onChange={(event) => setPix(event.target.value)} placeholder="PIX" className="rounded border px-3 py-3 font-bold" />
         <input value={cash} onChange={(event) => setCash(event.target.value)} placeholder="DINHEIRO" className="rounded border px-3 py-3 font-bold" />

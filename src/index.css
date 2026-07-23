@@ -1086,6 +1086,10 @@ textarea[data-preserve-case] {
   font-size: 1rem;
   font-weight: 800;
   padding: 0.85rem 1rem;
+  text-transform: none;
+}
+
+.sr-admin-auth-form label {
   text-transform: uppercase;
 }
 
@@ -1109,6 +1113,142 @@ textarea[data-preserve-case] {
 
 .sr-admin-auth-form > div > button:disabled {
   opacity: 0.62;
+}
+
+.sr-combobox {
+  position: relative;
+  min-width: 0;
+}
+
+.sr-combobox-label {
+  display: grid;
+  gap: 0.35rem;
+  color: var(--sr-red);
+  font-size: 0.875rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.sr-combobox-trigger {
+  display: grid;
+  min-height: 3.25rem;
+  width: 100%;
+  min-width: 0;
+  gap: 0.15rem;
+  border: 1px solid rgba(220, 0, 8, 0.35);
+  border-radius: 0.65rem;
+  background: var(--sr-white);
+  color: var(--sr-red);
+  padding: 0.7rem 0.85rem;
+  text-align: left;
+}
+
+.sr-combobox-trigger:focus-visible,
+.sr-combobox-search:focus-visible,
+.sr-combobox-list button:focus-visible {
+  outline: 3px solid var(--sr-yellow);
+  outline-offset: 2px;
+}
+
+.sr-combobox-trigger span,
+.sr-combobox-trigger small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sr-combobox-trigger span {
+  font-weight: 900;
+}
+
+.sr-combobox-trigger small {
+  color: var(--sr-red);
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 0.78;
+}
+
+.sr-combobox-popover {
+  position: absolute;
+  z-index: 80;
+  top: calc(100% + 0.45rem);
+  left: 0;
+  width: min(36rem, calc(100vw - 2rem));
+  max-width: 100%;
+  border: 2px solid var(--sr-yellow);
+  border-radius: 0.85rem;
+  background: var(--sr-red);
+  box-shadow: 0 18px 44px rgba(220, 0, 8, 0.26);
+  padding: 0.75rem;
+}
+
+.sr-combobox-search {
+  width: 100%;
+  border: 1px solid var(--sr-yellow);
+  border-radius: 0.65rem;
+  background: var(--sr-white);
+  color: var(--sr-red);
+  padding: 0.85rem;
+  font-weight: 900;
+}
+
+.sr-combobox-list {
+  margin-top: 0.7rem;
+  max-height: min(22rem, 54vh);
+  overflow: auto;
+  padding-right: 0.25rem;
+}
+
+.sr-combobox-group > p {
+  margin: 0.75rem 0 0.35rem;
+  color: var(--sr-yellow);
+  font-size: 0.78rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.sr-combobox-subgroup > span {
+  display: block;
+  margin: 0.55rem 0 0.25rem 0.45rem;
+  color: var(--sr-white);
+  font-size: 0.72rem;
+  font-weight: 900;
+  opacity: 0.86;
+}
+
+.sr-combobox-list button {
+  display: grid;
+  width: 100%;
+  gap: 0.1rem;
+  border: 1px solid rgba(255, 189, 13, 0.35);
+  border-radius: 0.65rem;
+  background: transparent;
+  color: var(--sr-white);
+  margin-top: 0.35rem;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.sr-combobox-list button:hover,
+.sr-combobox-list button[aria-selected='true'] {
+  background: var(--sr-yellow);
+  color: var(--sr-red);
+}
+
+.sr-combobox-list button strong,
+.sr-combobox-list button small {
+  overflow-wrap: anywhere;
+}
+
+.sr-combobox-list button small {
+  font-size: 0.72rem;
+  font-weight: 800;
+  opacity: 0.9;
+}
+
+.sr-combobox-empty {
+  color: var(--sr-white);
+  font-weight: 900;
 }
 
 .sr-admin-loading div {

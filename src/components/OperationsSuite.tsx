@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { ReactNode } from 'react'
 import {
   api,
   type ApiOrder,
   type ApiProduct,
   type AuthUser,
+  type CatalogPayload,
   type FinanceSummary,
   type PrintStatus,
   type ReportSummary,
@@ -824,7 +825,17 @@ function LoginForm({
     <AuthBox title="Login" subtitle="Acesso restrito à operação do Salgados R.">
       <label>
         Email
-        <input type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="email@exemplo.com" autoComplete="email" />
+        <input
+          type="email"
+          inputMode="email"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          placeholder="email@exemplo.com"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          autoComplete="username"
+        />
       </label>
       <label>
         Senha
@@ -834,6 +845,9 @@ function LoginForm({
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Sua senha"
             type={showPassword ? 'text' : 'password'}
+            autoCapitalize="none"
+            autoCorrect="off"
+            spellCheck={false}
             autoComplete="current-password"
           />
           <button type="button" onClick={() => setShowPassword((value) => !value)} aria-label={showPassword ? 'Ocultar senha' : 'Mostrar senha'}>
@@ -1135,68 +1149,408 @@ function AdminPanel({
   onCreated: () => Promise<void>
   setMessage: (message: string) => void
 }) {
-  const [name, setName] = useState('')
-  const [category, setCategory] = useState('pasteis')
-  const [availability, setAvailability] = useState('ambos')
-  const [price, setPrice] = useState('')
+  const [catalog, setCatalog] = useState<CatalogPayload | null>(null)
+  const [tab, setTab] = useState<'produtos' | 'categorias' | 'subcategorias' | 'sabores' | 'variacoes'>('produtos')
+  const [search, setSearch] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ativos')
+  const [productForm, setProductForm] = useState({
+    id: '',
+    name: '',
+    description: '',
+    categoryId: '',
+    subcategoryId: '',
+    flavorId: '',
+    variantId: '',
+    availability: 'ambos',
+    unit: 'unidade',
+    volumeMl: '',
+    price: '',
+    sortOrder: '0',
+    showPublic: true,
+    deliveryEnabled: true,
+    pickupEnabled: true,
+    dineInOnly: false,
+    active: true,
+  })
+  const [categoryForm, setCategoryForm] = useState({ id: '', name: '', description: '', sortOrder: '0', showPublic: true, active: true })
+  const [subcategoryForm, setSubcategoryForm] = useState({ id: '', categoryId: '', name: '', description: '', sortOrder: '0', showPublic: true, active: true })
+  const [flavorForm, setFlavorForm] = useState({ id: '', name: '', description: '', sortOrder: '0', active: true })
+  const [variantForm, setVariantForm] = useState({ id: '', name: '', unit: 'unidade', volumeMl: '', sortOrder: '0', active: true })
+  const [productImageFile, setProductImageFile] = useState<File | null>(null)
 
-  async function createProduct() {
-    await api.createProduct({
-      name,
-      category,
-      availability,
-      priceCents: Math.round(Number(price.replace(',', '.')) * 100),
+  const refreshCatalog = useCallback(async () => {
+    const next = await api.catalog()
+    setCatalog(next)
+    if (!productForm.categoryId && next.categories[0]) setProductForm((state) => ({ ...state, categoryId: next.categories[0].id }))
+    if (!subcategoryForm.categoryId && next.categories[0]) setSubcategoryForm((state) => ({ ...state, categoryId: next.categories[0].id }))
+  }, [productForm.categoryId, subcategoryForm.categoryId])
+
+  useEffect(() => {
+    refreshCatalog().catch((error: Error) => setMessage(error.message))
+  }, [refreshCatalog, setMessage])
+
+  const catalogProducts = catalog?.products.length ? catalog.products : products
+  const normalizedSearch = search.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim()
+  const filteredProducts = catalogProducts.filter((product) => {
+    const statusOk = statusFilter === 'todos' || (statusFilter === 'ativos' ? product.active : !product.active)
+    const text = [product.name, product.categoryName, product.subcategoryName, product.flavorName, product.variantName]
+      .join(' ')
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+    return statusOk && (!normalizedSearch || text.includes(normalizedSearch))
+  })
+  const selectedCategorySubcategories = (catalog?.subcategories || []).filter((item) => item.categoryId === productForm.categoryId)
+
+  function editProduct(product: ApiProduct) {
+    setTab('produtos')
+    setProductForm({
+      id: product.id,
+      name: product.name,
+      description: product.description || '',
+      categoryId: product.categoryId || '',
+      subcategoryId: product.subcategoryId || '',
+      flavorId: product.flavorId || '',
+      variantId: product.variantId || '',
+      availability: product.availability,
+      unit: product.unit || 'unidade',
+      volumeMl: product.volumeMl ? String(product.volumeMl) : '',
+      price: String(product.price).replace('.', ','),
+      sortOrder: String(product.sortOrder || 0),
+      showPublic: product.showPublic,
+      deliveryEnabled: product.deliveryEnabled,
+      pickupEnabled: product.pickupEnabled,
+      dineInOnly: product.dineInOnly,
+      active: product.active,
     })
-    setMessage('Produto criado no banco.')
-    setName('')
-    setPrice('')
+    setProductImageFile(null)
+  }
+
+  async function saveProduct() {
+    if (!productForm.name.trim()) return setMessage('INFORME O NOME DO PRODUTO.')
+    if (!productForm.categoryId) return setMessage('SELECIONE UMA CATEGORIA.')
+    const payload = {
+      name: productForm.name,
+      description: productForm.description,
+      categoryId: productForm.categoryId,
+      subcategoryId: productForm.subcategoryId || null,
+      flavorId: productForm.flavorId || null,
+      variantId: productForm.variantId || null,
+      availability: productForm.availability as ApiProduct['availability'],
+      unit: productForm.unit,
+      volumeMl: productForm.volumeMl ? Number(productForm.volumeMl) : null,
+      priceCents: toCents(productForm.price),
+      sortOrder: Number(productForm.sortOrder || 0),
+      showPublic: productForm.showPublic,
+      deliveryEnabled: productForm.deliveryEnabled,
+      pickupEnabled: productForm.pickupEnabled,
+      dineInOnly: productForm.dineInOnly,
+      establishmentOnly: productForm.dineInOnly,
+      active: productForm.active,
+    }
+    const saved = productForm.id ? await api.updateCatalogProduct(productForm.id, payload) : await api.createCatalogProduct(payload)
+    if (productImageFile) await api.uploadCatalogProductImage(saved.id, productImageFile)
+    setMessage(productForm.id ? 'PRODUTO ATUALIZADO.' : 'PRODUTO CRIADO.')
+    setProductForm((state) => ({ ...state, id: '', name: '', description: '', price: '', volumeMl: '', sortOrder: '0', active: true }))
+    setProductImageFile(null)
+    await refreshCatalog()
     await onCreated()
   }
 
   async function toggleProduct(product: ApiProduct) {
-    await api.updateProduct(product.id, { active: !product.active })
-    setMessage(product.active ? 'Produto desativado.' : 'Produto ativado.')
+    if (product.active) await api.archiveCatalogProduct(product.id)
+    else await api.restoreCatalogProduct(product.id)
+    setMessage(product.active ? 'PRODUTO ARQUIVADO. HISTÓRICO PRESERVADO.' : 'PRODUTO REATIVADO.')
+    await refreshCatalog()
     await onCreated()
   }
 
+  async function saveCategory() {
+    if (!categoryForm.name.trim()) return setMessage('INFORME A CATEGORIA.')
+    const payload = { name: categoryForm.name, description: categoryForm.description, sortOrder: Number(categoryForm.sortOrder || 0), showPublic: categoryForm.showPublic, active: categoryForm.active }
+    if (categoryForm.id) await api.updateCatalogCategory(categoryForm.id, payload)
+    else await api.createCatalogCategory(payload)
+    setCategoryForm({ id: '', name: '', description: '', sortOrder: '0', showPublic: true, active: true })
+    setMessage('CATEGORIA SALVA.')
+    await refreshCatalog()
+  }
+
+  async function saveSubcategory() {
+    if (!subcategoryForm.categoryId || !subcategoryForm.name.trim()) return setMessage('INFORME CATEGORIA E SUBCATEGORIA.')
+    const payload = { categoryId: subcategoryForm.categoryId, name: subcategoryForm.name, description: subcategoryForm.description, sortOrder: Number(subcategoryForm.sortOrder || 0), showPublic: subcategoryForm.showPublic, active: subcategoryForm.active }
+    if (subcategoryForm.id) await api.updateCatalogSubcategory(subcategoryForm.id, payload)
+    else await api.createCatalogSubcategory(payload)
+    setSubcategoryForm((state) => ({ ...state, id: '', name: '', description: '', sortOrder: '0', active: true }))
+    setMessage('SUBCATEGORIA SALVA.')
+    await refreshCatalog()
+  }
+
+  async function saveFlavor() {
+    if (!flavorForm.name.trim()) return setMessage('INFORME O SABOR.')
+    const payload = { name: flavorForm.name, description: flavorForm.description, sortOrder: Number(flavorForm.sortOrder || 0), active: flavorForm.active }
+    if (flavorForm.id) await api.updateCatalogFlavor(flavorForm.id, payload)
+    else await api.createCatalogFlavor(payload)
+    setFlavorForm({ id: '', name: '', description: '', sortOrder: '0', active: true })
+    setMessage('SABOR SALVO.')
+    await refreshCatalog()
+  }
+
+  async function saveVariant() {
+    if (!variantForm.name.trim()) return setMessage('INFORME A VARIAÇÃO.')
+    const payload = { name: variantForm.name, unit: variantForm.unit, volumeMl: variantForm.volumeMl ? Number(variantForm.volumeMl) : null, sortOrder: Number(variantForm.sortOrder || 0), active: variantForm.active }
+    if (variantForm.id) await api.updateCatalogVariant(variantForm.id, payload)
+    else await api.createCatalogVariant(payload)
+    setVariantForm({ id: '', name: '', unit: 'unidade', volumeMl: '', sortOrder: '0', active: true })
+    setMessage('VARIAÇÃO SALVA.')
+    await refreshCatalog()
+  }
+
+  if (!catalog) return <EmptyState text="CARREGANDO CATÁLOGO DINÂMICO." />
+
   return (
-    <div className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
-      {hasPermission(user, 'products.create') ? <div className="rounded-lg border border-zinc-200 p-5">
-        <h3 className="text-xl font-black">Novo produto</h3>
-        <div className="mt-4 grid gap-3">
-          <input value={name} onChange={(event) => setName(event.target.value)} placeholder="Nome" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-          <div className="grid gap-3 sm:grid-cols-2">
-            <select value={category} onChange={(event) => setCategory(event.target.value)} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
-              <option value="pasteis">Pasteis</option>
-              <option value="salgados">Salgados</option>
-              <option value="sucos">Sucos</option>
-              <option value="refil">Refil</option>
-            </select>
-            <select value={availability} onChange={(event) => setAvailability(event.target.value)} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
-              <option value="ambos">Delivery e balcao</option>
-              <option value="delivery">Delivery</option>
-              <option value="presencial">Presencial</option>
-            </select>
-          </div>
-          <input value={price} onChange={(event) => setPrice(event.target.value)} placeholder="Preco, ex: 5,00" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
-          <button type="button" onClick={createProduct} className="rounded bg-[var(--sr-red)] px-4 py-3 font-black text-[var(--sr-yellow)]">
-            Salvar produto
-          </button>
+    <div className="grid gap-5">
+      <section className="rounded-lg border border-[var(--sr-yellow)] bg-[var(--sr-red)] p-5 text-[var(--sr-white)]">
+        <p className="text-sm font-black text-[var(--sr-yellow)]">CATÁLOGO DINÂMICO</p>
+        <h3 className="mt-2 text-3xl font-black">PRODUTOS, CATEGORIAS, SABORES E VARIAÇÕES</h3>
+        <p className="mt-2 text-sm font-bold">CADASTRE NOVOS ITENS PELO PAINEL. PRODUTOS ARQUIVADOS SAEM DAS NOVAS OPERAÇÕES E FICAM NOS HISTÓRICOS.</p>
+        <div className="mt-4 flex flex-wrap gap-2">
+          {(['produtos', 'categorias', 'subcategorias', 'sabores', 'variacoes'] as const).map((item) => (
+            <button key={item} type="button" onClick={() => setTab(item)} className={`rounded-full border border-[var(--sr-yellow)] px-4 py-2 font-black ${tab === item ? 'bg-[var(--sr-yellow)] text-[var(--sr-red)]' : 'text-[var(--sr-white)]'}`}>
+              {item}
+            </button>
+          ))}
         </div>
-      </div> : <EmptyState text="Seu perfil pode consultar produtos, mas nao cadastrar novos itens." />}
-      <div className="overflow-hidden rounded-lg border border-zinc-200">
-        {products.map((product) => (
-          <div key={product.id} className="grid gap-2 border-b border-zinc-100 p-4 text-sm font-semibold sm:grid-cols-[1fr_auto_auto_auto]">
-            <span>{product.name}</span>
-            <span>{product.active ? 'ativo' : 'inativo'}</span>
-            <span className="font-black">{formatCurrency(product.price)}</span>
-            {hasPermission(user, 'products.update') ? <button type="button" onClick={() => toggleProduct(product)} className="rounded bg-zinc-100 px-3 py-2 text-xs font-black">
-              {product.active ? 'Desativar' : 'Ativar'}
-            </button> : <span className="text-xs font-black text-[var(--sr-white)]">Consulta</span>}
-          </div>
+      </section>
+
+      {tab === 'produtos' ? (
+        <div className="grid gap-5 xl:grid-cols-[0.85fr_1.15fr]">
+          {hasPermission(user, 'products.create') ? (
+            <section className="rounded-lg border border-zinc-200 bg-white p-5">
+              <h3 className="text-xl font-black text-[var(--sr-red)]">{productForm.id ? 'EDITAR PRODUTO' : 'NOVO PRODUTO'}</h3>
+              <div className="mt-4 grid gap-3">
+                <input value={productForm.name} onChange={(event) => setProductForm((state) => ({ ...state, name: event.target.value }))} placeholder="NOME" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+                <textarea value={productForm.description} onChange={(event) => setProductForm((state) => ({ ...state, description: event.target.value }))} placeholder="DESCRIÇÃO" className="min-h-20 rounded border border-zinc-300 px-3 py-3 font-semibold" />
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <select value={productForm.categoryId} onChange={(event) => setProductForm((state) => ({ ...state, categoryId: event.target.value, subcategoryId: '' }))} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+                    {catalog.categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+                  </select>
+                  <select value={productForm.subcategoryId} onChange={(event) => setProductForm((state) => ({ ...state, subcategoryId: event.target.value }))} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+                    <option value="">SEM SUBCATEGORIA</option>
+                    {selectedCategorySubcategories.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </select>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <select value={productForm.flavorId} onChange={(event) => setProductForm((state) => ({ ...state, flavorId: event.target.value }))} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+                    <option value="">SEM SABOR</option>
+                    {catalog.flavors.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </select>
+                  <select value={productForm.variantId} onChange={(event) => setProductForm((state) => ({ ...state, variantId: event.target.value }))} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+                    <option value="">SEM VARIAÇÃO</option>
+                    {catalog.variants.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}
+                  </select>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  <input value={productForm.price} onChange={(event) => setProductForm((state) => ({ ...state, price: event.target.value }))} placeholder="PREÇO, EX: 5,00" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+                  <input value={productForm.unit} onChange={(event) => setProductForm((state) => ({ ...state, unit: event.target.value }))} placeholder="UNIDADE" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+                  <input value={productForm.volumeMl} onChange={(event) => setProductForm((state) => ({ ...state, volumeMl: event.target.value }))} placeholder="VOLUME ML" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+                </div>
+                <label className="grid gap-1 text-sm font-black text-[var(--sr-red)]">
+                  IMAGEM DO PRODUTO
+                  <input
+                    type="file"
+                    accept="image/png,image/jpeg,image/webp"
+                    onChange={(event) => setProductImageFile(event.target.files?.[0] || null)}
+                    className="rounded border border-zinc-300 px-3 py-3 font-semibold"
+                  />
+                  <small>PNG, JPEG OU WEBP ATÉ 2 MB.</small>
+                </label>
+                <div className="grid gap-2 text-sm font-black text-[var(--sr-red)] sm:grid-cols-2">
+                  <label><input type="checkbox" checked={productForm.showPublic} onChange={(event) => setProductForm((state) => ({ ...state, showPublic: event.target.checked }))} /> VISÍVEL NO SITE</label>
+                  <label><input type="checkbox" checked={productForm.deliveryEnabled} onChange={(event) => setProductForm((state) => ({ ...state, deliveryEnabled: event.target.checked }))} /> DELIVERY</label>
+                  <label><input type="checkbox" checked={productForm.dineInOnly} onChange={(event) => setProductForm((state) => ({ ...state, dineInOnly: event.target.checked }))} /> SOMENTE ESTABELECIMENTO</label>
+                  <label><input type="checkbox" checked={productForm.active} onChange={(event) => setProductForm((state) => ({ ...state, active: event.target.checked }))} /> ATIVO</label>
+                </div>
+                <button type="button" onClick={saveProduct} className="rounded bg-[var(--sr-yellow)] px-4 py-3 font-black text-[var(--sr-red)]">SALVAR PRODUTO</button>
+              </div>
+            </section>
+          ) : <EmptyState text="SEU PERFIL PODE CONSULTAR PRODUTOS, MAS NÃO CADASTRAR." />}
+
+          <section className="rounded-lg border border-zinc-200 bg-white p-5">
+            <div className="grid gap-3 sm:grid-cols-[1fr_auto]">
+              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="BUSCAR NO CATÁLOGO" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+                <option value="ativos">ATIVOS</option>
+                <option value="inativos">INATIVOS</option>
+                <option value="todos">TODOS</option>
+              </select>
+            </div>
+            <div className="mt-4 grid gap-3">
+              {filteredProducts.map((product) => (
+                <article key={product.id} className="grid gap-3 rounded border border-[var(--sr-red)] p-4 md:grid-cols-[1fr_auto_auto] md:items-center">
+                  <div className="grid gap-3 sm:grid-cols-[72px_1fr] sm:items-center">
+                    {product.imageUrl ? <img src={product.imageUrl} alt="" className="h-16 w-16 rounded border border-[var(--sr-yellow)] object-cover" /> : <span className="hidden h-16 w-16 rounded border border-[var(--sr-yellow)] sm:block" aria-hidden="true" />}
+                    <div>
+                    <strong className="text-[var(--sr-red)]">{product.name}</strong>
+                    <p className="text-sm font-bold text-[var(--sr-red)]">{[product.categoryName, product.subcategoryName, product.flavorName, product.variantName].filter(Boolean).join(' > ') || product.category}</p>
+                    <small className="font-black text-[var(--sr-red)]">{product.active ? 'ATIVO' : 'INATIVO'} · {product.showPublic ? 'SITE' : 'OCULTO'} · {product.deliveryEnabled ? 'DELIVERY' : 'SEM DELIVERY'}</small>
+                    </div>
+                  </div>
+                  <span className="font-black text-[var(--sr-red)]">{formatCurrency(product.price)}</span>
+                  <div className="flex flex-wrap gap-2">
+                    <button type="button" onClick={() => editProduct(product)} className="rounded bg-[var(--sr-yellow)] px-3 py-2 text-xs font-black text-[var(--sr-red)]">EDITAR</button>
+                    {hasPermission(user, 'products.update') ? <button type="button" onClick={() => toggleProduct(product)} className="rounded bg-[var(--sr-red)] px-3 py-2 text-xs font-black text-[var(--sr-white)]">{product.active ? 'ARQUIVAR' : 'REATIVAR'}</button> : null}
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+        </div>
+      ) : null}
+
+      {tab === 'categorias' ? (
+        <CatalogSimpleManager title="CATEGORIAS" form={categoryForm} setForm={setCategoryForm} onSave={saveCategory} items={catalog.categories} onEdit={(item) => setCategoryForm({ id: item.id, name: item.name, description: item.description || '', sortOrder: String(item.sortOrder), showPublic: item.showPublic !== false, active: item.active })} />
+      ) : null}
+      {tab === 'subcategorias' ? (
+        <CatalogSubcategoryManager categories={catalog.categories} form={subcategoryForm} setForm={setSubcategoryForm} onSave={saveSubcategory} items={catalog.subcategories} onEdit={(item) => setSubcategoryForm({ id: item.id, categoryId: item.categoryId, name: item.name, description: item.description, sortOrder: String(item.sortOrder), showPublic: item.showPublic, active: item.active })} />
+      ) : null}
+      {tab === 'sabores' ? (
+        <CatalogSimpleManager title="SABORES" form={flavorForm} setForm={setFlavorForm} onSave={saveFlavor} items={catalog.flavors} onEdit={(item) => setFlavorForm({ id: item.id, name: item.name, description: item.description || '', sortOrder: String(item.sortOrder), active: item.active })} />
+      ) : null}
+      {tab === 'variacoes' ? (
+        <CatalogVariantManager form={variantForm} setForm={setVariantForm} onSave={saveVariant} items={catalog.variants} onEdit={(item) => setVariantForm({ id: item.id, name: item.name, unit: item.unit, volumeMl: item.volumeMl ? String(item.volumeMl) : '', sortOrder: String(item.sortOrder), active: item.active })} />
+      ) : null}
+    </div>
+  )
+}
+
+function CatalogSimpleManager({
+  title,
+  form,
+  setForm,
+  onSave,
+  items,
+  onEdit,
+}: {
+  title: string
+  form: { id: string; name: string; description: string; sortOrder: string; showPublic?: boolean; active: boolean }
+  setForm: (value: any) => void
+  onSave: () => Promise<void>
+  items: Array<{ id: string; name: string; description?: string; sortOrder: number; active: boolean; showPublic?: boolean; productsCount?: number; activeProductsCount?: number }>
+  onEdit: (item: { id: string; name: string; description?: string; sortOrder: number; active: boolean; showPublic?: boolean }) => void
+}) {
+  return (
+    <section className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h3 className="text-xl font-black text-[var(--sr-red)]">{form.id ? `EDITAR ${title}` : `NOVO ${title}`}</h3>
+        <div className="mt-4 grid gap-3">
+          <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="NOME" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="DESCRIÇÃO" className="min-h-20 rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: event.target.value })} placeholder="ORDEM" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          {'showPublic' in form ? <label className="font-black text-[var(--sr-red)]"><input type="checkbox" checked={Boolean(form.showPublic)} onChange={(event) => setForm({ ...form, showPublic: event.target.checked })} /> VISÍVEL NO SITE</label> : null}
+          <label className="font-black text-[var(--sr-red)]"><input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} /> ATIVO</label>
+          <button type="button" onClick={onSave} className="rounded bg-[var(--sr-yellow)] px-4 py-3 font-black text-[var(--sr-red)]">SALVAR</button>
+        </div>
+      </div>
+      <div className="grid gap-3">
+        {items.map((item) => (
+          <article key={item.id} className="grid gap-2 rounded border border-[var(--sr-red)] bg-white p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div>
+              <strong className="text-[var(--sr-red)]">{item.name}</strong>
+              <p className="text-sm font-bold text-[var(--sr-red)]">{item.description || 'SEM DESCRIÇÃO'} · ORDEM {item.sortOrder} · {item.active ? 'ATIVO' : 'INATIVO'}</p>
+              {'productsCount' in item ? <small className="font-black text-[var(--sr-red)]">{item.productsCount} PRODUTO(S), {item.activeProductsCount} ATIVO(S)</small> : null}
+            </div>
+            <button type="button" onClick={() => onEdit(item)} className="rounded bg-[var(--sr-yellow)] px-3 py-2 text-xs font-black text-[var(--sr-red)]">EDITAR</button>
+          </article>
         ))}
       </div>
-    </div>
+    </section>
+  )
+}
+
+function CatalogSubcategoryManager({
+  categories,
+  form,
+  setForm,
+  onSave,
+  items,
+  onEdit,
+}: {
+  categories: CatalogPayload['categories']
+  form: { id: string; categoryId: string; name: string; description: string; sortOrder: string; showPublic: boolean; active: boolean }
+  setForm: (value: { id: string; categoryId: string; name: string; description: string; sortOrder: string; showPublic: boolean; active: boolean }) => void
+  onSave: () => Promise<void>
+  items: CatalogPayload['subcategories']
+  onEdit: (item: CatalogPayload['subcategories'][number]) => void
+}) {
+  return (
+    <section className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h3 className="text-xl font-black text-[var(--sr-red)]">{form.id ? 'EDITAR SUBCATEGORIA' : 'NOVA SUBCATEGORIA'}</h3>
+        <div className="mt-4 grid gap-3">
+          <select value={form.categoryId} onChange={(event) => setForm({ ...form, categoryId: event.target.value })} className="rounded border border-zinc-300 px-3 py-3 font-semibold">
+            {categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}
+          </select>
+          <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="NOME" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <textarea value={form.description} onChange={(event) => setForm({ ...form, description: event.target.value })} placeholder="DESCRIÇÃO" className="min-h-20 rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: event.target.value })} placeholder="ORDEM" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <label className="font-black text-[var(--sr-red)]"><input type="checkbox" checked={form.showPublic} onChange={(event) => setForm({ ...form, showPublic: event.target.checked })} /> VISÍVEL NO SITE</label>
+          <label className="font-black text-[var(--sr-red)]"><input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} /> ATIVA</label>
+          <button type="button" onClick={onSave} className="rounded bg-[var(--sr-yellow)] px-4 py-3 font-black text-[var(--sr-red)]">SALVAR</button>
+        </div>
+      </div>
+      <div className="grid gap-3">
+        {items.map((item) => (
+          <article key={item.id} className="grid gap-2 rounded border border-[var(--sr-red)] bg-white p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div>
+              <strong className="text-[var(--sr-red)]">{item.categoryName} &gt; {item.name}</strong>
+              <p className="text-sm font-bold text-[var(--sr-red)]">{item.description || 'SEM DESCRIÇÃO'} · {item.active ? 'ATIVA' : 'INATIVA'}</p>
+            </div>
+            <button type="button" onClick={() => onEdit(item)} className="rounded bg-[var(--sr-yellow)] px-3 py-2 text-xs font-black text-[var(--sr-red)]">EDITAR</button>
+          </article>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function CatalogVariantManager({
+  form,
+  setForm,
+  onSave,
+  items,
+  onEdit,
+}: {
+  form: { id: string; name: string; unit: string; volumeMl: string; sortOrder: string; active: boolean }
+  setForm: (value: { id: string; name: string; unit: string; volumeMl: string; sortOrder: string; active: boolean }) => void
+  onSave: () => Promise<void>
+  items: CatalogPayload['variants']
+  onEdit: (item: CatalogPayload['variants'][number]) => void
+}) {
+  return (
+    <section className="grid gap-5 lg:grid-cols-[0.8fr_1.2fr]">
+      <div className="rounded-lg border border-zinc-200 bg-white p-5">
+        <h3 className="text-xl font-black text-[var(--sr-red)]">{form.id ? 'EDITAR VARIAÇÃO' : 'NOVA VARIAÇÃO'}</h3>
+        <div className="mt-4 grid gap-3">
+          <input value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="NOME" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={form.unit} onChange={(event) => setForm({ ...form, unit: event.target.value })} placeholder="UNIDADE" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={form.volumeMl} onChange={(event) => setForm({ ...form, volumeMl: event.target.value })} placeholder="VOLUME ML" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <input value={form.sortOrder} onChange={(event) => setForm({ ...form, sortOrder: event.target.value })} placeholder="ORDEM" className="rounded border border-zinc-300 px-3 py-3 font-semibold" />
+          <label className="font-black text-[var(--sr-red)]"><input type="checkbox" checked={form.active} onChange={(event) => setForm({ ...form, active: event.target.checked })} /> ATIVA</label>
+          <button type="button" onClick={onSave} className="rounded bg-[var(--sr-yellow)] px-4 py-3 font-black text-[var(--sr-red)]">SALVAR</button>
+        </div>
+      </div>
+      <div className="grid gap-3">
+        {items.map((item) => (
+          <article key={item.id} className="grid gap-2 rounded border border-[var(--sr-red)] bg-white p-4 sm:grid-cols-[1fr_auto] sm:items-center">
+            <div>
+              <strong className="text-[var(--sr-red)]">{item.name}</strong>
+              <p className="text-sm font-bold text-[var(--sr-red)]">{item.unit} · {item.volumeMl ? `${item.volumeMl} ML` : 'SEM VOLUME'} · {item.active ? 'ATIVA' : 'INATIVA'}</p>
+            </div>
+            <button type="button" onClick={() => onEdit(item)} className="rounded bg-[var(--sr-yellow)] px-3 py-2 text-xs font-black text-[var(--sr-red)]">EDITAR</button>
+          </article>
+        ))}
+      </div>
+    </section>
   )
 }
 
